@@ -7,12 +7,14 @@
 - Execute `./install`
 
 ### `install`
-- Welcome message
+- Install gum if not present (for pretty TUI)
+- Use gum for welcome message and interactive menus
 - Check if running on Arch Linux
-- Interactive menu: choose which steps to run (all/select)
+- Interactive menu: choose which steps to run (all/select/custom)
 - Loop through `scripts/install/steps/*` in order
 - Source `scripts/install/lib/common` for shared functions
-- Summary at end with any failures
+- Dank Material Shell (DMS) installation and setup handled in dedicated step
+- Summary at end with any failures (use gum table/formatting)
 
 ---
 
@@ -27,6 +29,11 @@
   - ILoveCandy
   - VerbosePkgLists
   - lib32 enabled
+
+### `01-install-dependencies`
+- Install gum (charmbracelet/gum) for prettier CLI interactions
+- Install any other core tools needed by installer itself
+- Set up basic environment for remaining steps
 
 ### `05-install-drivers`
 - Detect GPU (lspci | grep VGA)
@@ -46,6 +53,9 @@
 - Switch from udev to systemd in mkinitcpio.conf:
   - HOOKS=(base systemd autodetect modconf kms keyboard sd-vconsole block sd-encrypt filesystems fsck)
 - Regenerate initramfs: limine-update
+
+### `27-setup-dms`
+- Install DankMaterialShell from installation script
 
 ### `20-deploy-configs`
 - Clone niriland repo to `~/.local/share/niriland` (or verify it exists and pull latest)
@@ -195,6 +205,13 @@ For scripts that needs to be called systemwide:
 - **Tools prefix:** Use `niriland-*` for all user-facing scripts
 - **Package manager:** paru (faster than yay, compatible with pacman syntax, yay will be aliased to paru)
 - **FDE setup:** Only run if system is already encrypted, don't force encryption
-- **Interactive:** All steps should be non-interactive by default (--needed --noconfirm)
+- **Interactive UI:** Use gum (charmbracelet/gum) for menus, prompts, and progress indicators
+  - Graceful fallback to basic bash if gum unavailable
+  - Bootstrap installs gum before running main installer
+  - All steps should be automatic (--needed --noconfirm)
+- **Desktop Shell:** DankMaterialShell (DMS) provides the complete desktop environment
+  - Replaces traditional fragmented tools (waybar, mako, fuzzel, swaylock, etc.)
+  - Handles panels, notifications, launcher, lock screen, theming, brightness, screenshots
+  - Self-contained configuration (doesn't modify other user configs)
 - **Idempotent:** All scripts should be safe to re-run (check before doing)
 - **Error handling:** Log errors but continue with remaining steps, should stop if a critical error occurs or else skip

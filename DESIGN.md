@@ -54,7 +54,7 @@
   - HOOKS=(base systemd autodetect modconf kms keyboard sd-vconsole block sd-encrypt filesystems fsck)
 - Regenerate initramfs: limine-update
 
-### `27-setup-dms`
+### `17-setup-dms`
 - Install DankMaterialShell from installation script
 
 ### `20-deploy-configs`
@@ -63,7 +63,6 @@
 - Backup existing configs to `~/.config/backups/<filename>.backup.TIMESTAMP`
 - Copy configs from `~/.local/share/niriland/configs/base/` to `~/` (preserves structure: `.config/`, `.zshrc`, etc.)
 - Modules in `configs/modules/` are accessed via include/source statements in base configs
-- Set proper permissions (644 for config files, 755 for directories)
 
 ### `25-setup-theming`
 - Install JetBrains Mono Nerd Font (AUR or manual)

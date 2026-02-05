@@ -148,16 +148,20 @@ LUKS_PASSWORD=""
 if [ "$HAVE_RECOVERY" != "true" ] || [ "$HAVE_TPM2" != "true" ]; then
   log "LUKS enrollment required. You will be prompted for your disk encryption password."
 
-  # Read password securely
-  read -rs -p "Enter LUKS password: " LUKS_PASSWORD
+  # Read password directly from terminal device
+  read -rs -p "Enter LUKS password: " LUKS_PASSWORD </dev/tty
   echo
+
+  # Verify password is not empty
+  if [ -z "$LUKS_PASSWORD" ]; then
+    die "Password cannot be empty"
+  fi
 fi
 
 # --- Create recovery key ---
 if [ "$HAVE_RECOVERY" != "true" ]; then
   log "Creating LUKS recovery key"
   if ! echo -n "$LUKS_PASSWORD" | sudo systemd-cryptenroll "$LUKS_DEV" --recovery-key 2>/dev/null | sudo tee "$RECOVERY_FILE" >/dev/null; then
-    unset LUKS_PASSWORD
     die "Failed to enroll recovery key. Check your password and try again."
   fi
 
@@ -169,14 +173,8 @@ fi
 if [ "$HAVE_TPM2" != "true" ]; then
   log "Enrolling TPM2 auto-unlock"
   if ! echo -n "$LUKS_PASSWORD" | sudo systemd-cryptenroll "$LUKS_DEV" --tpm2-device=auto 2>/dev/null; then
-    unset LUKS_PASSWORD
     die "Failed to enroll TPM2. The password may be incorrect or TPM enrollment failed."
   fi
-fi
-
-# Clear password from memory
-if [ -n "$LUKS_PASSWORD" ]; then
-  unset LUKS_PASSWORD
 fi
 
 # --- Final rebuild ---

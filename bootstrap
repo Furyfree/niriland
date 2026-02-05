@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+log() {
+  printf '==> %s\n' "$*"
+}
+
+die() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+REPO_URL="${NIRILAND_REPO_URL:-https://github.com/Furyfree/niriland.git}"
+TARGET_DIR="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
+
+require_cmd git
+
+if [[ -d "$TARGET_DIR/.git" ]]; then
+  log "Updating repo in $TARGET_DIR"
+  git -C "$TARGET_DIR" pull --ff-only
+else
+  log "Cloning repo to $TARGET_DIR"
+  mkdir -p "$(dirname "$TARGET_DIR")"
+  git clone "$REPO_URL" "$TARGET_DIR"
+fi
+
+INSTALL_SCRIPT="$TARGET_DIR/install"
+if [[ ! -x "$INSTALL_SCRIPT" ]]; then
+  die "Install script not found or not executable: $INSTALL_SCRIPT"
+fi
+
+log "Bootstrapping (steps 00 and 05)"
+bash "$INSTALL_SCRIPT"

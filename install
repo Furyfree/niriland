@@ -1,3 +1,23 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./scripts/install/lib/common.sh
+source "$ROOT_DIR/scripts/install/lib/common.sh"
+
+STEPS=(
+  "$ROOT_DIR/scripts/install/steps/00-setup-pacman"
+  "$ROOT_DIR/scripts/install/steps/05-install-drivers"
+)
+
+for step in "${STEPS[@]}"; do
+  if [[ ! -x "$step" ]]; then
+    die "Step not found or not executable: $step"
+  fi
+
+  log "Running $(basename "$step")"
+  bash "$step"
+done
+
+log "Done"

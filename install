@@ -7,9 +7,15 @@ INSTALL_DIR="$ROOT_DIR/scripts/install"
 STEPS_DIR="$INSTALL_DIR/steps"
 source "$INSTALL_DIR/lib/common"
 
+read_system_pass
+read_luks_pass
+read_git_config
+setup_git_user
+
 STEPS=(
   "$STEPS_DIR/00-setup-pacman"
   "$STEPS_DIR/05-setup-fde"
+  "$STEPS_DIR/15-install-packages"
   "$STEPS_DIR/17-setup-dms"
 )
 
@@ -21,5 +27,7 @@ for step in "${STEPS[@]}"; do
   log "Running $(basename "$step")"
   bash "$step"
 done
+
+cleanup_all
 
 log "Done"

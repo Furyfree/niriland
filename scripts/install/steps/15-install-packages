@@ -5,4 +5,29 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
-require_sudo
+BASE="$REPO_ROOT/packages/base.packages"
+AUR="$REPO_ROOT/packages/aur.packages"
+CHAOTIC="$REPO_ROOT/packages/chaotic.packages"
+
+if [ ! -f "$BASE" ]; then
+    die "Missing $BASE"
+fi
+if [ ! -f "$AUR" ]; then
+    die "Missing $AUR"
+fi
+if [ ! -f "$CHAOTIC" ]; then
+    die "Missing $CHAOTIC"
+fi
+
+# Install base packages
+mapfile -t packages < <(grep -Ev '^\s*(#|$)' "$BASE")
+install_package "${packages[@]}"
+
+# Install Chaotic AUR packages
+mapfile -t chaotic_packages < <(grep -Ev '^\s*(#|$)' "$CHAOTIC")
+install_package "${chaotic_packages[@]}"
+
+# Install AUR packages
+require_paru
+mapfile -t aur_packages < <(grep -Ev '^\s*(#|$)' "$AUR")
+install_aur_package "${aur_packages[@]}"

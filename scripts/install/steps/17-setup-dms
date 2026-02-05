@@ -5,13 +5,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
-require_sudo
-
 log "Installing DankMaterialShell..."
 install_aur_package dms-shell-bin
 
 log "Starting DMS..."
-
+systemctl --user start dms
 systemctl --user add-wants niri.service dms
 
 log "DMS setup complete."

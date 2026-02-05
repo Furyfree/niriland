@@ -20,8 +20,6 @@ trap cleanup EXIT
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
-require_sudo
-
 log "Setting up FDE auto-unlock with TPM2..."
 
 # --- TPM presence check (skip if unavailable) ---
@@ -46,14 +44,14 @@ if [ -z "$MAPPER_NAME" ]; then
   die "Could not determine root mapper"
 fi
 
-if ! sudo cryptsetup status "$MAPPER_NAME" >/dev/null 2>&1; then
+if ! run_sudo cryptsetup status "$MAPPER_NAME" >/dev/null 2>&1; then
   die "Root is not a LUKS mapper"
 fi
 
 log "Root mapper: $MAPPER_NAME"
 
 # --- Resolve underlying LUKS device (authoritative) ---
-LUKS_DEV="$(sudo cryptsetup status "$MAPPER_NAME" | awk '/device:/ {print $2}')"
+LUKS_DEV="$(run_sudo cryptsetup status "$MAPPER_NAME" | awk '/device:/ {print $2}')"
 
 if [ -z "$LUKS_DEV" ]; then
   die "Could not resolve LUKS device for root"
@@ -62,12 +60,12 @@ fi
 log "Underlying LUKS device: $LUKS_DEV"
 
 # --- Verify LUKS2 ---
-if ! sudo cryptsetup luksDump "$LUKS_DEV" | head -n 5 | grep -q "Version:[[:space:]]*2"; then
+if ! run_sudo cryptsetup luksDump "$LUKS_DEV" | head -n 5 | grep -q "Version:[[:space:]]*2"; then
   die "$LUKS_DEV is not LUKS2"
 fi
 
 # --- Get LUKS UUID ---
-LUKS_UUID="$(sudo cryptsetup luksUUID "$LUKS_DEV")"
+LUKS_UUID="$(run_sudo cryptsetup luksUUID "$LUKS_DEV")"
 
 if [ -z "$LUKS_UUID" ]; then
   die "Failed to get LUKS UUID"
@@ -79,14 +77,12 @@ log "LUKS UUID: $LUKS_UUID"
 HAVE_RECOVERY=false
 HAVE_TPM2=false
 
-require_sudo
-if sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-recovery"'; then
+if run_sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-recovery"'; then
   HAVE_RECOVERY=true
   log "Recovery key already enrolled"
 fi
 
-require_sudo
-if sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-tpm2"'; then
+if run_sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-tpm2"'; then
   HAVE_TPM2=true
   log "TPM2 auto-unlock already enrolled"
 fi
@@ -97,10 +93,10 @@ log "Configuring mkinitcpio (systemd-based initramfs)"
 CONF_DIR="/etc/mkinitcpio.conf.d"
 CONF_FILE="$CONF_DIR/fde-systemd.conf"
 
-sudo mkdir -p "$CONF_DIR"
-sudo touch "$CONF_FILE"
+run_sudo mkdir -p "$CONF_DIR"
+run_sudo touch "$CONF_FILE"
 
-sudo tee "$CONF_FILE" >/dev/null <<'EOF'
+run_sudo tee "$CONF_FILE" >/dev/null <<'EOF'
 # systemd-based initramfs for TPM2 auto-unlock
 HOOKS=(base systemd autodetect microcode modconf kms keyboard sd-vconsole block sd-encrypt filesystems fsck)
 EOF
@@ -109,37 +105,33 @@ log "Written $CONF_FILE"
 
 # --- Kernel cmdline ---
 CMDLINE="/etc/kernel/cmdline"
-sudo mkdir -p "$(dirname "$CMDLINE")"
+run_sudo mkdir -p "$(dirname "$CMDLINE")"
 
 # Simple format that actually works
 NEW_CMDLINE="root=/dev/mapper/$MAPPER_NAME rw quiet rootfstype=btrfs rootflags=subvol=@"
 
-echo "$NEW_CMDLINE" | sudo tee "$CMDLINE" >/dev/null
+echo "$NEW_CMDLINE" | run_sudo tee "$CMDLINE" >/dev/null
 log "Updated kernel cmdline"
 
 # --- Crypttab (use "-" not "none") ---
 CRYPTTAB="/etc/crypttab.initramfs"
 ENTRY="$MAPPER_NAME UUID=$LUKS_UUID - tpm2-device=auto"
 
-sudo touch "$CRYPTTAB"
-echo "$ENTRY" | sudo tee "$CRYPTTAB" >/dev/null
+run_sudo touch "$CRYPTTAB"
+echo "$ENTRY" | run_sudo tee "$CRYPTTAB" >/dev/null
 log "Updated crypttab"
 
 # --- Create and store recovery key (idempotent) ---
 RECOVERY_FILE="/root/luks-recovery-key.txt"
 
 # --- Prompt once for password if enrollment needed ---
-LUKS_PASSWORD=""
 TEMP_KEYFILE=""
-
 if [ "$HAVE_RECOVERY" != "true" ] || [ "$HAVE_TPM2" != "true" ]; then
-  log "LUKS enrollment required. You will be prompted for your disk encryption password."
-
-  read -rs -p "Enter LUKS password: " LUKS_PASSWORD </dev/tty
-  echo
+  log "LUKS enrollment required. Using disk encryption password collected at start."
+  LUKS_PASSWORD="$(get_luks_pass)"
 
   if [ -z "$LUKS_PASSWORD" ]; then
-    die "Password cannot be empty"
+    die "Disk encryption password not available. This should not happen."
   fi
 
   # Create temporary keyfile
@@ -152,26 +144,26 @@ fi
 if [ "$HAVE_RECOVERY" != "true" ]; then
   log "Creating LUKS recovery key"
 
-  if ! sudo systemd-cryptenroll "$LUKS_DEV" --unlock-key-file="$TEMP_KEYFILE" --recovery-key | sudo tee "$RECOVERY_FILE" >/dev/null; then
+  if ! run_sudo systemd-cryptenroll "$LUKS_DEV" --unlock-key-file="$TEMP_KEYFILE" --recovery-key | run_sudo tee "$RECOVERY_FILE" >/dev/null; then
     die "Failed to enroll recovery key"
   fi
 
   log "Recovery key saved to $RECOVERY_FILE"
-  sudo chmod 600 "$RECOVERY_FILE"
+  run_sudo chmod 600 "$RECOVERY_FILE"
 fi
 
 # --- Enroll TPM2 ---
 if [ "$HAVE_TPM2" != "true" ]; then
   log "Enrolling TPM2 auto-unlock"
 
-  if ! sudo systemd-cryptenroll "$LUKS_DEV" --unlock-key-file="$TEMP_KEYFILE" --tpm2-device=auto; then
+  if ! run_sudo systemd-cryptenroll "$LUKS_DEV" --unlock-key-file="$TEMP_KEYFILE" --tpm2-device=auto; then
     die "Failed to enroll TPM2"
   fi
 fi
 
 # --- Final rebuild ---
 log "Updating bootloader and initramfs"
-sudo limine-update
+run_sudo limine-update
 
 log "FDE auto-unlock setup complete"
 log "Recovery key is stored in $RECOVERY_FILE (keep this safe!)"

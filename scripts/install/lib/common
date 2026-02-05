@@ -1,19 +1,67 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
+##############################################################################
+# Path Setup
+##############################################################################
+
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$LIB_DIR/../../.." && pwd)"
 
+##############################################################################
+# Colors
+##############################################################################
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+##############################################################################
+# Logging Functions
+##############################################################################
+
 log() {
-  printf '==> %s\n' "$*"
+  printf "${BLUE}==>${NC} %s\n" "$*"
+}
+
+log_success() {
+  printf "${GREEN}==>${NC} %s\n" "$*"
+}
+
+log_warning() {
+  printf "${YELLOW}WARN:${NC} %s\n" "$*" >&2
+}
+
+log_error() {
+  printf "${RED}ERROR:${NC} %s\n" "$*" >&2
+}
+
+warn() {
+  log_warning "$@"
 }
 
 die() {
-  printf 'ERROR: %s\n' "$*" >&2
+  log_error "$@"
   exit 1
 }
 
-require_sudo() {
-  sudo -v || die "sudo authentication failed"
+##############################################################################
+# Requirement Checks
+##############################################################################
+
+ensure_sudo_session() {
+  if sudo -n true 2>/dev/null; then
+    return 0
+  fi
+
+  if [[ -z "${SYSTEM_PASS:-}" ]]; then
+    die "System password not set. Call read_system_pass first."
+  fi
+
+  sudo -S -p '' -v <<<"$SYSTEM_PASS" >/dev/null 2>&1 || die "sudo authentication failed"
 }
 
 require_paru() {
@@ -22,27 +70,45 @@ require_paru() {
   fi
 }
 
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+##############################################################################
+# Package Management
+##############################################################################
+
 install_package() {
-  local pkg="$1"
+  local pkg
 
-  if pacman -Qq "$pkg" >/dev/null 2>&1; then
-    log "$pkg already installed, skipping."
-    return 0
-  fi
+  for pkg in "$@"; do
+    if pacman -Qq "$pkg" >/dev/null 2>&1; then
+      log "$pkg already installed, skipping."
+      continue
+    fi
 
-  log "Installing $pkg..."
-  sudo pacman -S --needed --noconfirm "$pkg" || die "Failed to install $pkg"
+    log "Installing $pkg..."
+    run_sudo pacman -S --needed --noconfirm "$pkg" || die "Failed to install $pkg"
+  done
 }
 
 install_aur_package() {
-  local pkg="$1"
-  if pacman -Qq "$pkg" >/dev/null 2>&1; then
-    log "$pkg already installed, skipping."
-    return 0
-  fi
-  log "Installing $pkg..."
-  paru -S --needed --noconfirm "$pkg" || die "Failed to install $pkg"
+  local pkg
+
+  for pkg in "$@"; do
+    if pacman -Qq "$pkg" >/dev/null 2>&1; then
+      log "$pkg already installed, skipping."
+      continue
+    fi
+
+    log "Installing $pkg from AUR..."
+    paru -S --needed --noconfirm "$pkg" || die "Failed to install $pkg"
+  done
 }
+
+##############################################################################
+# File Operations
+##############################################################################
 
 copy_file() {
   local src="$1"
@@ -54,9 +120,180 @@ copy_file() {
   if [[ "$backup" == "true" ]] && [[ -f "$dest" ]] && ! cmp -s "$src" "$dest"; then
     local backup_path="${dest}.bak.$(date +%s)"
     log "Backing up $dest to $backup_path..."
-    sudo cp "$dest" "$backup_path" || die "Failed to backup $dest"
+    run_sudo cp "$dest" "$backup_path" || die "Failed to backup $dest"
   fi
 
   log "Copying $src to $dest..."
-  sudo cp "$src" "$dest" || die "Failed to copy $src to $dest"
+  run_sudo cp "$src" "$dest" || die "Failed to copy $src to $dest"
+}
+
+##############################################################################
+# Password Management
+##############################################################################
+
+# Read and validate system password for sudo usage.
+read_system_pass() {
+  log "Collecting system password..."
+
+  while true; do
+    read -sp "Enter system password (sudo): " SYSTEM_PASS
+    echo
+    read -sp "Confirm system password: " SYSTEM_PASS_CONFIRM
+    echo
+
+    if [[ "$SYSTEM_PASS" != "$SYSTEM_PASS_CONFIRM" ]]; then
+      warn "Passwords don't match, please try again"
+      continue
+    fi
+
+    # Force a fresh check so cached sudo credentials do not mask a bad password.
+    sudo -k
+    if sudo -S -p '' -v <<<"$SYSTEM_PASS" >/dev/null 2>&1; then
+      export SYSTEM_PASS
+      unset SYSTEM_PASS_CONFIRM
+      log_success "Password verified"
+      return 0
+    else
+      warn "Invalid sudo password, please try again"
+    fi
+  done
+}
+
+# Read and cache disk encryption password for later non-interactive enrollment.
+read_luks_pass() {
+  if [[ -z "${SYSTEM_PASS:-}" ]]; then
+    die "System password not set. Call read_system_pass first."
+  fi
+
+  log "Collecting disk encryption password..."
+
+  while true; do
+    read -sp "Enter disk encryption password (LUKS, Enter = system password): " LUKS_PASSWORD
+    echo
+
+    if [[ -z "$LUKS_PASSWORD" ]]; then
+      export LUKS_PASSWORD="$SYSTEM_PASS"
+      log_success "Disk encryption password set (reusing system password)"
+      return 0
+    fi
+
+    read -sp "Confirm disk encryption password: " LUKS_PASSWORD_CONFIRM
+    echo
+
+    if [[ "$LUKS_PASSWORD" != "$LUKS_PASSWORD_CONFIRM" ]]; then
+      warn "Passwords don't match, please try again"
+      continue
+    fi
+
+    export LUKS_PASSWORD
+    unset LUKS_PASSWORD_CONFIRM
+    log_success "Disk encryption password set"
+    return 0
+  done
+}
+
+# Get the system password.
+get_system_pass() {
+  if [[ -z "${SYSTEM_PASS:-}" ]]; then
+    die "System password not set. Call read_system_pass first."
+  fi
+  echo "$SYSTEM_PASS"
+}
+
+# Get the disk encryption password.
+get_luks_pass() {
+  if [[ -z "${LUKS_PASSWORD:-}" ]]; then
+    die "LUKS password not set. Call read_luks_pass first."
+  fi
+  echo "$LUKS_PASSWORD"
+}
+
+# Run command with sudo using cached sudo session.
+run_sudo() {
+  ensure_sudo_session
+  sudo "$@"
+}
+
+# Clean up passwords from memory.
+clean_system_pass() {
+  unset SYSTEM_PASS
+  unset SYSTEM_PASS_CONFIRM
+}
+
+clean_luks_pass() {
+  unset LUKS_PASSWORD
+  unset LUKS_PASSWORD_CONFIRM
+}
+
+##############################################################################
+# Git Configuration
+##############################################################################
+
+# Read or confirm git configuration
+read_git_config() {
+  log "Checking Git configuration..."
+
+  # Check existing git config
+  local existing_name existing_email
+  existing_name=$(git config --global user.name 2>/dev/null || echo "")
+  existing_email=$(git config --global user.email 2>/dev/null || echo "")
+
+  if [[ -n "$existing_name" && -n "$existing_email" ]]; then
+    log_success "Found existing Git config:"
+    echo "  Name:  $existing_name"
+    echo "  Email: $existing_email"
+    echo
+
+    read -p "Keep this configuration? (Y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+      export GIT_NAME="$existing_name"
+      export GIT_EMAIL="$existing_email"
+      return 0
+    fi
+  fi
+
+  # Prompt for new config
+  echo
+  read -p "Git name (Full Name): " GIT_NAME
+  read -p "Git email: " GIT_EMAIL
+
+  # Validate inputs
+  if [[ -z "$GIT_NAME" || -z "$GIT_EMAIL" ]]; then
+    die "Git name and email cannot be empty"
+  fi
+
+  export GIT_NAME
+  export GIT_EMAIL
+  log_success "Git configuration set"
+}
+
+# Apply git configuration to global config
+setup_git_user() {
+  if [[ -z "${GIT_NAME:-}" || -z "${GIT_EMAIL:-}" ]]; then
+    warn "Git configuration not set, skipping setup"
+    return 0
+  fi
+
+  log "Applying Git configuration..."
+  git config --global user.name "$GIT_NAME"
+  git config --global user.email "$GIT_EMAIL"
+  log_success "Git user configured: $GIT_NAME <$GIT_EMAIL>"
+}
+
+# Clean up git config from environment
+clean_git_config() {
+  unset GIT_NAME
+  unset GIT_EMAIL
+}
+
+##############################################################################
+# Cleanup All
+##############################################################################
+
+cleanup_all() {
+  sudo -k >/dev/null 2>&1 || true
+  clean_system_pass
+  clean_luks_pass
+  clean_git_config
 }

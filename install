@@ -3,8 +3,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=./scripts/install/lib/common.sh
-source "$ROOT_DIR/scripts/install/lib/common.sh"
+source "$ROOT_DIR/scripts/install/lib/common"
 
 STEPS=(
   "$ROOT_DIR/scripts/install/steps/00-setup-pacman"

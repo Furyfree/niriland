@@ -287,6 +287,10 @@ clean_git_config() {
   unset GIT_EMAIL
 }
 
+clean_cache() {
+    run_sudo paccache -r
+}
+
 ##############################################################################
 # Cleanup All
 ##############################################################################
@@ -296,4 +300,5 @@ cleanup_all() {
   clean_system_pass
   clean_luks_pass
   clean_git_config
+  clean_cache
 }

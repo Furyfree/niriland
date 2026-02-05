@@ -171,7 +171,7 @@ RECOVERY_FILE="/root/luks-recovery-key.txt"
 
 if [ "$HAVE_RECOVERY" != "true" ]; then
   log "Creating LUKS recovery key"
-  printf '%s\n' "$PASSPHRASE" | sudo systemd-cryptenroll "$LUKS_DEV" --recovery-key --password-file=- | sudo tee "$RECOVERY_FILE" >/dev/null
+  printf '%s\n' "$PASSPHRASE" | sudo systemd-cryptenroll "$LUKS_DEV" --recovery-key --password | sudo tee "$RECOVERY_FILE" >/dev/null
 
   log "Recovery key saved to $RECOVERY_FILE"
 
@@ -183,7 +183,7 @@ fi
 
 if [ "$HAVE_TPM2" != "true" ]; then
   log "Enrolling TPM2 auto-unlock"
-  printf '%s\n' "$PASSPHRASE" | sudo systemd-cryptenroll "$LUKS_DEV" --tpm2-device=auto --password-file=-
+  printf '%s\n' "$PASSPHRASE" | sudo systemd-cryptenroll "$LUKS_DEV" --tpm2-device=auto --password
 fi
 
 # --- Final rebuild ---

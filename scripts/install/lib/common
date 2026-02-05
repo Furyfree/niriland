@@ -136,9 +136,9 @@ read_system_pass() {
   log "Collecting system password..."
 
   while true; do
-    read -sp "Enter system password (sudo): " SYSTEM_PASS
+    read -rsp "Enter system password (sudo): " SYSTEM_PASS </dev/tty
     echo
-    read -sp "Confirm system password: " SYSTEM_PASS_CONFIRM
+    read -rsp "Confirm system password: " SYSTEM_PASS_CONFIRM </dev/tty
     echo
 
     if [[ "$SYSTEM_PASS" != "$SYSTEM_PASS_CONFIRM" ]]; then
@@ -168,7 +168,7 @@ read_luks_pass() {
   log "Collecting disk encryption password..."
 
   while true; do
-    read -sp "Enter disk encryption password (LUKS, Enter = system password): " LUKS_PASSWORD
+    read -rsp "Enter disk encryption password (LUKS, Enter = system password): " LUKS_PASSWORD </dev/tty
     echo
 
     if [[ -z "$LUKS_PASSWORD" ]]; then
@@ -177,7 +177,7 @@ read_luks_pass() {
       return 0
     fi
 
-    read -sp "Confirm disk encryption password: " LUKS_PASSWORD_CONFIRM
+    read -rsp "Confirm disk encryption password: " LUKS_PASSWORD_CONFIRM </dev/tty
     echo
 
     if [[ "$LUKS_PASSWORD" != "$LUKS_PASSWORD_CONFIRM" ]]; then
@@ -244,7 +244,7 @@ read_git_config() {
     echo "  Email: $existing_email"
     echo
 
-    read -p "Keep this configuration? (Y/n) " -n 1 -r
+    read -rp "Keep this configuration? (Y/n) " -n 1 -r </dev/tty
     echo
     if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
       export GIT_NAME="$existing_name"
@@ -255,8 +255,8 @@ read_git_config() {
 
   # Prompt for new config
   echo
-  read -p "Git name (Full Name): " GIT_NAME
-  read -p "Git email: " GIT_EMAIL
+  read -rp "Git name (Full Name): " GIT_NAME </dev/tty
+  read -rp "Git email: " GIT_EMAIL </dev/tty
 
   # Validate inputs
   if [[ -z "$GIT_NAME" || -z "$GIT_EMAIL" ]]; then

@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
 require_sudo
+install_package base-devel
 
 # Deploy our pacman.conf (Color, ILoveCandy, ParallelDownloads, multilib, etc.)
 copy_file "$REPO_ROOT/configs/base/etc/pacman.conf" "/etc/pacman.conf"

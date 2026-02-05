@@ -107,9 +107,9 @@ if sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[
   log "TPM2 auto-unlock already enrolled"
 fi
 
-# Prompt once if we need to enroll either recovery or TPM2
+# Prompt notice if we need to enroll either recovery or TPM2
 if [ "$HAVE_RECOVERY" != "true" ] || [ "$HAVE_TPM2" != "true" ]; then
-  PASSPHRASE="$(read_passphrase)"
+  log "You may be prompted to enter your LUKS passphrase to authorize enrollment."
 fi
 
 # --- Ensure crypttab.initramfs entry ---
@@ -171,7 +171,7 @@ RECOVERY_FILE="/root/luks-recovery-key.txt"
 
 if [ "$HAVE_RECOVERY" != "true" ]; then
   log "Creating LUKS recovery key"
-  printf '%s\n' "$PASSPHRASE" | sudo systemd-cryptenroll "$LUKS_DEV" --recovery-key --password | sudo tee "$RECOVERY_FILE" >/dev/null
+  sudo systemd-cryptenroll "$LUKS_DEV" --recovery-key | sudo tee "$RECOVERY_FILE" >/dev/null
 
   log "Recovery key saved to $RECOVERY_FILE"
 
@@ -183,7 +183,7 @@ fi
 
 if [ "$HAVE_TPM2" != "true" ]; then
   log "Enrolling TPM2 auto-unlock"
-  printf '%s\n' "$PASSPHRASE" | sudo systemd-cryptenroll "$LUKS_DEV" --tpm2-device=auto --password
+  sudo systemd-cryptenroll "$LUKS_DEV" --tpm2-device=auto
 fi
 
 # --- Final rebuild ---

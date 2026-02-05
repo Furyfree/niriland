@@ -66,6 +66,52 @@ fi
 
 log "LUKS UUID: $LUKS_UUID"
 
+# --- Get passphrase (cached from get_password) ---
+read_passphrase() {
+  # Use cached password from get_password if available
+  if [ -n "${_PASSWORD:-}" ]; then
+    printf '%s' "$_PASSWORD"
+    return 0
+  fi
+
+  # Prefer a direct TTY prompt when available (even if stdin isn't a tty)
+  if [ -r /dev/tty ]; then
+    local passphrase=""
+    read -r -s -p "Enter current LUKS passphrase for $LUKS_DEV: " passphrase </dev/tty
+    printf '\n' >/dev/tty
+    printf '%s' "$passphrase"
+    return 0
+  fi
+
+  # Fall back to systemd-ask-password (start agent if needed)
+  if command -v systemd-tty-ask-password-agent >/dev/null 2>&1; then
+    sudo systemd-tty-ask-password-agent --watch >/tmp/systemd-ask-pass.log 2>&1 &
+  fi
+
+  systemd-ask-password "Enter current LUKS passphrase for $LUKS_DEV:"
+}
+
+# --- Check existing tokens and prompt once (if needed) ---
+HAVE_RECOVERY=false
+HAVE_TPM2=false
+
+require_sudo
+if sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-recovery"'; then
+  HAVE_RECOVERY=true
+  log "Recovery key already enrolled"
+fi
+
+require_sudo
+if sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-tpm2"'; then
+  HAVE_TPM2=true
+  log "TPM2 auto-unlock already enrolled"
+fi
+
+# Prompt once if we need to enroll either recovery or TPM2
+if [ "$HAVE_RECOVERY" != "true" ] || [ "$HAVE_TPM2" != "true" ]; then
+  PASSPHRASE="$(read_passphrase)"
+fi
+
 # --- Ensure crypttab.initramfs entry ---
 CRYPTTAB="/etc/crypttab.initramfs"
 ENTRY="$MAPPER_NAME UUID=$LUKS_UUID - tpm2-device=auto"
@@ -120,52 +166,8 @@ else
   echo "$CURRENT_CMDLINE $REQUIRED_ROOT" | sudo tee "$CMDLINE" >/dev/null
 fi
 
-# --- Get passphrase (cached from get_password) ---
-read_passphrase() {
-  # Use cached password from get_password if available
-  if [ -n "${_PASSWORD:-}" ]; then
-    printf '%s' "$_PASSWORD"
-    return 0
-  fi
-
-  # Prefer a direct TTY prompt when available
-  if [ -t 0 ]; then
-    local passphrase=""
-    read -r -s -p "Enter current LUKS passphrase for $LUKS_DEV: " passphrase
-    printf '\n' >&2
-    printf '%s' "$passphrase"
-    return 0
-  fi
-
-  # Fall back to systemd-ask-password (start agent if needed)
-  if command -v systemd-tty-ask-password-agent >/dev/null 2>&1; then
-    sudo systemd-tty-ask-password-agent --watch >/tmp/systemd-ask-pass.log 2>&1 &
-  fi
-
-  systemd-ask-password "Enter current LUKS passphrase for $LUKS_DEV:"
-}
-
 # --- Create and store recovery key (idempotent) ---
 RECOVERY_FILE="/root/luks-recovery-key.txt"
-
-HAVE_RECOVERY=false
-HAVE_TPM2=false
-
-if sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-recovery"'; then
-  HAVE_RECOVERY=true
-  log "Recovery key already enrolled"
-fi
-
-# --- Enroll TPM2 auto-unlock (idempotent) ---
-if sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-tpm2"'; then
-  HAVE_TPM2=true
-  log "TPM2 auto-unlock already enrolled"
-fi
-
-# Prompt once if we need to enroll either recovery or TPM2
-if [ "$HAVE_RECOVERY" != "true" ] || [ "$HAVE_TPM2" != "true" ]; then
-  PASSPHRASE="$(read_passphrase)"
-fi
 
 if [ "$HAVE_RECOVERY" != "true" ]; then
   log "Creating LUKS recovery key"

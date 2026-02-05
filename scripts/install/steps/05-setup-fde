@@ -2,15 +2,19 @@
 
 set -euo pipefail
 
+cleanup() {
+  if [ -n "${LUKS_PASSWORD:-}" ]; then
+    unset LUKS_PASSWORD
+  fi
+}
+trap cleanup EXIT
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
 require_sudo
 
 log "Setting up FDE auto-unlock with TPM2..."
-
-# Trap to clear password
-trap 'unset PASSPHRASE' EXIT
 
 # --- TPM presence check (skip if unavailable) ---
 if [ ! -e /dev/tpmrm0 ] && [ ! -e /dev/tpm0 ]; then
@@ -66,32 +70,7 @@ fi
 
 log "LUKS UUID: $LUKS_UUID"
 
-# --- Get passphrase (cached from get_password) ---
-read_passphrase() {
-  # Use cached password from get_password if available
-  if [ -n "${_PASSWORD:-}" ]; then
-    printf '%s' "$_PASSWORD"
-    return 0
-  fi
-
-  # Prefer a direct TTY prompt when available (even if stdin isn't a tty)
-  if [ -r /dev/tty ]; then
-    local passphrase=""
-    read -r -s -p "Enter current LUKS passphrase for $LUKS_DEV: " passphrase </dev/tty
-    printf '\n' >/dev/tty
-    printf '%s' "$passphrase"
-    return 0
-  fi
-
-  # Fall back to systemd-ask-password (start agent if needed)
-  if command -v systemd-tty-ask-password-agent >/dev/null 2>&1; then
-    sudo systemd-tty-ask-password-agent --watch >/tmp/systemd-ask-pass.log 2>&1 &
-  fi
-
-  systemd-ask-password "Enter current LUKS passphrase for $LUKS_DEV:"
-}
-
-# --- Check existing tokens and prompt once (if needed) ---
+# --- Check existing tokens ---
 HAVE_RECOVERY=false
 HAVE_TPM2=false
 
@@ -105,26 +84,6 @@ require_sudo
 if sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-tpm2"'; then
   HAVE_TPM2=true
   log "TPM2 auto-unlock already enrolled"
-fi
-
-# Prompt once if we need to enroll either recovery or TPM2
-if [ "$HAVE_RECOVERY" != "true" ] || [ "$HAVE_TPM2" != "true" ]; then
-  PASSPHRASE="$(read_passphrase)"
-fi
-
-# Use a temporary file for the unlock key to avoid stdin permission issues
-UNLOCK_KEY_FILE=""
-cleanup_unlock_key() {
-  if [ -n "${UNLOCK_KEY_FILE:-}" ] && [ -f "$UNLOCK_KEY_FILE" ]; then
-    sudo rm -f "$UNLOCK_KEY_FILE"
-  fi
-}
-trap cleanup_unlock_key EXIT
-
-if [ -n "${PASSPHRASE:-}" ]; then
-  UNLOCK_KEY_FILE="$(sudo mktemp /tmp/luks-unlock.XXXXXX)"
-  sudo chmod 600 "$UNLOCK_KEY_FILE"
-  printf '%s\n' "$PASSPHRASE" | sudo tee "$UNLOCK_KEY_FILE" >/dev/null
 fi
 
 # --- Ensure crypttab.initramfs entry ---
@@ -184,21 +143,40 @@ fi
 # --- Create and store recovery key (idempotent) ---
 RECOVERY_FILE="/root/luks-recovery-key.txt"
 
+# --- Prompt once for password if enrollment needed ---
+LUKS_PASSWORD=""
+if [ "$HAVE_RECOVERY" != "true" ] || [ "$HAVE_TPM2" != "true" ]; then
+  log "LUKS enrollment required. You will be prompted for your disk encryption password."
+
+  # Read password securely
+  read -rs -p "Enter LUKS password: " LUKS_PASSWORD
+  echo
+fi
+
+# --- Create recovery key ---
 if [ "$HAVE_RECOVERY" != "true" ]; then
   log "Creating LUKS recovery key"
-  sudo systemd-cryptenroll "$LUKS_DEV" --recovery-key --unlock-key-file="$UNLOCK_KEY_FILE" | sudo tee "$RECOVERY_FILE" >/dev/null
+  if ! echo -n "$LUKS_PASSWORD" | sudo systemd-cryptenroll "$LUKS_DEV" --recovery-key 2>/dev/null | sudo tee "$RECOVERY_FILE" >/dev/null; then
+    unset LUKS_PASSWORD
+    die "Failed to enroll recovery key. Check your password and try again."
+  fi
 
   log "Recovery key saved to $RECOVERY_FILE"
-
-  # ASSERT: recovery token now exists
-  sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[:space:]]*:[[:space:]]*"systemd-recovery"'
-
   sudo chmod 600 "$RECOVERY_FILE"
 fi
 
+# --- Enroll TPM2 ---
 if [ "$HAVE_TPM2" != "true" ]; then
   log "Enrolling TPM2 auto-unlock"
-  sudo systemd-cryptenroll "$LUKS_DEV" --tpm2-device=auto --unlock-key-file="$UNLOCK_KEY_FILE"
+  if ! echo -n "$LUKS_PASSWORD" | sudo systemd-cryptenroll "$LUKS_DEV" --tpm2-device=auto 2>/dev/null; then
+    unset LUKS_PASSWORD
+    die "Failed to enroll TPM2. The password may be incorrect or TPM enrollment failed."
+  fi
+fi
+
+# Clear password from memory
+if [ -n "$LUKS_PASSWORD" ]; then
+  unset LUKS_PASSWORD
 fi
 
 # --- Final rebuild ---

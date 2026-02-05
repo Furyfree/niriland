@@ -6,6 +6,14 @@ cleanup() {
   if [ -n "${LUKS_PASSWORD:-}" ]; then
     unset LUKS_PASSWORD
   fi
+  if [ -n "${TEMP_KEYFILE:-}" ] && [ -f "$TEMP_KEYFILE" ]; then
+    if command -v shred >/dev/null 2>&1; then
+      shred -u "$TEMP_KEYFILE"
+    else
+      rm -f "$TEMP_KEYFILE"
+    fi
+    unset TEMP_KEYFILE
+  fi
 }
 trap cleanup EXIT
 
@@ -86,23 +94,6 @@ if sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"type"[[
   log "TPM2 auto-unlock already enrolled"
 fi
 
-# --- Ensure crypttab.initramfs entry ---
-CRYPTTAB="/etc/crypttab.initramfs"
-ENTRY="$MAPPER_NAME UUID=$LUKS_UUID - tpm2-device=auto"
-
-sudo touch "$CRYPTTAB"
-
-if grep -q "^$MAPPER_NAME[[:space:]]" "$CRYPTTAB"; then
-  if grep -q "^$ENTRY$" "$CRYPTTAB"; then
-    log "crypttab entry already correct"
-  else
-    die "$MAPPER_NAME entry exists but differs: $(grep "^$MAPPER_NAME " "$CRYPTTAB")"
-  fi
-else
-  log "Adding crypttab entry"
-  echo "$ENTRY" | sudo tee -a "$CRYPTTAB" >/dev/null
-fi
-
 # --- Configure mkinitcpio for systemd + sd-encrypt ---
 log "Configuring mkinitcpio (systemd-based initramfs)"
 
@@ -119,25 +110,91 @@ EOF
 
 log "Written $CONF_FILE"
 
-# --- Ensure correct root= in kernel cmdline ---
+# --- Ensure correct kernel cmdline for systemd-based initramfs ---
 CMDLINE="/etc/kernel/cmdline"
 CMDLINE_DIR="$(dirname "$CMDLINE")"
 
 sudo mkdir -p "$CMDLINE_DIR"
 sudo touch "$CMDLINE"
 
-CURRENT_CMDLINE="$(cat "$CMDLINE")"
+REQUIRED_LUKS="rd.luks.name=$LUKS_UUID=$MAPPER_NAME"
 REQUIRED_ROOT="root=/dev/mapper/$MAPPER_NAME"
+CURRENT_CMDLINE="$(cat "$CMDLINE")"
 
-if echo "$CURRENT_CMDLINE" | grep -qw "$REQUIRED_ROOT"; then
-  log "Kernel cmdline already has correct root="
-elif echo "$CURRENT_CMDLINE" | grep -qw "root="; then
-  log "Fixing existing root= entry"
-  NEW_CMDLINE="$(echo "$CURRENT_CMDLINE" | sed "s|root=[^ ]*|$REQUIRED_ROOT|")"
+# Normalize whitespace to a single line
+CURRENT_CMDLINE="$(echo "$CURRENT_CMDLINE" | tr '\n' ' ' | xargs || true)"
+
+TOKENS=()
+REMOVED=false
+for token in $CURRENT_CMDLINE; do
+  case "$token" in
+    root=*)
+      REMOVED=true
+      continue
+      ;;
+    rd.luks.name=*)
+      rest="${token#rd.luks.name=}"
+      token_uuid="${rest%%=*}"
+      token_name="${rest#*=}"
+      if [ "$token_uuid" = "$LUKS_UUID" ] || [ "$token_name" = "$MAPPER_NAME" ]; then
+        REMOVED=true
+        continue
+      fi
+      ;;
+  esac
+  TOKENS+=("$token")
+done
+
+UPDATED=false
+ensure_token() {
+  local needle="$1"
+  local present=false
+  local t
+
+  for t in "${TOKENS[@]}"; do
+    if [ "$t" = "$needle" ]; then
+      present=true
+      break
+    fi
+  done
+
+  if [ "$present" != "true" ]; then
+    TOKENS+=("$needle")
+    UPDATED=true
+  fi
+}
+
+ensure_token "$REQUIRED_LUKS"
+ensure_token "$REQUIRED_ROOT"
+ensure_token "rw"
+ensure_token "quiet"
+
+if [ "$UPDATED" = "true" ] || [ "$REMOVED" = "true" ]; then
+  NEW_CMDLINE="$(printf '%s ' "${TOKENS[@]}" | sed 's/[[:space:]]*$//')"
+  log "Updating kernel cmdline for systemd initramfs"
   echo "$NEW_CMDLINE" | sudo tee "$CMDLINE" >/dev/null
 else
-  log "Adding missing root= entry"
-  echo "$CURRENT_CMDLINE $REQUIRED_ROOT" | sudo tee "$CMDLINE" >/dev/null
+  log "Kernel cmdline already correct"
+fi
+
+# --- Ensure crypttab.initramfs entry ---
+CRYPTTAB="/etc/crypttab.initramfs"
+ENTRY="$MAPPER_NAME UUID=$LUKS_UUID none tpm2-device=auto"
+
+sudo touch "$CRYPTTAB"
+
+EXISTING_ENTRY="$(awk -v name="$MAPPER_NAME" '$1==name {print; exit}' "$CRYPTTAB")"
+if [ -n "$EXISTING_ENTRY" ]; then
+  if [ "$EXISTING_ENTRY" = "$ENTRY" ]; then
+    log "crypttab entry already correct"
+  else
+    log "Updating crypttab entry"
+    sudo awk -v name="$MAPPER_NAME" '$1!=name {print}' "$CRYPTTAB" | sudo tee "$CRYPTTAB" >/dev/null
+    echo "$ENTRY" | sudo tee -a "$CRYPTTAB" >/dev/null
+  fi
+else
+  log "Adding crypttab entry"
+  echo "$ENTRY" | sudo tee -a "$CRYPTTAB" >/dev/null
 fi
 
 # --- Create and store recovery key (idempotent) ---

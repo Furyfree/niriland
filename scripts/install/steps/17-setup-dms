@@ -11,7 +11,7 @@ log "Installing DankMaterialShell..."
 install_aur_package dms-shell-bin
 
 log "Starting DMS..."
-systemctl --user start dms
+
 systemctl --user add-wants niri.service dms
 
 log "DMS setup complete."

@@ -29,6 +29,7 @@ fi
 
 # --- Paru ---
 install_package paru
+require_paru
 
 # --- Paru config ---
 log "Configuring paru..."

@@ -16,6 +16,12 @@ require_sudo() {
   sudo -v || die "sudo authentication failed"
 }
 
+require_paru() {
+  if ! command -v paru >/dev/null 2>&1; then
+    die "paru is required but not installed. Run 00-setup-pacman first."
+  fi
+}
+
 install_package() {
   local pkg="$1"
 

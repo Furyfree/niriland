@@ -110,92 +110,23 @@ EOF
 
 log "Written $CONF_FILE"
 
-# --- Ensure correct kernel cmdline for systemd-based initramfs ---
+# --- Kernel cmdline ---
 CMDLINE="/etc/kernel/cmdline"
-CMDLINE_DIR="$(dirname "$CMDLINE")"
+sudo mkdir -p "$(dirname "$CMDLINE")"
 
-sudo mkdir -p "$CMDLINE_DIR"
-sudo touch "$CMDLINE"
+# Simple format that actually works
+NEW_CMDLINE="root=/dev/mapper/$MAPPER_NAME rw quiet"
 
-REQUIRED_LUKS="rd.luks.name=$LUKS_UUID=$MAPPER_NAME"
-REQUIRED_ROOT="root=/dev/mapper/$MAPPER_NAME"
-CURRENT_CMDLINE="$(cat "$CMDLINE")"
+echo "$NEW_CMDLINE" | sudo tee "$CMDLINE" >/dev/null
+log "Updated kernel cmdline"
 
-# Normalize whitespace to a single line
-CURRENT_CMDLINE="$(echo "$CURRENT_CMDLINE" | tr '\n' ' ' | xargs || true)"
-
-TOKENS=()
-REMOVED=false
-for token in $CURRENT_CMDLINE; do
-  case "$token" in
-    root=*)
-      REMOVED=true
-      continue
-      ;;
-    rd.luks.name=*)
-      rest="${token#rd.luks.name=}"
-      token_uuid="${rest%%=*}"
-      token_name="${rest#*=}"
-      if [ "$token_uuid" = "$LUKS_UUID" ] || [ "$token_name" = "$MAPPER_NAME" ]; then
-        REMOVED=true
-        continue
-      fi
-      ;;
-  esac
-  TOKENS+=("$token")
-done
-
-UPDATED=false
-ensure_token() {
-  local needle="$1"
-  local present=false
-  local t
-
-  for t in "${TOKENS[@]}"; do
-    if [ "$t" = "$needle" ]; then
-      present=true
-      break
-    fi
-  done
-
-  if [ "$present" != "true" ]; then
-    TOKENS+=("$needle")
-    UPDATED=true
-  fi
-}
-
-ensure_token "$REQUIRED_LUKS"
-ensure_token "$REQUIRED_ROOT"
-ensure_token "rw"
-ensure_token "quiet"
-
-if [ "$UPDATED" = "true" ] || [ "$REMOVED" = "true" ]; then
-  NEW_CMDLINE="$(printf '%s ' "${TOKENS[@]}" | sed 's/[[:space:]]*$//')"
-  log "Updating kernel cmdline for systemd initramfs"
-  echo "$NEW_CMDLINE" | sudo tee "$CMDLINE" >/dev/null
-else
-  log "Kernel cmdline already correct"
-fi
-
-# --- Ensure crypttab.initramfs entry ---
+# --- Crypttab (use "-" not "none") ---
 CRYPTTAB="/etc/crypttab.initramfs"
-ENTRY="$MAPPER_NAME UUID=$LUKS_UUID none tpm2-device=auto"
+ENTRY="$MAPPER_NAME UUID=$LUKS_UUID - tpm2-device=auto"
 
 sudo touch "$CRYPTTAB"
-
-EXISTING_ENTRY="$(awk -v name="$MAPPER_NAME" '$1==name {print; exit}' "$CRYPTTAB")"
-if [ -n "$EXISTING_ENTRY" ]; then
-  if [ "$EXISTING_ENTRY" = "$ENTRY" ]; then
-    log "crypttab entry already correct"
-  else
-    log "Updating crypttab entry"
-    sudo awk -v name="$MAPPER_NAME" '$1!=name {print}' "$CRYPTTAB" | sudo tee "$CRYPTTAB" >/dev/null
-    echo "$ENTRY" | sudo tee -a "$CRYPTTAB" >/dev/null
-  fi
-else
-  log "Adding crypttab entry"
-  echo "$ENTRY" | sudo tee -a "$CRYPTTAB" >/dev/null
-fi
+echo "$ENTRY" | sudo tee "$CRYPTTAB" >/dev/null
+log "Updated crypttab"
 
 # --- Create and store recovery key (idempotent) ---
 RECOVERY_FILE="/root/luks-recovery-key.txt"

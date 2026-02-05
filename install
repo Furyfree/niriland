@@ -7,7 +7,7 @@ source "$ROOT_DIR/scripts/install/lib/common"
 
 STEPS=(
   "$ROOT_DIR/scripts/install/steps/00-setup-pacman"
-  "$ROOT_DIR/scripts/install/steps/05-setup-fde"
+  # "$ROOT_DIR/scripts/install/steps/05-setup-fde"
 )
 
 for step in "${STEPS[@]}"; do

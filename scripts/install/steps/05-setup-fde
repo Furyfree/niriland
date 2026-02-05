@@ -116,15 +116,15 @@ fi
 UNLOCK_KEY_FILE=""
 cleanup_unlock_key() {
   if [ -n "${UNLOCK_KEY_FILE:-}" ] && [ -f "$UNLOCK_KEY_FILE" ]; then
-    rm -f "$UNLOCK_KEY_FILE"
+    sudo rm -f "$UNLOCK_KEY_FILE"
   fi
 }
 trap cleanup_unlock_key EXIT
 
 if [ -n "${PASSPHRASE:-}" ]; then
-  UNLOCK_KEY_FILE="$(mktemp /tmp/luks-unlock.XXXXXX)"
-  chmod 600 "$UNLOCK_KEY_FILE"
-  printf '%s\n' "$PASSPHRASE" >"$UNLOCK_KEY_FILE"
+  UNLOCK_KEY_FILE="$(sudo mktemp /tmp/luks-unlock.XXXXXX)"
+  sudo chmod 600 "$UNLOCK_KEY_FILE"
+  printf '%s\n' "$PASSPHRASE" | sudo tee "$UNLOCK_KEY_FILE" >/dev/null
 fi
 
 # --- Ensure crypttab.initramfs entry ---

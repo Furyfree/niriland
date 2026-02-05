@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$COMMON_DIR/../.." && pwd)"
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$LIB_DIR/../../.." && pwd)"
 
 log() {
   printf '==> %s\n' "$*"
-}
-
-warn() {
-  printf 'WARN: %s\n' "$*" >&2
 }
 
 die() {
@@ -17,14 +12,35 @@ die() {
   exit 1
 }
 
-require_cmd() {
-  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
-}
-
 require_sudo() {
   sudo -v || die "sudo authentication failed"
 }
 
-require_paru() {
-  command -v paru >/dev/null 2>&1 || die "paru not found. Run 01-paru-and-chaotic.sh first."
+install_package() {
+  local pkg="$1"
+
+  if pacman -Qq "$pkg" >/dev/null 2>&1; then
+    log "$pkg already installed, skipping."
+    return 0
+  fi
+
+  log "Installing $pkg..."
+  sudo pacman -S --needed --noconfirm "$pkg" || die "Failed to install $pkg"
+}
+
+copy_file() {
+  local src="$1"
+  local dest="$2"
+  local backup="${3:-true}"
+
+  [[ -f "$src" ]] || die "File not found: $src"
+
+  if [[ "$backup" == "true" ]] && [[ -f "$dest" ]] && ! cmp -s "$src" "$dest"; then
+    local backup_path="${dest}.bak.$(date +%s)"
+    log "Backing up $dest to $backup_path..."
+    sudo cp "$dest" "$backup_path" || die "Failed to backup $dest"
+  fi
+
+  log "Copying $src to $dest..."
+  sudo cp "$src" "$dest" || die "Failed to copy $src to $dest"
 }

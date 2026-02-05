@@ -35,10 +35,7 @@ require_paru
 
 # Install required packages
 for pkg in limine-mkinitcpio-hook limine-snapper-sync; do
-  if ! pacman -Qi "$pkg" &>/dev/null; then
-    log "Installing $pkg..."
-    paru -S --noconfirm --needed "$pkg"
-  fi
+  install_aur_package "$pkg"
 done
 
 # --- Determine root mapper ---
@@ -115,7 +112,7 @@ CMDLINE="/etc/kernel/cmdline"
 sudo mkdir -p "$(dirname "$CMDLINE")"
 
 # Simple format that actually works
-NEW_CMDLINE="root=/dev/mapper/$MAPPER_NAME rw quiet"
+NEW_CMDLINE="root=/dev/mapper/$MAPPER_NAME rw quiet rootfstype=btrfs rootflags=subvol=@"
 
 echo "$NEW_CMDLINE" | sudo tee "$CMDLINE" >/dev/null
 log "Updated kernel cmdline"

@@ -1,0 +1,101 @@
+# ────────────────────────────────────────────────────────────────
+# Ctrl + Space Keybinds
+# ────────────────────────────────────────────────────────────────
+keybind = ctrl+space>c=new_tab
+keybind = ctrl+space>n=next_tab
+keybind = ctrl+space>p=previous_tab
+keybind = ctrl+space>w=close_tab
+keybind = ctrl+space>d=close_surface
+
+keybind = ctrl+space>1=goto_tab:1
+keybind = ctrl+space>2=goto_tab:2
+keybind = ctrl+space>3=goto_tab:3
+keybind = ctrl+space>4=goto_tab:4
+keybind = ctrl+space>5=goto_tab:5
+keybind = ctrl+space>6=goto_tab:6
+keybind = ctrl+space>7=goto_tab:7
+keybind = ctrl+space>8=goto_tab:8
+keybind = ctrl+space>9=goto_tab:9
+
+keybind = ctrl+space>|=new_split:right
+keybind = ctrl+space>-=new_split:down
+keybind = ctrl+space>a=new_split:left
+keybind = ctrl+space>u=new_split:up
+keybind = ctrl+space>f=toggle_split_zoom
+
+keybind = ctrl+space>h=goto_split:left
+keybind = ctrl+space>j=goto_split:bottom
+keybind = ctrl+space>k=goto_split:top
+keybind = ctrl+space>l=goto_split:right
+
+keybind = ctrl+space>left=goto_split:left
+keybind = ctrl+space>down=goto_split:bottom
+keybind = ctrl+space>up=goto_split:top
+keybind = ctrl+space>right=goto_split:right
+
+keybind = ctrl+space>shift++=resize_split:right,100
+keybind = ctrl+space>shift+-=resize_split:left,100
+keybind = ctrl+space>escape=equalize_splits
+
+keybind = ctrl+space>page_up=move_tab:-1
+keybind = ctrl+space>page_down=move_tab:1
+keybind = ctrl+space>home=goto_tab:1
+keybind = ctrl+space>end=goto_tab:9
+
+keybind = ctrl+space>r=reload_config
+
+# ────────────────────────────────────────────────────────────────
+# Alt Keybinds
+# ────────────────────────────────────────────────────────────────
+
+keybind = alt+c=new_tab
+keybind = alt+n=next_tab
+keybind = alt+p=previous_tab
+keybind = alt+w=close_tab
+keybind = alt+d=close_surface
+
+keybind = alt+1=goto_tab:1
+keybind = alt+2=goto_tab:2
+keybind = alt+3=goto_tab:3
+keybind = alt+4=goto_tab:4
+keybind = alt+5=goto_tab:5
+keybind = alt+6=goto_tab:6
+keybind = alt+7=goto_tab:7
+keybind = alt+8=goto_tab:8
+keybind = alt+9=goto_tab:9
+
+keybind = alt+|=new_split:right
+keybind = alt+-=new_split:down
+keybind = alt+a=new_split:left
+keybind = alt+u=new_split:up
+keybind = alt+f=toggle_split_zoom
+
+keybind = alt+h=goto_split:left
+keybind = alt+j=goto_split:bottom
+keybind = alt+k=goto_split:top
+keybind = alt+l=goto_split:right
+
+keybind = alt+left=goto_split:left
+keybind = alt+down=goto_split:bottom
+keybind = alt+up=goto_split:top
+keybind = alt+right=goto_split:right
+
+keybind = alt+shift++=resize_split:right,100
+keybind = alt+shift+-=resize_split:left,100
+keybind = alt+escape=equalize_splits
+
+keybind = alt+page_up=move_tab:-1
+keybind = alt+page_down=move_tab:1
+keybind = alt+home=goto_tab:1
+keybind = alt+end=goto_tab:9
+
+keybind = alt+shift+left=move_tab:-1
+keybind = alt+shift+right=move_tab:1
+keybind = alt+shift+down=goto_tab:1
+keybind = alt+shift+up=goto_tab:9
+
+keybind = alt+r=reload_config
+
+# Ctrl
+# keybind = ctrl+t=new_tab
+# keybind = ctrl+w=close_tab

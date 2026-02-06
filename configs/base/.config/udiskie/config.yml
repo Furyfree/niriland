@@ -1,0 +1,5 @@
+automount: true
+menu: flat # or 'nested' for submenus
+file_manager: nautilus
+tray: smart # 'always', 'smart', or 'never'
+notify: true

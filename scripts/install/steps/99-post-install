@@ -34,3 +34,4 @@ fi
 
 log_success "Post-install tasks complete."
 warn "Log out or reboot to ensure shell, group, and PAM changes are fully applied."
+warn "Run niriland-setup-fingerprint to setup fingerprint"

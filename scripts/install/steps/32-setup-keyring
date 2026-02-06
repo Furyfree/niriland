@@ -4,3 +4,50 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+log "Setting up GNOME keyring..."
+
+install_package gnome-keyring libsecret seahorse
+
+ensure_pam_line() {
+  local file="$1"
+  local pattern="$2"
+  local line="$3"
+
+  if [[ ! -f "$file" ]]; then
+    warn "PAM file not found, skipping: $file"
+    return 0
+  fi
+
+  if grep -Eq "$pattern" "$file"; then
+    log "PAM rule already present in $file"
+    return 0
+  fi
+
+  log "Adding PAM rule to $file"
+  printf '%s\n' "$line" | run_sudo tee -a "$file" >/dev/null
+}
+
+if [[ -f /etc/pam.d/greetd ]]; then
+  PAM_LOGIN_FILE="/etc/pam.d/greetd"
+else
+  PAM_LOGIN_FILE="/etc/pam.d/login"
+fi
+
+ensure_pam_line \
+  "$PAM_LOGIN_FILE" \
+  '^auth[[:space:]]+optional[[:space:]]+pam_gnome_keyring\.so([[:space:]].*)?$' \
+  'auth       optional     pam_gnome_keyring.so'
+
+ensure_pam_line \
+  "$PAM_LOGIN_FILE" \
+  '^session[[:space:]]+optional[[:space:]]+pam_gnome_keyring\.so([[:space:]]+auto_start)?([[:space:]].*)?$' \
+  'session    optional     pam_gnome_keyring.so auto_start'
+
+ensure_pam_line \
+  "/etc/pam.d/passwd" \
+  '^password[[:space:]]+optional[[:space:]]+pam_gnome_keyring\.so([[:space:]].*)?$' \
+  'password   optional     pam_gnome_keyring.so use_authtok'
+
+warn "Re-login is required for keyring PAM auto-unlock changes to take effect."
+log_success "GNOME keyring setup complete."

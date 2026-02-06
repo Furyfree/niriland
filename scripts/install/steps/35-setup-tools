@@ -4,3 +4,60 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+TOOLS_SRC="$REPO_ROOT/scripts/tools"
+TOOLS_DST="$HOME/.local/bin/niriland"
+
+if [[ ! -d "$TOOLS_SRC" ]]; then
+  warn "Tools source directory not found: $TOOLS_SRC"
+  exit 0
+fi
+
+mkdir -p "$TOOLS_DST"
+
+copied_count=0
+while IFS= read -r src_path; do
+  rel_path="${src_path#$TOOLS_SRC/}"
+  dest_path="$TOOLS_DST/$rel_path"
+
+  mkdir -p "$(dirname "$dest_path")"
+
+  if [[ -e "$dest_path" ]] && cmp -s "$src_path" "$dest_path"; then
+    continue
+  fi
+
+  cp -a "$src_path" "$dest_path"
+  if [[ -f "$dest_path" ]]; then
+    chmod +x "$dest_path"
+  fi
+  copied_count=$((copied_count + 1))
+done < <(find "$TOOLS_SRC" \( -type f -o -type l \) | sort)
+
+log "Tools destination: $TOOLS_DST"
+log "Tools updated: $copied_count"
+
+PATH_MARKER="# niriland-path"
+PATH_LINE='export PATH="$HOME/.local/bin:$HOME/.local/bin/niriland:$PATH"'
+
+ensure_path_block() {
+  local profile_file="$1"
+  touch "$profile_file"
+
+  if grep -Fq "$PATH_MARKER" "$profile_file"; then
+    log "PATH already configured in $profile_file"
+    return 0
+  fi
+
+  {
+    echo
+    echo "$PATH_MARKER"
+    echo "$PATH_LINE"
+  } >> "$profile_file"
+
+  log "PATH configured in $profile_file"
+}
+
+ensure_path_block "$HOME/.zprofile"
+ensure_path_block "$HOME/.profile"
+
+log_success "Tools setup complete."

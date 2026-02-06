@@ -6,11 +6,17 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTALL_DIR="$ROOT_DIR/scripts/install"
 STEPS_DIR="$INSTALL_DIR/steps"
 source "$INSTALL_DIR/lib/common"
+source "$INSTALL_DIR/lib/options"
 
 read_system_pass
 read_luks_pass
 read_git_config
 setup_git_user
+
+INSTALL_GAMING=false
+if should_install_gaming; then
+  INSTALL_GAMING=true
+fi
 
 STEPS=(
   "$STEPS_DIR/00-setup-pacman"
@@ -18,6 +24,12 @@ STEPS=(
   "$STEPS_DIR/15-install-packages"
   "$STEPS_DIR/17-setup-dms"
 )
+
+if "$INSTALL_GAMING"; then
+  STEPS+=("$STEPS_DIR/40-setup-gaming")
+else
+  log "Skipping gaming apps setup."
+fi
 
 for step in "${STEPS[@]}"; do
   if [[ ! -x "$step" ]]; then

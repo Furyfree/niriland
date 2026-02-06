@@ -104,14 +104,15 @@
 - Install common runtimes via mise (node, python, etc.)
 
 ### `50-setup-browser`
-- Set default browser via xdg-settings
-- Symlink Widevine CDM from AUR package to Helium:
+- Ensure required packages are installed:
+  - `helium-browser-bin`
+  - `chromium-widevine`
+  - `1password`
+- Symlink Widevine CDM from system package to Helium:
   - Source: /usr/lib/chromium/WidevineCdm
-  - Target: ~/.local/share/helium/ (or wherever Helium expects it)
-
-### `55-setup-1password`
+  - Target: /opt/helium-browser-bin/WidevineCdm
 - Trust Helium browser in 1Password:
-  - Add to allowed browsers list
+  - Add `helium` to /etc/1password/custom_allowed_browsers
 
 ### `60-setup-certificates`
 - Download DTU certificate (or copy from repo if included)

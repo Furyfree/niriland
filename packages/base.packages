@@ -54,6 +54,7 @@ p7zip
 zip
 unzip
 mise
+platformio-core
 signal-desktop
 playerctl
 mpv

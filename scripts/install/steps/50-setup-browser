@@ -4,3 +4,26 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+log "Installing browser dependencies"
+install_package "helium-browser-bin" "chromium-widevine"
+require_paru
+install_aur_package "1password"
+
+log "Adding Widevine DRM support for Helium Browser"
+if [[ -d /usr/lib/chromium/WidevineCdm && -d /opt/helium-browser-bin ]]; then
+  run_sudo ln -sfn /usr/lib/chromium/WidevineCdm /opt/helium-browser-bin/WidevineCdm
+  log "WidevineCdm symlink created successfully"
+else
+  warn "WidevineCdm or Helium browser directory missing; skipping DRM link"
+fi
+
+log "Adding Helium to 1Password trusted browsers"
+log "Creating 1Password config directory"
+run_sudo mkdir -p /etc/1password
+
+log "Allowing Helium browser"
+printf "helium\n" | run_sudo tee /etc/1password/custom_allowed_browsers >/dev/null
+
+log_success "1Password trusted browsers updated"
+log_success "Browser setup complete."

@@ -48,6 +48,44 @@ die() {
   exit 1
 }
 
+prompt_yes_no() {
+  local question="$1"
+  local default="${2:-N}"
+  local prompt_suffix
+  local reply
+
+  case "$default" in
+    Y|y)
+      prompt_suffix="[Y/n]"
+      ;;
+    N|n)
+      prompt_suffix="[y/N]"
+      ;;
+    *)
+      die "prompt_yes_no default must be Y or N"
+      ;;
+  esac
+
+  while true; do
+    read -rp "$question $prompt_suffix " reply </dev/tty
+    if [[ -z "$reply" ]]; then
+      reply="$default"
+    fi
+
+    case "$reply" in
+      Y|y|yes|YES)
+        return 0
+        ;;
+      N|n|no|NO)
+        return 1
+        ;;
+      *)
+        warn "Please answer y or n."
+        ;;
+    esac
+  done
+}
+
 ##############################################################################
 # Requirement Checks
 ##############################################################################

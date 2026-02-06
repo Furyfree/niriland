@@ -4,3 +4,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+install_package zsh
+TARGET_USER="${SUDO_USER:-${USER:-}}"
+run_sudo chsh -s "$(command -v zsh)" "$TARGET_USER"
+warn "Re-login or reboot is required for shell changes to take effect."

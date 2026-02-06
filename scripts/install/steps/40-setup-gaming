@@ -4,3 +4,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+log "Installing gaming apps..."
+
+install_package \
+  steam \
+  modrinth-app-bin \
+  prismlauncher \
+  faugus-launcher \
+  wowup-cf-bin
+
+log_success "Gaming apps setup complete."

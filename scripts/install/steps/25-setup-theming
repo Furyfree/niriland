@@ -74,4 +74,26 @@ else
   warn "Backgrounds directory not found at $BACKGROUNDS_SRC"
 fi
 
+mapfile -d '' -t wallpaper_files < <(find "$BACKGROUNDS_DST" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.bmp' -o -iname '*.gif' -o -iname '*.webp' \) -print0)
+
+if [[ "${#wallpaper_files[@]}" -eq 0 ]]; then
+  warn "No wallpapers found in $BACKGROUNDS_DST, skipping random wallpaper selection."
+elif ! command -v dms >/dev/null 2>&1; then
+  warn "dms command not found, skipping wallpaper setup."
+else
+  random_index=$((RANDOM % ${#wallpaper_files[@]}))
+  selected_wallpaper="${wallpaper_files[$random_index]}"
+  wallpaper_arg="$selected_wallpaper"
+
+  if [[ "$selected_wallpaper" == "$HOME/"* ]]; then
+    wallpaper_arg="${selected_wallpaper#"$HOME/"}"
+  fi
+
+  if dms ipc call wallpaper set "$wallpaper_arg" >/dev/null 2>&1; then
+    log "Random wallpaper set: $wallpaper_arg"
+  else
+    warn "Failed to set wallpaper via dms ipc (is DMS running in this user session?)."
+  fi
+fi
+
 log_success "Theming setup complete."

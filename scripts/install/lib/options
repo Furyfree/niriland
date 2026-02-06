@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+should_install_gaming() {
+  if [[ -n "${NIRILAND_INSTALL_GAMING:-}" ]]; then
+    case "${NIRILAND_INSTALL_GAMING}" in
+      1|true|TRUE|yes|YES|y|Y)
+        return 0
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+  fi
+
+  prompt_yes_no "Install gaming apps (Steam, Minecraft launchers, Faugus, WowUp)?" "N"
+}

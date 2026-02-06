@@ -4,3 +4,85 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+log "Starting development environment setup..."
+
+TARGET_USER="${SUDO_USER:-${USER:-}}"
+if [[ -z "$TARGET_USER" ]]; then
+  die "Could not determine target user."
+fi
+
+GROUP_CHANGES=false
+
+# ====================
+# Docker Setup
+# ====================
+log "Configuring Docker..."
+install_package docker docker-compose
+
+run_sudo systemctl enable --now docker.service
+run_sudo systemctl enable --now docker.socket
+
+if id -nG "$TARGET_USER" | grep -qw docker; then
+  log "User $TARGET_USER is already in docker group."
+else
+  log "Adding $TARGET_USER to docker group..."
+  run_sudo usermod -aG docker "$TARGET_USER"
+  GROUP_CHANGES=true
+fi
+
+# ====================
+# Mise Setup
+# ====================
+log "Configuring mise..."
+install_package mise
+
+MISE_CONFIG="$HOME/.config/mise/config.toml"
+if [[ -f "$MISE_CONFIG" ]]; then
+  if mise install; then
+    log_success "mise runtimes installed from $MISE_CONFIG"
+  else
+    warn "mise install failed. You may need to run it manually after setup."
+  fi
+else
+  warn "mise config not found at $MISE_CONFIG, skipping mise install."
+fi
+
+# ====================
+# PlatformIO Setup
+# ====================
+log "Configuring PlatformIO..."
+install_package platformio-core
+
+for group in uucp lock; do
+  if id -nG "$TARGET_USER" | grep -qw "$group"; then
+    log "User $TARGET_USER is already in group $group."
+  else
+    log "Adding $TARGET_USER to group $group..."
+    run_sudo usermod -aG "$group" "$TARGET_USER"
+    GROUP_CHANGES=true
+  fi
+done
+
+UDEV_RULES="/etc/udev/rules.d/99-platformio-udev.rules"
+PLATFORMIO_UDEV_URL="https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules"
+
+if [[ -f "$UDEV_RULES" ]]; then
+  log "PlatformIO udev rules already present: $UDEV_RULES"
+else
+  require_cmd curl
+  log "Installing PlatformIO udev rules..."
+  if run_sudo curl -fsSL "$PLATFORMIO_UDEV_URL" -o "$UDEV_RULES"; then
+    run_sudo udevadm control --reload-rules
+    run_sudo udevadm trigger
+    log_success "PlatformIO udev rules installed."
+  else
+    warn "Failed to download PlatformIO udev rules."
+  fi
+fi
+
+if [[ "$GROUP_CHANGES" == "true" ]]; then
+  warn "Log out and back in (or reboot) for new group memberships to take effect."
+fi
+
+log_success "Development environment setup complete."

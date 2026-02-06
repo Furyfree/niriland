@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Google Maps
+Comment=Google Maps
+Exec=niriland-launch-webapp https://www.google.com/maps
+Terminal=false
+Type=Application
+Icon=GoogleMaps
+StartupNotify=true

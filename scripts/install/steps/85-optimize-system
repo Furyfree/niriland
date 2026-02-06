@@ -4,3 +4,28 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+has_systemd_unit() {
+  local unit="$1"
+  [[ -f "/usr/lib/systemd/system/$unit" || -f "/etc/systemd/system/$unit" ]]
+}
+
+enable_timer_if_present() {
+  local timer_unit="$1"
+  if has_systemd_unit "$timer_unit"; then
+    log "Enabling $timer_unit"
+    run_sudo systemctl enable --now "$timer_unit"
+  else
+    warn "$timer_unit not found, skipping."
+  fi
+}
+
+log "Applying system optimizations"
+
+# Keep SSD performance healthy over time.
+enable_timer_if_present "fstrim.timer"
+
+# Keep package cache maintenance active.
+enable_timer_if_present "paccache.timer"
+
+log_success "System optimization complete."

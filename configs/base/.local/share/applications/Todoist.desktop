@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Todoist
+Comment=Todo App
+Exec=niriland-launch-webapp https://app.todoist.com/
+Terminal=false
+Type=Application
+Icon=Todoist
+StartupNotify=true

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Notebook LM
+Comment=Notebook LM
+Exec=niriland-launch-webapp https://notebooklm.google.com/
+Terminal=false
+Type=Application
+Icon=NotebookLM
+StartupNotify=true

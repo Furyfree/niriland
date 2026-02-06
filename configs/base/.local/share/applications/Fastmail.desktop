@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Fastmail
+Comment=Fastmail Web App
+Exec=niriland-launch-webapp https://app.fastmail.com/
+Terminal=false
+Type=Application
+Icon=Fastmail
+StartupNotify=true
+Categories=Network;Email;

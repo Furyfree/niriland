@@ -7,7 +7,7 @@ source "$SCRIPT_DIR/../lib/common"
 install_package base-devel
 
 # Deploy our pacman.conf (Color, ILoveCandy, ParallelDownloads, multilib, etc.)
-copy_file "$REPO_ROOT/configs/base/etc/pacman.conf" "/etc/pacman.conf"
+copy_file "$REPO_ROOT/configs/system/etc/pacman.conf" "/etc/pacman.conf"
 
 # --- Chaotic AUR ---
 if ! grep -q '^\[chaotic-aur\]' /etc/pacman.conf; then

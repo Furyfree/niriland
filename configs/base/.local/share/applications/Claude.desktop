@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Claude
+Comment=Claude
+Exec=niriland-launch-webapp https://claude.ai/
+Terminal=false
+Type=Application
+Icon=Claude
+StartupNotify=true

@@ -4,3 +4,21 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+CERT_NAME="Eduroam_aug2020.pem"
+CERT_SRC="$REPO_ROOT/configs/system/etc/certs/$CERT_NAME"
+CERT_DIR="/etc/certs"
+CERT_DST="$CERT_DIR/$CERT_NAME"
+
+log "Installing DTU Eduroam certificate"
+
+[[ -f "$CERT_SRC" ]] || die "Certificate not found: $CERT_SRC"
+
+run_sudo mkdir -p "$CERT_DIR"
+copy_file "$CERT_SRC" "$CERT_DST"
+
+require_cmd update-ca-trust
+log "Updating system CA trust"
+run_sudo update-ca-trust
+
+log_success "Certificate installation complete."

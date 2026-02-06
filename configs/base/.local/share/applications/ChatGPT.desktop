@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=ChatGPT
+Comment=ChatGPT
+Exec=niriland-launch-webapp https://chatgpt.com/
+Terminal=false
+Type=Application
+Icon=ChatGPT
+StartupNotify=true

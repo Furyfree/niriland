@@ -1,217 +1,192 @@
-# Niriland Install Scripts - Implementation Ideas
+# Niriland Installer Design
 
-## Bootstrap & Main Installer
+This document describes the current implementation in this repository.
+
+## Entry Points
 
 ### `bootstrap`
-- Clone repo to `~/.local/share/niriland` (or pull if exists)
-- Execute `./install`
+- Clones or updates the repo to `NIRILAND_DIR` (default: `~/.local/share/niriland`).
+- Uses `NIRILAND_REPO_URL` when set (default: `https://github.com/Furyfree/niriland.git`).
+- Executes `install` from the cloned repo.
 
 ### `install`
-- Install gum if not present (for pretty TUI)
-- Use gum for welcome message and interactive menus
-- Check if running on Arch Linux
-- Interactive menu: choose which steps to run (all/select/custom)
-- Loop through `scripts/install/steps/*` in order
-- Source `scripts/install/lib/common` for shared functions
-- Dank Material Shell (DMS) installation and setup handled in dedicated step
-- Summary at end with any failures (use gum table/formatting)
+- Sources shared helpers from:
+  - `scripts/install/lib/common`
+  - `scripts/install/lib/options`
+- Collects:
+  - sudo password (`read_system_pass`)
+  - disk encryption password (`read_luks_pass`)
+  - git user/email (`read_git_config`, `setup_git_user`)
+- Builds an ordered step list and runs each executable step script.
+- Cleans up credentials/cache at the end via `cleanup_all`.
 
----
+## Recommended Archinstall Baseline
 
-## Install Steps
+Template file:
+- `configs/system/archinstall/recommended.json`
+
+Baseline intent:
+- Minimal profile
+- Limine bootloader
+- Btrfs + Snapper subvolumes
+- LUKS encryption
+- `nm_iwd` networking
+- PipeWire + Bluetooth + print service enabled
+
+Fields expected to be customized per machine/location:
+- `disk_config.device_modifications[].device`
+- `hostname`
+- `locale_config.kb_layout`
+- `mirror_config.mirror_regions`
+- `timezone`
+
+## Install Options
+
+These are implemented in `scripts/install/lib/options`:
+
+- `NIRILAND_INSTALL_GAMING`:
+  - true values: `1`, `true`, `yes`, `y` (case-insensitive variants included)
+  - otherwise false
+  - if unset: interactive prompt (default: `No`)
+- `NIRILAND_INSTALL_AI`:
+  - true values: `1`, `true`, `yes`, `y` (case-insensitive variants included)
+  - otherwise false
+  - if unset: interactive prompt (default: `No`)
+
+AI model overrides used by `65-setup-ai`:
+- `NIRILAND_OLLAMA_MODEL_NVIDIA` (default: `qwen2.5-coder:14b`)
+- `NIRILAND_OLLAMA_MODEL_CPU` (default: `qwen2.5-coder:3b`)
+
+## Step Order
+
+Current `install` execution order:
+
+1. `00-setup-pacman`
+2. `05-setup-fde`
+3. `10-install-drivers`
+4. `15-install-packages`
+5. `17-setup-dms`
+6. `20-deploy-configs`
+7. `25-setup-theming`
+8. `30-setup-shell`
+9. `32-setup-keyring`
+10. `35-setup-tools`
+11. `40-setup-gaming` (optional)
+12. `45-setup-dev`
+13. `50-setup-browser`
+14. `60-setup-certificates`
+15. `65-setup-ai` (optional)
+16. `70-setup-desktop-entries`
+17. `85-optimize-system`
+18. `99-post-install`
+
+## Step Responsibilities
 
 ### `00-setup-pacman`
-- Enable Chaotic AUR (add repo to pacman.conf)
-- Install paru if not present
-- Configure pacman.conf:
-  - Parallel downloads
-  - Color output
-  - ILoveCandy
-  - VerbosePkgLists
-  - lib32 enabled
+- Deploys `configs/system/etc/pacman.conf` to `/etc/pacman.conf`.
+- Configures Chaotic AUR keyring + repo if missing.
+- Installs `paru` and enables `paccache.timer`.
 
-### `01-install-dependencies`
-- Install gum (charmbracelet/gum) for prettier CLI interactions
-- Install any other core tools needed by installer itself
-- Set up basic environment for remaining steps
+### `05-setup-fde`
+- Configures TPM2 auto-unlock for existing LUKS2 root.
+- Writes:
+  - `/etc/mkinitcpio.conf.d/fde-systemd.conf`
+  - `/etc/kernel/cmdline`
+  - `/etc/crypttab.initramfs`
+- Enrolls recovery key and TPM2 token when missing.
+- Runs `limine-update`.
 
-### `05-install-drivers`
-- Detect GPU (lspci | grep VGA)
-- If AMD: install mesa, vulkan-radeon, lib32-mesa, lib32-vulkan-radeon
-- If NVIDIA: install nvidia-dkms, nvidia-utils, lib32-nvidia-utils
-- Prompt user if detection fails
+### `10-install-drivers`
+- Detects GPU vendor(s) via `lspci`.
+- Installs Vulkan + vendor-specific driver packages.
 
-### `10-install-packages`
-- Read from `packages/base.txt` and install via pacman
-- Read from `packages/aur.txt` and install via paru
-- Skip already installed packages
-- Log failed packages
-
-### `15-setup-fde`
-- Check if system is encrypted (cryptsetup status)
-- Enroll key via sd-cryptenroll (TPM2 or recovery key)
-- Switch from udev to systemd in mkinitcpio.conf:
-  - HOOKS=(base systemd autodetect modconf kms keyboard sd-vconsole block sd-encrypt filesystems fsck)
-- Regenerate initramfs: limine-update
+### `15-install-packages`
+- Installs package sets from:
+  - `packages/base.packages`
+  - `packages/chaotic.packages`
+  - `packages/aur.packages`
 
 ### `17-setup-dms`
-- Install DankMaterialShell from installation script
+- Installs DMS and dependencies.
+- Adds user wants for `dms` under `niri.service`.
 
 ### `20-deploy-configs`
-- Clone niriland repo to `~/.local/share/niriland` (or verify it exists and pull latest)
-- Create backup directory: `~/.config/backups/`
-- Backup existing configs to `~/.config/backups/<filename>.backup.TIMESTAMP`
-- Copy configs from `~/.local/share/niriland/configs/base/` to `~/` (preserves structure: `.config/`, `.zshrc`, etc.)
-- Modules in `configs/modules/` are accessed via include/source statements in base configs
+- Copies `configs/base/*` to `$HOME/*` with backups.
+- Skips unchanged files and placeholders.
 
 ### `25-setup-theming`
-- Install JetBrains Mono Nerd Font (AUR or manual)
-- Install SF Pro (download from Apple or use AUR package)
-- Install Apple Cursor
-- Install Papirus Icon Theme
-- Update font cache: fc-cache -fv
-- Set GTK theme, dark mode, cursor and icon theme:
-  - GTK theme: Adwaita-dark
-  - Dark mode: true
-  - Cursor: Apple
-  - Icon theme: Papirus-Dark
+- Applies `gsettings` interface/font preferences (best effort).
+- Syncs wallpapers from `configs/backgrounds` to `~/Pictures/Wallpapers`.
+- Sets a random wallpaper through `dms ipc` when available.
 
 ### `30-setup-shell`
-- Install zsh
-- Change default shell: chsh -s /bin/zsh
-- Copy/symlink zsh configs (.zshrc, .zprofile)
+- Ensures `zsh` is installed.
+- Sets default shell for target user.
 
 ### `32-setup-keyring`
-- Setup gnome-keyring
+- Installs GNOME keyring packages.
+- Ensures PAM lines for keyring auto-unlock.
 
 ### `35-setup-tools`
-- Create ~/.local/bin/ if not exists
-- Symlink scripts/tools/* to ~/.local/bin/
-- Ensure ~/.local/bin is in PATH (.zshrc or .profile)
-- Make all tools executable
+- Syncs `scripts/tools/*` to `~/.local/bin/niriland`.
+- Ensures PATH entries in `~/.zprofile` and `~/.profile`.
 
-### `40-setup-gaming`
-- Install Steam
-- Install Minecraft launchers (Minecraft Launcher, Modrinth App)
-- Install Faugus Launcher
-- Install WoWUp, Wago (wine/bottles?)
-- Enable gamemode, mangohud
+### `40-setup-gaming` (optional)
+- Installs gaming packages (Steam, launchers, etc.).
 
 ### `45-setup-dev`
-- Install mise (https://mise.jdx.dev)
-- Install uv (Python package manager)
-- Configure mise global defaults (via mise/config.toml)
-- Install common runtimes via mise (node, python, etc.)
+- Installs and enables Docker.
+- Adds target user to required groups.
+- Installs mise + platformio-core.
+- Installs PlatformIO udev rules when missing.
 
 ### `50-setup-browser`
-- Ensure required packages are installed:
+- Installs browser dependencies:
   - `helium-browser-bin`
   - `chromium-widevine`
   - `1password`
-- Symlink Widevine CDM from system package to Helium:
-  - Source: /usr/lib/chromium/WidevineCdm
-  - Target: /opt/helium-browser-bin/WidevineCdm
-- Trust Helium browser in 1Password:
-  - Add `helium` to /etc/1password/custom_allowed_browsers
+- Links Widevine into Helium.
+- Allows `helium` in `/etc/1password/custom_allowed_browsers`.
 
 ### `60-setup-certificates`
-- Download DTU certificate (or copy from repo if included)
-- Install to /etc/certs/
-- Update trust store: update-ca-trust
+- Copies `configs/system/etc/certs/Eduroam_aug2020.pem` to `/etc/certs/`.
+- Runs `update-ca-trust`.
 
-### `65-setup-ai`
-- Install Ollama (pacman or AUR)
-- Install Open WebUI (docker)
-- Start services: systemctl enable --now ollama
-- Pull default models (llama3.2, etc.)
-- Configure Open WebUI endpoint
+### `65-setup-ai` (optional)
+- Installs Opencode and Codex only when missing.
+- Installs/enables Ollama and Docker.
+- Detects NVIDIA and chooses:
+  - NVIDIA service template + CUDA OpenWebUI image + larger model
+  - CPU service template + CPU OpenWebUI image + smaller model
+- Uses templates from `configs/system/etc/systemd/system/`.
 
 ### `70-setup-desktop-entries`
-- Create custom .desktop files for webapps:
-  - ChatGPT (browser --app=https://chatgpt.com)
-  - Fastmail
-  - Other PWAs
-  - Zed launch via `WAYLAND_DISPLAY='' zeditor`
-- Remove bloat desktop entries:
-  - Move avahi-discover.desktop, etc. to ~/.local/share/applications/*.bak
-- Update desktop database: update-desktop-database ~/.local/share/applications/
+- Syncs:
+  - `configs/base/.local/share/applications` -> `~/.local/share/applications`
+  - `configs/base/.local/share/icons` -> `~/.local/share/icons`
+- Preserves `hidden/` and skips unchanged files/symlinks.
+
+### `85-optimize-system`
+- Enables `fstrim.timer` if present.
+- Enables `paccache.timer` if present.
 
 ### `99-post-install`
-- Enable user services (mako, etc.): systemctl --user enable mako
-- Update caches:
-  - fc-cache -fv (fonts)
-  - gtk-update-icon-cache (icons)
-  - update-desktop-database
-- Set GTK theme via gsettings
-- Print installation summary
-- List any failed steps
-- Prompt to reboot
+- Refreshes font cache.
+- Refreshes desktop entry database.
+- Refreshes icon cache for local hicolor theme when present.
+- Prints logout/reboot reminder.
 
----
+## Shared Paths
 
-## Shared Library Functions
+- User configs: `configs/base/`
+- System configs: `configs/system/`
+- Package lists: `packages/*.packages`
+- Install steps: `scripts/install/steps/*`
+- Shared functions: `scripts/install/lib/common`
 
-### `scripts/install/lib/common`
-- Color variables (RED, GREEN, YELLOW, BLUE, NC)
-- Logging functions:
-  - log_info "message"
-  - log_success "message"
-  - log_warning "message"
-  - log_error "message"
-- Confirm prompt: confirm "Question?" (returns 0/1)
-- Backup function: backup_file "/path/to/file"
-- Check if package installed: is_installed "package-name"
-- Detect GPU: detect_gpu (returns "amd", "nvidia", "intel", or "unknown")
+## Design Constraints
 
----
-
-## Package Files
-
-### `packages/base.txt`
-```
-# Core Niri stack
-niri
-xdg-desktop-portal-gnome
-polkit-gnome
-
-# Other essentials
-# ... add more
-```
-
-### `packages/aur.txt`
-```
-limine-snapper-sync
-
-# Other essentials
-# ... add more
-```
-
----
-
-## Tools Scripts
-
-For scripts that needs to be called systemwide:
-- `scripts/tools/niriland-screenshot`
-
----
-
-## Notes & Decisions
-
-- **Config deployment:** Copy base configs to `~/.config/` and `~/`, then source modules from `~/.local/share/niriland/configs/modules/`
-- **Config structure:** 
-  - `configs/base/` → Copied to `~/` (preserves directory structure: `.config/`, `.zshrc`, etc.)
-  - `configs/modules/` → Contains modular configs that are sourced/included by base configs
-  - Repo is cloned to `~/.local/share/niriland/`, so modules are accessed via includes from there
-- **Tools prefix:** Use `niriland-*` for all user-facing scripts
-- **Package manager:** paru (faster than yay, compatible with pacman syntax, yay will be aliased to paru)
-- **FDE setup:** Only run if system is already encrypted, don't force encryption
-- **Interactive UI:** Use gum (charmbracelet/gum) for menus, prompts, and progress indicators
-  - Graceful fallback to basic bash if gum unavailable
-  - Bootstrap installs gum before running main installer
-  - All steps should be automatic (--needed --noconfirm)
-- **Desktop Shell:** DankMaterialShell (DMS) provides the complete desktop environment
-  - Replaces traditional fragmented tools (waybar, mako, fuzzel, swaylock, etc.)
-  - Handles panels, notifications, launcher, lock screen, theming, brightness, screenshots
-  - Self-contained configuration (doesn't modify other user configs)
-- **Idempotent:** All scripts should be safe to re-run (check before doing)
-- **Error handling:** Log errors but continue with remaining steps, should stop if a critical error occurs or else skip
+- Steps are designed to be idempotent where practical.
+- The installer assumes Arch Linux + systemd + sudo access.
+- `05-setup-fde` expects an existing encrypted root setup when TPM is present.
+- Some theming/session actions are best-effort if no active desktop session is available.

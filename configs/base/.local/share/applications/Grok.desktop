@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Grok
+Comment=Grok
+Exec=niriland-launch-webapp https://grok.com/
+Terminal=false
+Type=Application
+Icon=Grok
+StartupNotify=true

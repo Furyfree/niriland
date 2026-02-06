@@ -16,3 +16,18 @@ should_install_gaming() {
 
   prompt_yes_no "Install gaming apps (Steam, Minecraft launchers, Faugus, WowUp)?" "N"
 }
+
+should_install_ai() {
+  if [[ -n "${NIRILAND_INSTALL_AI:-}" ]]; then
+    case "${NIRILAND_INSTALL_AI}" in
+      1|true|TRUE|yes|YES|y|Y)
+        return 0
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+  fi
+
+  prompt_yes_no "Install AI stack (Opencode, Codex, Ollama, OpenWebUI)?" "N"
+}

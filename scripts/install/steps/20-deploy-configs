@@ -47,8 +47,6 @@ log "Preparing destination directories..."
 while IFS= read -r dir_path; do
   rel_dir="${dir_path#$BASE_CONFIG_DIR/}"
   [[ "$rel_dir" == "$dir_path" ]] && continue
-  [[ "$rel_dir" == "etc" ]] && continue
-  [[ "$rel_dir" == etc/* ]] && continue
   mkdir -p "$HOME/$rel_dir"
 done < <(find "$BASE_CONFIG_DIR" -type d | sort)
 
@@ -58,7 +56,6 @@ while IFS= read -r file_path; do
   [[ "$rel_file" == "$file_path" ]] && continue
   [[ "$rel_file" == "PLACEHOLDER" ]] && continue
   [[ "$rel_file" == */PLACEHOLDER ]] && continue
-  [[ "$rel_file" == "etc/"* ]] && continue
   deploy_file "$file_path" "$rel_file"
 done < <(find "$BASE_CONFIG_DIR" \( -type f -o -type l \) | sort)
 

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Open WebUI
+Comment=Local AI chat powered by Open WebUI and Ollama
+Exec=niriland-launch-webapp http://127.0.0.1:3210
+Icon=OpenWebUI
+Terminal=false
+Categories=Utility;

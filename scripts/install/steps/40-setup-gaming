@@ -9,9 +9,11 @@ log "Installing gaming apps..."
 
 install_package \
   steam \
-  modrinth-app-bin \
   prismlauncher \
   faugus-launcher \
   wowup-cf-bin
+
+require_paru
+install_aur_package modrinth-app-bin
 
 log_success "Gaming apps setup complete."

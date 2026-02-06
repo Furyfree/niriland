@@ -5,11 +5,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
-log "Installing DankMaterialShell..."
+log "Installing DankMaterialShell and dependencies..."
+install_package niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk matugen cava qt6-multimedia-ffmpeg
 install_aur_package dms-shell-bin
 
 log "Starting DMS..."
-systemctl --user start dms
 systemctl --user add-wants niri.service dms
 
 log "DMS setup complete."

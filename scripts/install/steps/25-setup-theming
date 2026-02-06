@@ -4,3 +4,74 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+log "Setting up theming and wallpapers..."
+
+set_gsetting() {
+  local schema="$1"
+  local key="$2"
+  local value="$3"
+
+  if ! command -v gsettings >/dev/null 2>&1; then
+    warn "gsettings not found, skipping desktop interface settings."
+    return 1
+  fi
+
+  if ! gsettings set "$schema" "$key" "$value" >/dev/null 2>&1; then
+    warn "Failed to set gsettings $schema $key"
+    return 1
+  fi
+
+  return 0
+}
+
+# Interface style
+set_gsetting "org.gnome.desktop.interface" "color-scheme" "prefer-dark" || true
+set_gsetting "org.gnome.desktop.interface" "gtk-theme" "Graphite-Dark" || true
+set_gsetting "org.gnome.desktop.interface" "icon-theme" "Papirus-Dark" || true
+set_gsetting "org.gnome.desktop.interface" "cursor-theme" "macOS" || true
+set_gsetting "org.gnome.desktop.interface" "cursor-size" "24" || true
+
+# Fonts
+set_gsetting "org.gnome.desktop.interface" "font-name" "SF Pro Text 11" || true
+set_gsetting "org.gnome.desktop.interface" "document-font-name" "SF Pro Text 11" || true
+set_gsetting "org.gnome.desktop.interface" "monospace-font-name" "JetBrainsMono Nerd Font 10" || true
+
+BACKGROUNDS_SRC="$REPO_ROOT/configs/backgrounds"
+PICTURES_DIR="$HOME/Pictures"
+
+if command -v xdg-user-dir >/dev/null 2>&1; then
+  XDG_PICTURES_DIR="$(xdg-user-dir PICTURES 2>/dev/null || true)"
+  if [[ -n "$XDG_PICTURES_DIR" && "$XDG_PICTURES_DIR" != "XDG_PICTURES_DIR" ]]; then
+    PICTURES_DIR="$XDG_PICTURES_DIR"
+  fi
+fi
+
+BACKGROUNDS_DST="$PICTURES_DIR/Wallpapers"
+mkdir -p "$BACKGROUNDS_DST"
+
+copied_count=0
+
+if [[ -d "$BACKGROUNDS_SRC" ]]; then
+  while IFS= read -r src_file; do
+    rel_path="${src_file#$BACKGROUNDS_SRC/}"
+    dest_file="$BACKGROUNDS_DST/$rel_path"
+
+    mkdir -p "$(dirname "$dest_file")"
+
+    if [[ -f "$dest_file" ]] && cmp -s "$src_file" "$dest_file"; then
+      continue
+    fi
+
+    cp -a "$src_file" "$dest_file"
+    copied_count=$((copied_count + 1))
+  done < <(find "$BACKGROUNDS_SRC" -type f ! -name 'PLACEHOLDER' ! -name '.gitkeep' | sort)
+
+  log "Wallpaper source: $BACKGROUNDS_SRC"
+  log "Wallpaper destination: $BACKGROUNDS_DST"
+  log "Wallpaper files updated: $copied_count"
+else
+  warn "Backgrounds directory not found at $BACKGROUNDS_SRC"
+fi
+
+log_success "Theming setup complete."

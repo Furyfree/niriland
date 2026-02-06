@@ -34,5 +34,5 @@ if [[ ! -x "$INSTALL_SCRIPT" ]]; then
   die "Install script not found or not executable: $INSTALL_SCRIPT"
 fi
 
-log "Bootstrapping (steps 00 and 05)"
+log "Bootstrapping"
 bash "$INSTALL_SCRIPT"

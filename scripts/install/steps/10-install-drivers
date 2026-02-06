@@ -4,3 +4,86 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+BASE_PKGS="vulkan-icd-loader lib32-vulkan-icd-loader"
+AMD_PKGS="mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon"
+INTEL_PKGS="mesa lib32-mesa vulkan-intel lib32-vulkan-intel"
+NVIDIA_PKGS="nvidia-open-dkms nvidia-utils lib32-nvidia-utils linux-headers"
+
+install_package pciutils
+require_cmd lspci
+
+GPU_LINES="$(lspci -nn | grep -E 'VGA compatible controller|3D controller|Display controller' || true)"
+if [[ -z "$GPU_LINES" ]]; then
+  warn "Could not detect any GPU via lspci"
+fi
+
+log "Detected GPU controllers:"
+printf '%s\n' "$GPU_LINES"
+
+HAS_AMD=false
+HAS_INTEL=false
+HAS_NVIDIA=false
+
+while IFS= read -r line; do
+  case "$line" in
+    *"[1002:"*) HAS_AMD=true ;;
+    *"[8086:"*) HAS_INTEL=true ;;
+    *"[10de:"*) HAS_NVIDIA=true ;;
+  esac
+done <<< "$GPU_LINES"
+
+declare -a DETECTED_VENDORS=()
+if "$HAS_AMD"; then
+  DETECTED_VENDORS+=("amd")
+fi
+if "$HAS_INTEL"; then
+  DETECTED_VENDORS+=("intel")
+fi
+if "$HAS_NVIDIA"; then
+  DETECTED_VENDORS+=("nvidia")
+fi
+
+if [[ "${#DETECTED_VENDORS[@]}" -eq 0 ]]; then
+  warn "No AMD/Intel/NVIDIA GPU detected, skipping driver installation."
+  exit 0
+fi
+
+log "Detected GPU vendors: ${DETECTED_VENDORS[*]}"
+
+declare -a INSTALL_PKGS=()
+declare -A SEEN_PKGS=()
+
+add_pkgs() {
+  local pkg
+  for pkg in "$@"; do
+    if [[ -n "${SEEN_PKGS[$pkg]:-}" ]]; then
+      continue
+    fi
+    SEEN_PKGS["$pkg"]=1
+    INSTALL_PKGS+=("$pkg")
+  done
+}
+
+add_pkg_string() {
+  local pkg_string="$1"
+  local -a parsed_pkgs=()
+  read -r -a parsed_pkgs <<<"$pkg_string"
+  add_pkgs "${parsed_pkgs[@]}"
+}
+
+add_pkg_string "$BASE_PKGS"
+if "$HAS_AMD"; then
+  add_pkg_string "$AMD_PKGS"
+fi
+if "$HAS_INTEL"; then
+  add_pkg_string "$INTEL_PKGS"
+fi
+if "$HAS_NVIDIA"; then
+  add_pkg_string "$NVIDIA_PKGS"
+fi
+
+log "Installing GPU packages: ${INSTALL_PKGS[*]}"
+install_package "${INSTALL_PKGS[@]}"
+
+log_success "GPU drivers setup complete."

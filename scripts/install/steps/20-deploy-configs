@@ -4,3 +4,62 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
+
+BASE_CONFIG_DIR="$REPO_ROOT/configs/base"
+
+if [[ ! -d "$BASE_CONFIG_DIR" ]]; then
+  die "Missing config directory: $BASE_CONFIG_DIR"
+fi
+
+BACKUP_TS="$(date +%Y%m%d%H%M%S)"
+BACKUP_ROOT="$HOME/.config/backups/niriland/$BACKUP_TS"
+mkdir -p "$BACKUP_ROOT"
+
+deploy_file() {
+  local src="$1"
+  local rel_path="$2"
+  local dest="$HOME/$rel_path"
+
+  mkdir -p "$(dirname "$dest")"
+
+  if [[ -f "$src" && -f "$dest" ]] && cmp -s "$src" "$dest"; then
+    log "$rel_path unchanged, skipping."
+    return 0
+  fi
+
+  if [[ -L "$src" && -L "$dest" ]] && [[ "$(readlink "$src")" == "$(readlink "$dest")" ]]; then
+    log "$rel_path unchanged, skipping."
+    return 0
+  fi
+
+  if [[ -e "$dest" || -L "$dest" ]]; then
+    local backup_path="$BACKUP_ROOT/$rel_path"
+    mkdir -p "$(dirname "$backup_path")"
+    log "Backing up $dest -> $backup_path"
+    cp -a "$dest" "$backup_path"
+  fi
+
+  log "Deploying $rel_path"
+  cp -a "$src" "$dest"
+}
+
+log "Preparing destination directories..."
+while IFS= read -r dir_path; do
+  rel_dir="${dir_path#$BASE_CONFIG_DIR/}"
+  [[ "$rel_dir" == "$dir_path" ]] && continue
+  [[ "$rel_dir" == "etc" ]] && continue
+  [[ "$rel_dir" == etc/* ]] && continue
+  mkdir -p "$HOME/$rel_dir"
+done < <(find "$BASE_CONFIG_DIR" -type d | sort)
+
+log "Deploying user config files from $BASE_CONFIG_DIR to $HOME"
+while IFS= read -r file_path; do
+  rel_file="${file_path#$BASE_CONFIG_DIR/}"
+  [[ "$rel_file" == "$file_path" ]] && continue
+  [[ "$rel_file" == "PLACEHOLDER" ]] && continue
+  [[ "$rel_file" == */PLACEHOLDER ]] && continue
+  [[ "$rel_file" == "etc/"* ]] && continue
+  deploy_file "$file_path" "$rel_file"
+done < <(find "$BASE_CONFIG_DIR" \( -type f -o -type l \) | sort)
+
+log_success "Config deployment complete."

@@ -165,5 +165,10 @@ fi
 log "Updating bootloader and initramfs"
 run_sudo limine-update
 
+if [[ -d /boot/limine ]]; then
+  log "Removing conflicting entry"
+  run_sudo rm -rf /boot/limine
+fi
+
 log "FDE auto-unlock setup complete"
 log "Recovery key is stored in $RECOVERY_FILE (keep this safe!)"

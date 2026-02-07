@@ -35,7 +35,7 @@ fi
 
 if command -v limine-snapper-sync >/dev/null 2>&1; then
   log "Syncing limine-snapper"
-  limine-snapper-sync
+  run_sudo limine-snapper-sync
 else
   warn "limine-snapper-sync not found, skipping limine-snapper sync."
 fi

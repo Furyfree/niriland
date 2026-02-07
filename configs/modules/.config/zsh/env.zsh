@@ -11,10 +11,6 @@ export PATH="$PATH:$HOME/.dotnet/tools"
 export PATH="$HOME/.local/bin/scripts:$PATH"
 export PATH=$HOME/.opencode/bin:$PATH
 
-
-# Mise (Environment manager for multiple languages)
-eval "$(~/.local/bin/mise activate zsh)"
-
 # Starship
 export STARSHIP_CONFIG=$HOME/.config/starship/starship.toml
 eval "$(starship init zsh)"

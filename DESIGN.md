@@ -150,10 +150,12 @@ Current `install` execution order:
 - Allows `helium` in `/etc/1password/custom_allowed_browsers`.
 
 ### `55-setup-vm`
-- Enables and starts `libvirtd.service`.
-- Adds the target user to `libvirt` group when missing.
-- Ensures libvirt `default` network is active and autostart-enabled when present.
-- Warns to re-login/reboot when group membership changes.
+- Installs `vmware-workstation`.
+- Enables and starts:
+  - `vmware-networks.service`
+  - `vmware-usbarbitrator.service`
+- Treats VMware service setup as best-effort:
+  - warns and continues if a unit is missing or service start fails.
 
 ### `60-setup-certificates`
 - Copies `configs/system/etc/certs/Eduroam_aug2020.pem` to `/etc/certs/`.
@@ -171,7 +173,9 @@ Current `install` execution order:
 - Syncs:
   - `configs/base/.local/share/applications` -> `~/.local/share/applications`
   - `configs/base/.local/share/icons` -> `~/.local/share/icons`
-- Preserves `hidden/` and skips unchanged files/symlinks.
+  - `configs/base/.local/share/icons` -> `~/.local/share/pixmaps`
+- Applies `configs/base/.local/share/applications/hidden/*.desktop` as overrides in `~/.local/share/applications/`.
+- Skips unchanged files/symlinks.
 
 ### `85-optimize-system`
 - Enables `fstrim.timer` if present.

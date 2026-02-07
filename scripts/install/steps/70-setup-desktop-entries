@@ -9,6 +9,7 @@ APPLICATIONS_SRC="$REPO_ROOT/configs/base/.local/share/applications"
 APPLICATIONS_DST="$HOME/.local/share/applications"
 ICONS_SRC="$REPO_ROOT/configs/base/.local/share/icons"
 ICONS_DST="$HOME/.local/share/icons"
+PIXMAPS_DST="$HOME/.local/share/pixmaps"
 
 sync_tree() {
   local src_root="$1"
@@ -49,10 +50,45 @@ sync_tree() {
   done < <(find "$src_root" \( -type f -o -type l \) | sort)
 }
 
+deploy_hidden_overrides() {
+  local hidden_src="$APPLICATIONS_SRC/hidden"
+
+  if [[ ! -d "$hidden_src" ]]; then
+    warn "Hidden desktop entries directory not found: $hidden_src"
+    return 0
+  fi
+
+  mkdir -p "$APPLICATIONS_DST"
+
+  while IFS= read -r src_path; do
+    local rel_path="${src_path#$hidden_src/}"
+    local dest_path="$APPLICATIONS_DST/$rel_path"
+
+    mkdir -p "$(dirname "$dest_path")"
+
+    if [[ -f "$src_path" && -f "$dest_path" ]] && cmp -s "$src_path" "$dest_path"; then
+      log "applications/$rel_path hidden override unchanged, skipping."
+      continue
+    fi
+
+    if [[ -L "$src_path" && -L "$dest_path" ]] && [[ "$(readlink "$src_path")" == "$(readlink "$dest_path")" ]]; then
+      log "applications/$rel_path hidden override unchanged, skipping."
+      continue
+    fi
+
+    cp -a "$src_path" "$dest_path"
+    log "Applied hidden override applications/$rel_path"
+  done < <(find "$hidden_src" \( -type f -o -type l \) | sort)
+}
+
 log "Deploying desktop entries"
 sync_tree "$APPLICATIONS_SRC" "$APPLICATIONS_DST" "applications"
+log "Applying hidden desktop entry overrides"
+deploy_hidden_overrides
 
 log "Deploying desktop icons"
 sync_tree "$ICONS_SRC" "$ICONS_DST" "icons"
+log "Deploying pixmap icons"
+sync_tree "$ICONS_SRC" "$PIXMAPS_DST" "pixmaps"
 
 log_success "Desktop entries setup complete."

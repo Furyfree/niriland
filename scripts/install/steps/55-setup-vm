@@ -5,61 +5,29 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
-log "Configuring virtualization support"
+log "Configuring VMware Workstation"
 
-TARGET_USER="${SUDO_USER:-${USER:-}}"
-if [[ -z "$TARGET_USER" ]]; then
-  die "Could not determine target user."
-fi
+has_systemd_unit() {
+  local unit="$1"
+  [[ -f "/usr/lib/systemd/system/$unit" || -f "/etc/systemd/system/$unit" ]]
+}
 
-GROUP_CHANGES=false
+enable_service_if_present() {
+  local service="$1"
 
-run_sudo systemctl enable --now libvirtd.service
-
-if id -nG "$TARGET_USER" | grep -qw libvirt; then
-  log "User $TARGET_USER is already in libvirt group."
-else
-  log "Adding $TARGET_USER to libvirt group..."
-  run_sudo usermod -aG libvirt "$TARGET_USER"
-  GROUP_CHANGES=true
-fi
-
-if command -v virsh >/dev/null 2>&1; then
-  is_default_network_active() {
-    run_sudo virsh net-info default 2>/dev/null | grep -Eq '^Active:[[:space:]]+yes$'
-  }
-
-  is_default_network_autostart() {
-    run_sudo virsh net-info default 2>/dev/null | grep -Eq '^Autostart:[[:space:]]+yes$'
-  }
-
-  if run_sudo virsh net-info default >/dev/null 2>&1; then
-    if is_default_network_active; then
-      log "libvirt default network is already active."
+  if has_systemd_unit "$service"; then
+    if run_sudo systemctl enable --now "$service"; then
+      log "$service enabled and started."
     else
-      log "Starting libvirt default network..."
-      if run_sudo virsh net-start default; then
-        log "libvirt default network started."
-      else
-        warn "Failed to start libvirt default network. You may need to resolve network conflicts manually."
-      fi
-    fi
-
-    if is_default_network_autostart; then
-      log "libvirt default network autostart is already enabled."
-    else
-      log "Enabling autostart for libvirt default network..."
-      run_sudo virsh net-autostart default
+      warn "Failed to enable/start $service."
     fi
   else
-    warn "libvirt default network is missing; skipping network setup."
+    warn "$service not found; skipping."
   fi
-else
-  warn "virsh is not installed; skipping libvirt network setup."
-fi
+}
 
-if [[ "$GROUP_CHANGES" == "true" ]]; then
-  warn "Log out and back in (or reboot) for libvirt group changes to take effect."
-fi
+install_package vmware-workstation
+enable_service_if_present "vmware-networks.service"
+enable_service_if_present "vmware-usbarbitrator.service"
 
-log_success "VM setup complete."
+log_success "VMware setup complete."

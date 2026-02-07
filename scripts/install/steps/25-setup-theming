@@ -39,14 +39,6 @@ set_gsetting "org.gnome.desktop.interface" "monospace-font-name" "JetBrainsMono 
 
 BACKGROUNDS_SRC="$REPO_ROOT/configs/backgrounds"
 PICTURES_DIR="$HOME/Pictures"
-
-if command -v xdg-user-dir >/dev/null 2>&1; then
-  XDG_PICTURES_DIR="$(xdg-user-dir PICTURES 2>/dev/null || true)"
-  if [[ -n "$XDG_PICTURES_DIR" && "$XDG_PICTURES_DIR" != "XDG_PICTURES_DIR" ]]; then
-    PICTURES_DIR="$XDG_PICTURES_DIR"
-  fi
-fi
-
 BACKGROUNDS_DST="$PICTURES_DIR/Wallpapers"
 mkdir -p "$BACKGROUNDS_DST"
 

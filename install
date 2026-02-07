@@ -25,10 +25,10 @@ fi
 
 STEPS=(
   "$STEPS_DIR/00-setup-pacman"
+  "$STEPS_DIR/01-setup-dms"
   "$STEPS_DIR/05-setup-fde"
   "$STEPS_DIR/10-install-drivers"
   "$STEPS_DIR/15-install-packages"
-  "$STEPS_DIR/17-setup-dms"
   "$STEPS_DIR/20-deploy-configs"
   "$STEPS_DIR/25-setup-theming"
   "$STEPS_DIR/30-setup-shell"

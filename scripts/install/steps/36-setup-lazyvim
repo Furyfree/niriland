@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common"
+
+LAZYVIM_REPO="https://github.com/LazyVim/starter"
+NVIM_CONFIG="$HOME/.config/nvim"
+BACKUP_TS="$(date +%Y%m%d%H%M%S)"
+
+log "Setting up LazyVim..."
+
+# Skip if LazyVim is already installed
+if [[ -d "$NVIM_CONFIG/lua/plugins" ]] && grep -rq "LazyVim" "$NVIM_CONFIG" 2>/dev/null; then
+  log "LazyVim already installed, skipping."
+  exit 0
+fi
+
+# Backup existing neovim directories
+for dir in "$HOME/.config/nvim" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim"; do
+  if [[ -d "$dir" ]]; then
+    log "Backing up $dir"
+    mv "$dir" "${dir}.bak.$BACKUP_TS"
+  fi
+done
+
+# Clone LazyVim starter
+require_cmd git
+log "Cloning LazyVim starter..."
+git clone "$LAZYVIM_REPO" "$NVIM_CONFIG"
+rm -rf "$NVIM_CONFIG/.git"
+
+log_success "LazyVim setup complete."

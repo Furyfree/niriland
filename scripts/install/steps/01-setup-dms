@@ -5,25 +5,26 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
-log "Installing DankMaterialShell and dependencies..."
-install_package niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk matugen cava qt6-multimedia-ffmpeg
-install_aur_package dms-shell-bin
+log "Setting up DankMaterialShell via dankinstall..."
 
+require_cmd curl
+
+# --- Run dankinstall (interactive) ---
+curl -fsSL https://install.danklinux.com | sh
+
+# --- Greeter setup ---
 TARGET_USER="${SUDO_USER:-${USER:-}}"
 if [[ -z "$TARGET_USER" ]]; then
   die "Unable to determine target user for DMS greeter setup."
 fi
 
+log "Installing DMS greeter..."
+require_paru
+install_aur_package greetd-dms-greeter-git
+
 log "Ensuring greeter group access for $TARGET_USER..."
 run_sudo groupadd -f greeter
 run_sudo usermod -aG greeter "$TARGET_USER"
-
-log "Starting DMS..."
-if systemctl --user add-wants niri.service dms 2>/dev/null; then
-  log "DMS user service linked to niri.service"
-else
-  warn "No active user session; run 'systemctl --user add-wants niri.service dms' after first login."
-fi
 
 if command -v dms >/dev/null 2>&1; then
   if dms greeter enable 2>/dev/null && dms greeter sync 2>/dev/null; then
@@ -35,4 +36,4 @@ else
   warn "dms command not found after install; skipping greeter setup."
 fi
 
-log "DMS setup complete."
+log_success "DMS setup complete."

@@ -38,7 +38,11 @@ if command -v virsh >/dev/null 2>&1; then
       log "libvirt default network is already active."
     else
       log "Starting libvirt default network..."
-      run_sudo virsh net-start default
+      if run_sudo virsh net-start default; then
+        log "libvirt default network started."
+      else
+        warn "Failed to start libvirt default network. You may need to resolve network conflicts manually."
+      fi
     fi
 
     if is_default_network_autostart; then

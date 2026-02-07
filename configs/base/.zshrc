@@ -2,7 +2,7 @@
 # Modular ZSH configuration
 
 # Configuration directory
-ZSH_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.local/share/niriland/configs/modules/.config}/zsh"
+ZSH_CONFIG_DIR="$HOME/.local/share/niriland/configs/modules/.config/zsh"
 
 # Source configuration files in order
 source "$ZSH_CONFIG_DIR/env.zsh"

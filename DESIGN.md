@@ -74,11 +74,12 @@ Current `install` execution order:
 11. `40-setup-gaming` (optional)
 12. `45-setup-dev`
 13. `50-setup-browser`
-14. `60-setup-certificates`
-15. `65-setup-ai` (optional)
-16. `70-setup-desktop-entries`
-17. `85-optimize-system`
-18. `99-post-install`
+14. `55-setup-vm`
+15. `60-setup-certificates`
+16. `65-setup-ai` (optional)
+17. `70-setup-desktop-entries`
+18. `85-optimize-system`
+19. `99-post-install`
 
 ## Step Responsibilities
 
@@ -147,6 +148,12 @@ Current `install` execution order:
   - `1password`
 - Links Widevine into Helium.
 - Allows `helium` in `/etc/1password/custom_allowed_browsers`.
+
+### `55-setup-vm`
+- Enables and starts `libvirtd.service`.
+- Adds the target user to `libvirt` group when missing.
+- Ensures libvirt `default` network is active and autostart-enabled when present.
+- Warns to re-login/reboot when group membership changes.
 
 ### `60-setup-certificates`
 - Copies `configs/system/etc/certs/Eduroam_aug2020.pem` to `/etc/certs/`.

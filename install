@@ -45,6 +45,7 @@ fi
 STEPS+=(
   "$STEPS_DIR/45-setup-dev"
   "$STEPS_DIR/50-setup-browser"
+  "$STEPS_DIR/55-setup-vm"
   "$STEPS_DIR/60-setup-certificates"
 )
 

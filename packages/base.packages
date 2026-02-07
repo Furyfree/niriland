@@ -76,3 +76,10 @@ pacman-contrib
 steam
 nm-connection-editor
 discord
+qemu-desktop
+virt-manager
+libvirt
+edk2-ovmf
+swtpm
+virglrenderer
+dnsmasq

@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common"
+
+log "Configuring virtualization support"
+
+TARGET_USER="${SUDO_USER:-${USER:-}}"
+if [[ -z "$TARGET_USER" ]]; then
+  die "Could not determine target user."
+fi
+
+GROUP_CHANGES=false
+
+run_sudo systemctl enable --now libvirtd.service
+
+if id -nG "$TARGET_USER" | grep -qw libvirt; then
+  log "User $TARGET_USER is already in libvirt group."
+else
+  log "Adding $TARGET_USER to libvirt group..."
+  run_sudo usermod -aG libvirt "$TARGET_USER"
+  GROUP_CHANGES=true
+fi
+
+if command -v virsh >/dev/null 2>&1; then
+  is_default_network_active() {
+    run_sudo virsh net-info default 2>/dev/null | grep -Eq '^Active:[[:space:]]+yes$'
+  }
+
+  is_default_network_autostart() {
+    run_sudo virsh net-info default 2>/dev/null | grep -Eq '^Autostart:[[:space:]]+yes$'
+  }
+
+  if run_sudo virsh net-info default >/dev/null 2>&1; then
+    if is_default_network_active; then
+      log "libvirt default network is already active."
+    else
+      log "Starting libvirt default network..."
+      run_sudo virsh net-start default
+    fi
+
+    if is_default_network_autostart; then
+      log "libvirt default network autostart is already enabled."
+    else
+      log "Enabling autostart for libvirt default network..."
+      run_sudo virsh net-autostart default
+    fi
+  else
+    warn "libvirt default network is missing; skipping network setup."
+  fi
+else
+  warn "virsh is not installed; skipping libvirt network setup."
+fi
+
+if [[ "$GROUP_CHANGES" == "true" ]]; then
+  warn "Log out and back in (or reboot) for libvirt group changes to take effect."
+fi
+
+log_success "VM setup complete."

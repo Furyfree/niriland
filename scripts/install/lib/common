@@ -291,14 +291,25 @@ read_git_config() {
     fi
   fi
 
-  # Prompt for new config
+  # Prompt for new config.
+  # Leave both fields empty to skip setting git user values.
   echo
-  read -rp "Git name (Full Name): " GIT_NAME </dev/tty
-  read -rp "Git email: " GIT_EMAIL </dev/tty
+  read -rp "Git name (Full Name, Enter to skip): " GIT_NAME </dev/tty
+  read -rp "Git email (Enter to skip): " GIT_EMAIL </dev/tty
 
-  # Validate inputs
+  # Allow blank inputs and continue without changing git config.
+  if [[ -z "$GIT_NAME" && -z "$GIT_EMAIL" ]]; then
+    warn "Git configuration left blank, skipping setup."
+    unset GIT_NAME
+    unset GIT_EMAIL
+    return 0
+  fi
+
   if [[ -z "$GIT_NAME" || -z "$GIT_EMAIL" ]]; then
-    die "Git name and email cannot be empty"
+    warn "Git name/email incomplete, skipping setup."
+    unset GIT_NAME
+    unset GIT_EMAIL
+    return 0
   fi
 
   export GIT_NAME

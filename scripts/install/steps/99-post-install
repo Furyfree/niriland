@@ -17,7 +17,7 @@ fi
 if [[ -d "$HOME/.local/share/applications" ]]; then
   if command -v update-desktop-database >/dev/null 2>&1; then
     log "Refreshing desktop entry database"
-    update-desktop-database "$HOME/.local/share/applications" >/dev/null
+    run_sudo update-desktop-database "$HOME/.local/share/applications" >/dev/null
   else
     warn "update-desktop-database not found, skipping desktop database refresh."
   fi

@@ -6,10 +6,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
 BASE_CONFIG_DIR="$REPO_ROOT/configs/base"
+CONFIG_DEPLOY_MODE="${NIRILAND_CONFIG_DEPLOY_MODE:-overwrite}"
 
 if [[ ! -d "$BASE_CONFIG_DIR" ]]; then
   die "Missing config directory: $BASE_CONFIG_DIR"
 fi
+
+case "$CONFIG_DEPLOY_MODE" in
+  overwrite|preserve)
+    ;;
+  *)
+    die "Invalid NIRILAND_CONFIG_DEPLOY_MODE: $CONFIG_DEPLOY_MODE (expected overwrite or preserve)"
+    ;;
+esac
 
 BACKUP_TS="$(date +%Y%m%d%H%M%S)"
 BACKUP_ROOT="$HOME/.config/backups/niriland/$BACKUP_TS"
@@ -29,6 +38,11 @@ deploy_file() {
 
   if [[ -L "$src" && -L "$dest" ]] && [[ "$(readlink "$src")" == "$(readlink "$dest")" ]]; then
     log "$rel_path unchanged, skipping."
+    return 0
+  fi
+
+  if [[ "$CONFIG_DEPLOY_MODE" == "preserve" && "$rel_path" == .config/* ]] && [[ -e "$dest" || -L "$dest" ]]; then
+    log "$rel_path has local changes, preserve mode enabled, skipping."
     return 0
   fi
 

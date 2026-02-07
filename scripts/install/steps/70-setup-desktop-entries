@@ -8,46 +8,43 @@ source "$SCRIPT_DIR/../lib/common"
 APPLICATIONS_SRC="$REPO_ROOT/configs/base/.local/share/applications"
 APPLICATIONS_DST="$HOME/.local/share/applications"
 ICONS_SRC="$REPO_ROOT/configs/base/.local/share/icons"
-ICONS_DST="$HOME/.local/share/icons"
-PIXMAPS_DST="$HOME/.local/share/pixmaps"
+HICOLOR_SRC="/usr/share/icons/hicolor/index.theme"
+HICOLOR_DST="$HOME/.local/share/icons/hicolor"
+HICOLOR_APPS_DST="$HICOLOR_DST/256x256/apps"
 
-sync_tree() {
-  local src_root="$1"
-  local dst_root="$2"
+copy_if_changed() {
+  local src_path="$1"
+  local dest_path="$2"
   local label="$3"
 
-  if [[ ! -d "$src_root" ]]; then
-    warn "$label source directory not found: $src_root"
+  mkdir -p "$(dirname "$dest_path")"
+
+  if [[ -f "$src_path" && -f "$dest_path" ]] && cmp -s "$src_path" "$dest_path"; then
+    log "$label unchanged, skipping."
     return 0
   fi
 
-  mkdir -p "$dst_root"
+  if [[ -L "$src_path" && -L "$dest_path" ]] && [[ "$(readlink "$src_path")" == "$(readlink "$dest_path")" ]]; then
+    log "$label unchanged, skipping."
+    return 0
+  fi
 
-  while IFS= read -r dir_path; do
-    local rel_dir="${dir_path#$src_root/}"
-    [[ "$rel_dir" == "$dir_path" ]] && continue
-    mkdir -p "$dst_root/$rel_dir"
-  done < <(find "$src_root" -type d | sort)
+  cp -a "$src_path" "$dest_path"
+  log "Deployed $label"
+}
+
+deploy_spotlight_entries() {
+  if [[ ! -d "$APPLICATIONS_SRC" ]]; then
+    warn "Applications source directory not found: $APPLICATIONS_SRC"
+    return 0
+  fi
+
+  mkdir -p "$APPLICATIONS_DST"
 
   while IFS= read -r src_path; do
-    local rel_path="${src_path#$src_root/}"
-    local dest_path="$dst_root/$rel_path"
-
-    mkdir -p "$(dirname "$dest_path")"
-
-    if [[ -f "$src_path" && -f "$dest_path" ]] && cmp -s "$src_path" "$dest_path"; then
-      log "$label/$rel_path unchanged, skipping."
-      continue
-    fi
-
-    if [[ -L "$src_path" && -L "$dest_path" ]] && [[ "$(readlink "$src_path")" == "$(readlink "$dest_path")" ]]; then
-      log "$label/$rel_path unchanged, skipping."
-      continue
-    fi
-
-    cp -a "$src_path" "$dest_path"
-    log "Deployed $label/$rel_path"
-  done < <(find "$src_root" \( -type f -o -type l \) | sort)
+    local rel_path="${src_path#$APPLICATIONS_SRC/}"
+    copy_if_changed "$src_path" "$APPLICATIONS_DST/$rel_path" "applications/$rel_path"
+  done < <(find "$APPLICATIONS_SRC" -mindepth 1 -maxdepth 1 \( -type f -o -type l \) | sort)
 }
 
 deploy_hidden_overrides() {
@@ -63,32 +60,47 @@ deploy_hidden_overrides() {
   while IFS= read -r src_path; do
     local rel_path="${src_path#$hidden_src/}"
     local dest_path="$APPLICATIONS_DST/$rel_path"
-
-    mkdir -p "$(dirname "$dest_path")"
-
-    if [[ -f "$src_path" && -f "$dest_path" ]] && cmp -s "$src_path" "$dest_path"; then
-      log "applications/$rel_path hidden override unchanged, skipping."
-      continue
-    fi
-
-    if [[ -L "$src_path" && -L "$dest_path" ]] && [[ "$(readlink "$src_path")" == "$(readlink "$dest_path")" ]]; then
-      log "applications/$rel_path hidden override unchanged, skipping."
-      continue
-    fi
-
-    cp -a "$src_path" "$dest_path"
-    log "Applied hidden override applications/$rel_path"
+    copy_if_changed "$src_path" "$dest_path" "applications/$rel_path hidden override"
   done < <(find "$hidden_src" \( -type f -o -type l \) | sort)
 }
 
-log "Deploying desktop entries"
-sync_tree "$APPLICATIONS_SRC" "$APPLICATIONS_DST" "applications"
+deploy_hicolor_theme() {
+  if [[ ! -d "$ICONS_SRC" ]]; then
+    warn "Icons source directory not found: $ICONS_SRC"
+    return 0
+  fi
+
+  mkdir -p "$HICOLOR_APPS_DST"
+
+  if [[ -f "$HICOLOR_SRC" ]]; then
+    copy_if_changed "$HICOLOR_SRC" "$HICOLOR_DST/index.theme" "icons/hicolor/index.theme"
+  else
+    warn "System hicolor index.theme not found: $HICOLOR_SRC"
+  fi
+
+  while IFS= read -r src_path; do
+    local file_name
+    file_name="$(basename "$src_path")"
+    copy_if_changed "$src_path" "$HICOLOR_APPS_DST/$file_name" "icons/hicolor/256x256/apps/$file_name"
+  done < <(find "$ICONS_SRC" -mindepth 1 -maxdepth 1 \( -type f -o -type l \) | sort)
+}
+
+refresh_icon_cache() {
+  if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    log "Refreshing icon cache"
+    gtk-update-icon-cache -f -t "$HICOLOR_DST"
+  else
+    warn "gtk-update-icon-cache not found, skipping icon cache refresh."
+  fi
+}
+
+log "Deploying desktop entries for DMS spotlight"
+deploy_spotlight_entries
 log "Applying hidden desktop entry overrides"
 deploy_hidden_overrides
 
-log "Deploying desktop icons"
-sync_tree "$ICONS_SRC" "$ICONS_DST" "icons"
-log "Deploying pixmap icons"
-sync_tree "$ICONS_SRC" "$PIXMAPS_DST" "pixmaps"
+log "Deploying hicolor icon theme entries"
+deploy_hicolor_theme
+refresh_icon_cache
 
 log_success "Desktop entries setup complete."

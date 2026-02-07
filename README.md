@@ -16,6 +16,24 @@ cd niriland
 ./install
 ```
 
+## Updating Existing Installs
+
+Use the updater tool to pull the latest repo changes and run the update subset:
+
+```bash
+scripts/tools/niriland-update
+```
+
+What it runs (in order):
+- `15-*`
+- `20-*`
+- `70-*`
+- `99-*`
+
+During update step `20-*`, existing `~/.config/*` files are preserved (not overwritten).
+
+`niriland-update` uses the current repo when run inside one, otherwise falls back to `NIRILAND_DIR` or `~/.local/share/niriland`.
+
 ## Requirements
 
 - Arch Linux with `systemd`

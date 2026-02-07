@@ -170,11 +170,11 @@ Current `install` execution order:
 - Uses templates from `configs/system/etc/systemd/system/`.
 
 ### `70-setup-desktop-entries`
-- Syncs:
-  - `configs/base/.local/share/applications` -> `~/.local/share/applications`
-  - `configs/base/.local/share/icons` -> `~/.local/share/icons`
-  - `configs/base/.local/share/icons` -> `~/.local/share/pixmaps`
+- Copies top-level desktop entries from `configs/base/.local/share/applications` to `~/.local/share/applications`.
 - Applies `configs/base/.local/share/applications/hidden/*.desktop` as overrides in `~/.local/share/applications/`.
+- Copies icon files from `configs/base/.local/share/icons` to `~/.local/share/icons/hicolor/256x256/apps/`.
+- Copies `/usr/share/icons/hicolor/index.theme` to `~/.local/share/icons/hicolor/index.theme`.
+- Runs `gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor` when available.
 - Skips unchanged files/symlinks.
 
 ### `85-optimize-system`

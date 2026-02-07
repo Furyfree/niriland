@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+if [[ -d "$SCRIPT_REPO_ROOT/scripts/install/steps" && -f "$SCRIPT_REPO_ROOT/install" ]]; then
+  REPO_ROOT="$SCRIPT_REPO_ROOT"
+elif [[ -d "$PWD/scripts/install/steps" && -f "$PWD/install" ]]; then
+  REPO_ROOT="$PWD"
+else
+  REPO_ROOT="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
+fi
+
+[[ -d "$REPO_ROOT/scripts/install/steps" ]] || {
+  printf 'ERROR: Could not find install steps in %s\n' "$REPO_ROOT" >&2
+  exit 1
+}
+
+source "$REPO_ROOT/scripts/install/lib/common"
+require_cmd git
+
+if [[ ! -d "$REPO_ROOT/.git" ]]; then
+  die "Not a git repo: $REPO_ROOT"
+fi
+
+if ! git -C "$REPO_ROOT" diff-index --quiet HEAD --; then
+  die "Repo has local changes. Commit or stash before running niriland-update."
+fi
+
+log "Using repo: $REPO_ROOT"
+log "Pulling latest changes"
+git -C "$REPO_ROOT" pull --ff-only
+
+# 15-* and 99-* include privileged operations.
+read_system_pass
+
+for pattern in 15-* 20-* 70-* 99-*; do
+  found=false
+
+  for step in "$REPO_ROOT/scripts/install/steps"/$pattern; do
+    [[ -e "$step" ]] || continue
+    found=true
+
+    if [[ ! -x "$step" ]]; then
+      die "Step not found or not executable: $step"
+    fi
+
+    step_name="$(basename "$step")"
+    log "Running $step_name"
+
+    if [[ "$step_name" == 20-* ]]; then
+      NIRILAND_CONFIG_DEPLOY_MODE=preserve bash "$step"
+    else
+      bash "$step"
+    fi
+  done
+
+  if [[ "$found" == "false" ]]; then
+    warn "No step found matching $pattern"
+  fi
+done
+
+clean_system_pass
+
+log_success "Update complete."

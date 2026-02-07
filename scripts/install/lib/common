@@ -335,8 +335,8 @@ clean_cache() {
 
 cleanup_all() {
   sudo -k >/dev/null 2>&1 || true
-  clean_system_pass
-  clean_luks_pass
   clean_git_config
   clean_cache
+  clean_system_pass
+  clean_luks_pass
 }

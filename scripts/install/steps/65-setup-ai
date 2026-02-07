@@ -13,16 +13,25 @@ OPENWEBUI_PORT="3210"
 MODEL_NVIDIA="${NIRILAND_OLLAMA_MODEL_NVIDIA:-qwen2.5-coder:14b}"
 MODEL_CPU="${NIRILAND_OLLAMA_MODEL_CPU:-qwen2.5-coder:3b}"
 
-is_nvidia_system() {
-  if command -v nvidia-smi >/dev/null 2>&1; then
-    return 0
-  fi
-
+has_nvidia_hardware() {
   if command -v lspci >/dev/null 2>&1 && lspci | grep -qi 'nvidia'; then
     return 0
   fi
 
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    return 0
+  fi
+
   return 1
+}
+
+is_nvidia_runtime_ready() {
+  if ! command -v nvidia-smi >/dev/null 2>&1; then
+    return 1
+  fi
+
+  # CUDA workloads require the driver to be loaded and nvidia-smi to work.
+  nvidia-smi >/dev/null 2>&1
 }
 
 install_opencode_if_missing() {
@@ -100,8 +109,8 @@ run_sudo systemctl enable --now ollama
 install_package docker
 run_sudo systemctl enable --now docker.service
 
-if is_nvidia_system; then
-  log "NVIDIA system detected"
+if is_nvidia_runtime_ready; then
+  log "NVIDIA runtime detected and ready"
   install_package nvidia-container-toolkit
   run_sudo nvidia-ctk runtime configure --runtime=docker
   run_sudo systemctl restart docker
@@ -109,7 +118,13 @@ if is_nvidia_system; then
   pull_model_if_missing "$MODEL_NVIDIA"
   setup_openwebui_service "$OPENWEBUI_SERVICE_NVIDIA" "ghcr.io/open-webui/open-webui:cuda"
 else
-  log "Non-NVIDIA system detected"
+  if has_nvidia_hardware; then
+    warn "NVIDIA hardware detected, but runtime is not ready. Falling back to CPU image."
+    warn "If you expect CUDA, verify drivers/modules and retry after reboot."
+  else
+    log "Non-NVIDIA system detected"
+  fi
+
   pull_model_if_missing "$MODEL_CPU"
   setup_openwebui_service "$OPENWEBUI_SERVICE_CPU" "ghcr.io/open-webui/open-webui:main"
 fi

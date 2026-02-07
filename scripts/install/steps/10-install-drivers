@@ -86,4 +86,6 @@ fi
 log "Installing GPU packages: ${INSTALL_PKGS[*]}"
 install_package "${INSTALL_PKGS[@]}"
 
+run_sudo limine-update
+
 log_success "GPU drivers setup complete."

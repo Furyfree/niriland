@@ -32,6 +32,14 @@ if [[ -f "$HOME/.local/share/icons/hicolor/index.theme" ]]; then
   fi
 fi
 
+
+if command -v limine-snapper-sync >/dev/null 2>&1; then
+  log "Syncing limine-snapper"
+  limine-snapper-sync
+else
+  warn "limine-snapper-sync not found, skipping limine-snapper sync."
+fi
+
 log_success "Post-install tasks complete."
 warn "Log out or reboot to ensure shell, group, and PAM changes are fully applied."
 warn "Run niriland-setup-fingerprint to setup fingerprint"

@@ -19,8 +19,20 @@ run_sudo groupadd -f greeter
 run_sudo usermod -aG greeter "$TARGET_USER"
 
 log "Starting DMS..."
-systemctl --user add-wants niri.service dms
-dms greeter enable
-dms greeter sync
+if systemctl --user add-wants niri.service dms 2>/dev/null; then
+  log "DMS user service linked to niri.service"
+else
+  warn "No active user session; run 'systemctl --user add-wants niri.service dms' after first login."
+fi
+
+if command -v dms >/dev/null 2>&1; then
+  if dms greeter enable 2>/dev/null && dms greeter sync 2>/dev/null; then
+    log "DMS greeter configured."
+  else
+    warn "DMS greeter setup failed (no active session?). Run 'dms greeter enable && dms greeter sync' after first login."
+  fi
+else
+  warn "dms command not found after install; skipping greeter setup."
+fi
 
 log "DMS setup complete."

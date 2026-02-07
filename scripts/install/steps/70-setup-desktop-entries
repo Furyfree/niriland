@@ -11,11 +11,14 @@ ICONS_SRC="$REPO_ROOT/configs/base/.local/share/icons"
 HICOLOR_SRC="/usr/share/icons/hicolor/index.theme"
 HICOLOR_DST="$HOME/.local/share/icons/hicolor"
 HICOLOR_APPS_DST="$HICOLOR_DST/256x256/apps"
+DESKTOP_ENTRIES_CHANGED=false
+LAST_COPY_CHANGED=false
 
 copy_if_changed() {
   local src_path="$1"
   local dest_path="$2"
   local label="$3"
+  LAST_COPY_CHANGED=false
 
   mkdir -p "$(dirname "$dest_path")"
 
@@ -30,6 +33,7 @@ copy_if_changed() {
   fi
 
   cp -a "$src_path" "$dest_path"
+  LAST_COPY_CHANGED=true
   log "Deployed $label"
 }
 
@@ -44,6 +48,9 @@ deploy_spotlight_entries() {
   while IFS= read -r src_path; do
     local rel_path="${src_path#$APPLICATIONS_SRC/}"
     copy_if_changed "$src_path" "$APPLICATIONS_DST/$rel_path" "applications/$rel_path"
+    if [[ "$LAST_COPY_CHANGED" == "true" ]]; then
+      DESKTOP_ENTRIES_CHANGED=true
+    fi
   done < <(find "$APPLICATIONS_SRC" -mindepth 1 -maxdepth 1 \( -type f -o -type l \) | sort)
 }
 
@@ -61,7 +68,29 @@ deploy_hidden_overrides() {
     local rel_path="${src_path#$hidden_src/}"
     local dest_path="$APPLICATIONS_DST/$rel_path"
     copy_if_changed "$src_path" "$dest_path" "applications/$rel_path hidden override"
+    if [[ "$LAST_COPY_CHANGED" == "true" ]]; then
+      DESKTOP_ENTRIES_CHANGED=true
+    fi
   done < <(find "$hidden_src" \( -type f -o -type l \) | sort)
+}
+
+restart_dms_if_needed() {
+  if [[ "$DESKTOP_ENTRIES_CHANGED" != "true" ]]; then
+    log "No desktop entry changes detected, skipping DMS restart."
+    return 0
+  fi
+
+  if ! command -v systemctl >/dev/null 2>&1; then
+    warn "systemctl not found, skipping DMS restart."
+    return 0
+  fi
+
+  log "Desktop entries changed, restarting DMS."
+  if systemctl --user restart dms >/dev/null 2>&1; then
+    log "DMS restarted."
+  else
+    warn "Failed to restart dms user service (no active user session?)."
+  fi
 }
 
 deploy_hicolor_theme() {
@@ -98,6 +127,7 @@ log "Deploying desktop entries for DMS spotlight"
 deploy_spotlight_entries
 log "Applying hidden desktop entry overrides"
 deploy_hidden_overrides
+restart_dms_if_needed
 
 log "Deploying hicolor icon theme entries"
 deploy_hicolor_theme

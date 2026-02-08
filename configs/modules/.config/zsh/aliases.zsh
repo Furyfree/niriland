@@ -31,17 +31,5 @@ alias fman='compgen -c | fzf | xargs man'
 alias fzf-find='fd --type f | fzf'
 alias find='fd'
 
-# Network/VPN
-# DTU VPN
-alias vpn-dtu-up='nmcli connection up dtu-vpn'
-alias vpn-dtu-down='nmcli connection down dtu-vpn'
-
-# Own VPN
-alias vpn-up='nmcli connection up unifi-wg'
-alias vpn-down='nmcli connection down unifi-wg'
-
-# System Maintenance
-alias updategrub='sudo grub-mkconfig -o /boot/grub/grub.cfg'
-
 # AUR Helpers
 alias yay='paru'

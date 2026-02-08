@@ -26,6 +26,7 @@ alias nvimconfig="cd ~/.config/nvim && nvim ."
 alias n="nvim"
 alias ld='lazydocker'
 alias zed='zeditor'
+alias code='vscodium'
 
 # Search and Find
 alias fman='compgen -c | fzf | xargs man'

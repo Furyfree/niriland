@@ -35,6 +35,7 @@ STEPS=(
   "$STEPS_DIR/30-setup-shell"
   "$STEPS_DIR/32-setup-keyring"
   "$STEPS_DIR/35-setup-tools"
+  "$STEPS_DIR/36-setup-lazyvim"
 )
 
 if "$INSTALL_GAMING"; then

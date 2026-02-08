@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+VMWARE_PACKAGE="vmware-workstation"
+VMWARE_SERVICES=(
+  vmware-networks.service
+  vmware-usbarbitrator.service
+)
+
+log() {
+  printf '==> %s\n' "$*"
+}
+
+warn() {
+  printf 'WARN: %s\n' "$*" >&2
+}
+
+die() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage: niriland-vm-vmware [setup|status|help]
+
+Commands:
+  setup   Install and configure VMware Workstation services (default)
+  status  Show VMware service status
+  help    Show this help
+EOF
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+require_sudo() {
+  sudo -v || die "sudo authentication failed"
+}
+
+has_systemd_unit() {
+  local unit="$1"
+  [[ -f "/usr/lib/systemd/system/$unit" || -f "/etc/systemd/system/$unit" ]]
+}
+
+enable_service_if_present() {
+  local service="$1"
+
+  if has_systemd_unit "$service"; then
+    if sudo systemctl enable --now "$service"; then
+      log "$service enabled and started."
+    else
+      warn "Failed to enable/start $service."
+    fi
+  else
+    warn "$service not found; skipping."
+  fi
+}
+
+install_vmware() {
+  if pacman -Qq "$VMWARE_PACKAGE" >/dev/null 2>&1; then
+    log "$VMWARE_PACKAGE already installed, skipping."
+    return 0
+  fi
+
+  log "Installing $VMWARE_PACKAGE with pacman..."
+  if sudo pacman -S --needed --noconfirm "$VMWARE_PACKAGE"; then
+    return 0
+  fi
+
+  if command -v paru >/dev/null 2>&1; then
+    log "pacman install failed, trying paru..."
+    paru -S --needed --noconfirm "$VMWARE_PACKAGE"
+    return 0
+  fi
+
+  die "Failed to install $VMWARE_PACKAGE. Ensure Chaotic AUR is configured or install manually."
+}
+
+setup() {
+  local service
+
+  require_cmd pacman
+  require_sudo
+
+  install_vmware
+
+  for service in "${VMWARE_SERVICES[@]}"; do
+    enable_service_if_present "$service"
+  done
+
+  log "VMware setup complete."
+}
+
+show_status() {
+  local service
+
+  for service in "${VMWARE_SERVICES[@]}"; do
+    if has_systemd_unit "$service"; then
+      if systemctl is-active "$service" >/dev/null 2>&1; then
+        log "$service is active."
+      else
+        warn "$service is not active."
+      fi
+    else
+      warn "$service unit not found."
+    fi
+  done
+}
+
+case "${1:-setup}" in
+  setup)
+    setup
+    ;;
+  status)
+    show_status
+    ;;
+  help|--help|-h)
+    usage
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

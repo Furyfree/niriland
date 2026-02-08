@@ -8,7 +8,7 @@ alias ls='eza --icons --grid --group-directories-first'
 alias ll='eza -lah --icons --group-directories-first'
 alias lt='eza --tree --icons --group-directories-first'
 alias la='eza -a --icons --grid --group-directories-first'
-alias cat='bat'
+alias cat='bat -p'
 alias mkdir='mkdir -p'
 alias cd='z'
 alias ff="fzf --preview 'bat --style=numbers --color=always {}'"

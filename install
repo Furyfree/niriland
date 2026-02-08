@@ -30,7 +30,7 @@ STEPS=(
   "$STEPS_DIR/10-install-drivers"
   "$STEPS_DIR/15-install-packages"
   "$STEPS_DIR/20-deploy-configs"
-  "$STEPS_DIR/25-setup-theming"
+  "$STEPS_DIR/25-setup-backgrounds"
   "$STEPS_DIR/30-setup-shell"
   "$STEPS_DIR/32-setup-keyring"
   "$STEPS_DIR/35-setup-tools"
@@ -45,7 +45,6 @@ fi
 STEPS+=(
   "$STEPS_DIR/45-setup-dev"
   "$STEPS_DIR/50-setup-browser"
-  "$STEPS_DIR/55-setup-vm"
   "$STEPS_DIR/60-setup-certificates"
 )
 

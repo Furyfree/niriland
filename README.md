@@ -25,6 +25,7 @@ scripts/tools/niriland-update
 ```
 
 What it runs (in order):
+
 - `15-*`
 - `20-*`
 - `70-*`
@@ -42,6 +43,7 @@ During update step `20-*`, existing `~/.config/*` files are preserved (not overw
 - `git` installed (required by `bootstrap`)
 
 Notes:
+
 - The installer prompts for your sudo password and disk encryption password.
 - `05-setup-fde` configures TPM unlock for existing LUKS2 root setups.
 
@@ -56,6 +58,7 @@ curl -fsSL https://raw.githubusercontent.com/Furyfree/niriland/main/configs/syst
 ```
 
 Edit these fields before installing:
+
 - `disk_config.device_modifications[].device`: set your actual disk (for example `/dev/nvme0n1`)
 - `hostname`: set your machine hostname
 - `locale_config.kb_layout`: set your keyboard layout
@@ -69,6 +72,7 @@ archinstall --config archinstall-recommended.json
 ```
 
 Important:
+
 - The template uses `"wipe": true` and is destructive for the selected disk.
 - Do not keep Denmark/Copenhagen values unless you are actually in that locale.
 
@@ -89,6 +93,7 @@ You can run fully interactive (default) or set options via environment variables
 - If unset: interactive prompt (default `No`)
 
 AI model overrides (optional):
+
 - `NIRILAND_OLLAMA_MODEL_NVIDIA` (default: `qwen2.5-coder:14b`)
 - `NIRILAND_OLLAMA_MODEL_CPU` (default: `qwen2.5-coder:3b`)
 
@@ -103,12 +108,12 @@ NIRILAND_INSTALL_GAMING=true NIRILAND_INSTALL_AI=true ./install
 In order:
 
 1. `00-setup-pacman`
-2. `05-setup-fde`
-3. `10-install-drivers`
-4. `15-install-packages`
-5. `17-setup-dms`
+2. `01-setup-dms`
+3. `05-setup-fde`
+4. `10-install-drivers`
+5. `15-install-packages`
 6. `20-deploy-configs`
-7. `25-setup-theming`
+7. `25-setup-backgrounds`
 8. `30-setup-shell`
 9. `32-setup-keyring`
 10. `35-setup-tools`
@@ -120,6 +125,13 @@ In order:
 16. `70-setup-desktop-entries`
 17. `85-optimize-system`
 18. `99-post-install`
+
+Virtualization is intentionally not configured by default.
+
+Optional VM helper tools (after `35-setup-tools`):
+
+- `niriland-vm-libvirt setup`
+- `niriland-vm-vmware setup`
 
 ## Repository Layout
 
@@ -135,6 +147,7 @@ In order:
 ## Re-run Behavior
 
 Most steps are written to be safe on re-run:
+
 - package installs use `--needed`
 - file copy steps skip unchanged files
 - many system edits check before appending/changing
@@ -143,7 +156,7 @@ Most steps are written to be safe on re-run:
 
 - Log out or reboot after install (recommended).
 - Validate hardware-specific behavior (GPU drivers, TPM/FDE, printer devices).
-- If running headless/no session, re-run theme/session-dependent parts later in a user session.
+- If running headless/no session, re-run `bash scripts/install/steps/25-setup-backgrounds` later if you still need wallpaper files copied.
 
 ## Troubleshooting
 

@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+PACKAGES=(
+  qemu-desktop
+  virt-manager
+  libvirt
+  edk2-ovmf
+  swtpm
+  virglrenderer
+  dnsmasq
+)
+
+log() {
+  printf '==> %s\n' "$*"
+}
+
+warn() {
+  printf 'WARN: %s\n' "$*" >&2
+}
+
+die() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage: niriland-vm-libvirt [setup|status|help]
+
+Commands:
+  setup   Install libvirt/qemu packages and configure libvirtd (default)
+  status  Show libvirt service/network status
+  help    Show this help
+EOF
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+require_sudo() {
+  sudo -v || die "sudo authentication failed"
+}
+
+is_default_network_active() {
+  sudo virsh net-info default 2>/dev/null | grep -Eq '^Active:[[:space:]]+yes$'
+}
+
+is_default_network_autostart() {
+  sudo virsh net-info default 2>/dev/null | grep -Eq '^Autostart:[[:space:]]+yes$'
+}
+
+install_packages() {
+  local pkg
+  for pkg in "${PACKAGES[@]}"; do
+    if pacman -Qq "$pkg" >/dev/null 2>&1; then
+      log "$pkg already installed, skipping."
+      continue
+    fi
+
+    log "Installing $pkg..."
+    sudo pacman -S --needed --noconfirm "$pkg"
+  done
+}
+
+configure_libvirt() {
+  local target_user
+  local group_changed=false
+
+  target_user="${SUDO_USER:-${USER:-}}"
+  [[ -n "$target_user" ]] || die "Could not determine target user."
+
+  log "Enabling libvirtd.service"
+  sudo systemctl enable --now libvirtd.service
+
+  if id -nG "$target_user" | grep -qw libvirt; then
+    log "User $target_user is already in libvirt group."
+  else
+    log "Adding $target_user to libvirt group..."
+    sudo usermod -aG libvirt "$target_user"
+    group_changed=true
+  fi
+
+  if command -v virsh >/dev/null 2>&1; then
+    if sudo virsh net-info default >/dev/null 2>&1; then
+      if is_default_network_active; then
+        log "libvirt default network is already active."
+      else
+        log "Starting libvirt default network..."
+        if sudo virsh net-start default; then
+          log "libvirt default network started."
+        else
+          warn "Failed to start libvirt default network."
+        fi
+      fi
+
+      if is_default_network_autostart; then
+        log "libvirt default network autostart is already enabled."
+      else
+        log "Enabling libvirt default network autostart..."
+        sudo virsh net-autostart default
+      fi
+    else
+      warn "libvirt default network is missing; skipping network setup."
+    fi
+  else
+    warn "virsh not found; skipping libvirt network setup."
+  fi
+
+  if [[ "$group_changed" == "true" ]]; then
+    warn "Log out and back in (or reboot) for libvirt group changes to take effect."
+  fi
+}
+
+show_status() {
+  if systemctl is-enabled libvirtd.service >/dev/null 2>&1; then
+    log "libvirtd.service is enabled."
+  else
+    warn "libvirtd.service is not enabled."
+  fi
+
+  if systemctl is-active libvirtd.service >/dev/null 2>&1; then
+    log "libvirtd.service is active."
+  else
+    warn "libvirtd.service is not active."
+  fi
+
+  if command -v virsh >/dev/null 2>&1; then
+    log "virsh net-info default:"
+    sudo virsh net-info default || warn "Could not query default network."
+  else
+    warn "virsh not found."
+  fi
+}
+
+setup() {
+  require_cmd pacman
+  require_sudo
+  install_packages
+  configure_libvirt
+  log "Libvirt/qemu setup complete."
+}
+
+case "${1:-setup}" in
+  setup)
+    setup
+    ;;
+  status)
+    show_status
+    ;;
+  help|--help|-h)
+    usage
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

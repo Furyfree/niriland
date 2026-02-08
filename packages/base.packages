@@ -5,6 +5,7 @@ xdg-desktop-portal-gtk
 matugen
 cava
 qt6-multimedia-ffmpeg
+qt6ct
 brightnessctl
 wl-clipboard
 terminus-font
@@ -12,7 +13,10 @@ wlogout
 papirus-icon-theme
 ttf-jetbrains-mono-nerd
 ttf-jetbrains-mono
+inter-font
 gnome-themes-extra
+adw-gtk-theme
+bibata-cursor-theme
 woff2-font-awesome
 polkit-gnome
 seahorse

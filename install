@@ -31,6 +31,7 @@ STEPS=(
   "$STEPS_DIR/15-install-packages"
   "$STEPS_DIR/20-deploy-configs"
   "$STEPS_DIR/25-setup-backgrounds"
+  "$STEPS_DIR/28-setup-theming"
   "$STEPS_DIR/30-setup-shell"
   "$STEPS_DIR/32-setup-keyring"
   "$STEPS_DIR/35-setup-tools"

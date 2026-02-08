@@ -74,17 +74,18 @@ Current `install` execution order:
 5. `15-install-packages`
 6. `20-deploy-configs`
 7. `25-setup-backgrounds`
-8. `30-setup-shell`
-9. `32-setup-keyring`
-10. `35-setup-tools`
-11. `40-setup-gaming` (optional)
-12. `45-setup-dev`
-13. `50-setup-browser`
-14. `60-setup-certificates`
-15. `65-setup-ai` (optional)
-16. `70-setup-desktop-entries`
-17. `85-optimize-system`
-18. `99-post-install`
+8. `28-setup-theming`
+9. `30-setup-shell`
+10. `32-setup-keyring`
+11. `35-setup-tools`
+12. `40-setup-gaming` (optional)
+13. `45-setup-dev`
+14. `50-setup-browser`
+15. `60-setup-certificates`
+16. `65-setup-ai` (optional)
+17. `70-setup-desktop-entries`
+18. `85-optimize-system`
+19. `99-post-install`
 
 ## Step Responsibilities
 
@@ -129,6 +130,11 @@ Current `install` execution order:
 ### `25-setup-backgrounds`
 
 - Syncs backgrounds from `configs/backgrounds` to `~/Pictures/Wallpapers`.
+
+### `28-setup-theming`
+
+- Applies desktop theming via `gsettings` (GTK, icon, cursor, fonts, and font rendering options).
+- Skips values that are already set.
 
 ### `30-setup-shell`
 

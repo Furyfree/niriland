@@ -18,7 +18,16 @@ install_package \
   lib32-vulkan-icd-loader \
   gamemode \
   mangohud \
-  lib32-mangohud
+  lib32-mangohud \
+  protonup-qt \
+  dosbox \
+  inotify-tools \
+  scummvm \
+  timidity++ \
+  wget \
+  xdotool \
+  xorg-xwininfo \
+  yad
 
 require_paru
 install_aur_package modrinth-app-bin

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common"
+
+log "Applying desktop theming..."
+
+require_cmd gsettings
+
+set_gsetting() {
+  local schema="$1"
+  local key="$2"
+  local value="$3"
+
+  local current
+  current="$(gsettings get "$schema" "$key" 2>/dev/null || echo "")"
+
+  # gsettings wraps strings in single quotes for display
+  if [[ "$current" == "'$value'" || "$current" == "$value" ]]; then
+    log "$key already set to $value"
+    return 0
+  fi
+
+  gsettings set "$schema" "$key" "$value"
+  log "Set $key to $value"
+}
+
+# GTK theme
+set_gsetting org.gnome.desktop.interface gtk-theme "adw-gtk3-dark"
+set_gsetting org.gnome.desktop.interface color-scheme "prefer-dark"
+
+# Icons
+set_gsetting org.gnome.desktop.interface icon-theme "Papirus-Dark"
+
+# Cursor
+set_gsetting org.gnome.desktop.interface cursor-theme "Bibata-Modern-Ice"
+set_gsetting org.gnome.desktop.interface cursor-size 24
+
+# Fonts
+set_gsetting org.gnome.desktop.interface font-name "Inter 11"
+set_gsetting org.gnome.desktop.interface document-font-name "Inter 11"
+set_gsetting org.gnome.desktop.interface monospace-font-name "JetBrainsMono Nerd Font 11"
+
+# Font rendering
+set_gsetting org.gnome.desktop.interface font-antialiasing "rgba"
+set_gsetting org.gnome.desktop.interface font-hinting "slight"
+
+log_success "Desktop theming applied."

@@ -108,7 +108,7 @@ NIRILAND_INSTALL_GAMING=true NIRILAND_INSTALL_AI=true ./install
 In order:
 
 1. `00-setup-pacman`
-2. `01-setup-dms`
+2. `01-setup-dms` (interactive)
 3. `05-setup-fde`
 4. `10-install-drivers`
 5. `15-install-packages`

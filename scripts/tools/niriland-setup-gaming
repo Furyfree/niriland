@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+PACMAN_PACKAGES=(
+  steam
+  prismlauncher
+  faugus-launcher
+  wowup-cf-bin
+  wine
+  winetricks
+  vulkan-icd-loader
+  lib32-vulkan-icd-loader
+  gamemode
+  mangohud
+  lib32-mangohud
+  protonup-qt
+  dosbox
+  inotify-tools
+  scummvm
+  timidity++
+  wget
+  xdotool
+  xorg-xwininfo
+  yad
+)
+
+AUR_PACKAGES=(
+  modrinth-app-bin
+)
+
+log() {
+  printf '==> %s\n' "$*"
+}
+
+warn() {
+  printf 'WARN: %s\n' "$*" >&2
+}
+
+die() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage: niriland-setup-gaming [setup|status|help]
+
+Commands:
+  setup   Install gaming packages and launchers (default)
+  status  Show whether expected packages are installed
+  help    Show this help
+EOF
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+require_sudo() {
+  sudo -v || die "sudo authentication failed"
+}
+
+install_package_if_missing() {
+  local pkg
+
+  for pkg in "$@"; do
+    if pacman -Qq "$pkg" >/dev/null 2>&1; then
+      log "$pkg already installed, skipping."
+      continue
+    fi
+
+    log "Installing $pkg..."
+    sudo pacman -S --needed --noconfirm "$pkg"
+  done
+}
+
+install_aur_package_if_missing() {
+  local pkg
+
+  for pkg in "$@"; do
+    if pacman -Qq "$pkg" >/dev/null 2>&1; then
+      log "$pkg already installed, skipping."
+      continue
+    fi
+
+    log "Installing $pkg from AUR..."
+    paru -S --needed --noconfirm "$pkg"
+  done
+}
+
+show_package_status() {
+  local pkg
+
+  for pkg in "${PACMAN_PACKAGES[@]}" "${AUR_PACKAGES[@]}"; do
+    if pacman -Qq "$pkg" >/dev/null 2>&1; then
+      log "$pkg is installed."
+    else
+      warn "$pkg is missing."
+    fi
+  done
+}
+
+setup_gaming() {
+  require_cmd pacman
+  require_cmd sudo
+  require_cmd paru
+  require_sudo
+
+  log "Installing gaming apps..."
+  install_package_if_missing "${PACMAN_PACKAGES[@]}"
+  install_aur_package_if_missing "${AUR_PACKAGES[@]}"
+  log "Gaming apps setup complete."
+}
+
+case "${1:-setup}" in
+  setup)
+    setup_gaming
+    ;;
+  status)
+    show_package_status
+    ;;
+  help|--help|-h)
+    usage
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

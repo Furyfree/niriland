@@ -14,7 +14,6 @@ This document describes the current implementation in this repository.
 
 - Sources shared helpers from:
   - `scripts/install/lib/common`
-  - `scripts/install/lib/options`
 - Collects:
   - sudo password (`read_system_pass`)
   - disk encryption password (`read_luks_pass`)
@@ -45,20 +44,9 @@ Fields expected to be customized per machine/location:
 - `mirror_config.mirror_regions`
 - `timezone`
 
-## Install Options
+## Optional Tool Overrides
 
-These are implemented in `scripts/install/lib/options`:
-
-- `NIRILAND_INSTALL_GAMING`:
-  - true values: `1`, `true`, `yes`, `y` (case-insensitive variants included)
-  - otherwise false
-  - if unset: interactive prompt (default: `No`)
-- `NIRILAND_INSTALL_AI`:
-  - true values: `1`, `true`, `yes`, `y` (case-insensitive variants included)
-  - otherwise false
-  - if unset: interactive prompt (default: `No`)
-
-AI model overrides used by `65-setup-ai`:
+AI model overrides used by `scripts/tools/niriland-setup-ai`:
 
 - `NIRILAND_OLLAMA_MODEL_NVIDIA` (default: `qwen2.5-coder:14b`)
 - `NIRILAND_OLLAMA_MODEL_CPU` (default: `qwen2.5-coder:3b`)
@@ -78,14 +66,12 @@ Current `install` execution order:
 9. `30-setup-shell`
 10. `32-setup-keyring`
 11. `35-setup-tools`
-12. `40-setup-gaming` (optional)
-13. `45-setup-dev`
-14. `50-setup-browser`
-15. `60-setup-certificates`
-16. `65-setup-ai` (optional)
-17. `70-setup-desktop-entries`
-18. `85-optimize-system`
-19. `99-post-install`
+12. `45-setup-dev`
+13. `50-setup-browser`
+14. `60-setup-certificates`
+15. `70-setup-desktop-entries`
+16. `85-optimize-system`
+17. `99-post-install`
 
 ## Step Responsibilities
 
@@ -151,10 +137,6 @@ Current `install` execution order:
 - Syncs `scripts/tools/*` to `~/.local/bin/niriland`.
 - Ensures PATH entries in `~/.zprofile` and `~/.profile`.
 
-### `40-setup-gaming` (optional)
-
-- Installs gaming packages (Steam, launchers, etc.).
-
 ### `45-setup-dev`
 
 - Installs and enables Docker.
@@ -178,14 +160,18 @@ Current `install` execution order:
   - `niriland-vm-libvirt`
   - `niriland-vm-vmware`
 
+### Gaming (manual tool)
+
+- `scripts/tools/niriland-setup-gaming` installs gaming packages (Steam, launchers, etc.).
+
 ### `60-setup-certificates`
 
 - Copies `configs/system/etc/certs/Eduroam_aug2020.pem` to `/etc/certs/`.
 - Runs `update-ca-trust`.
 
-### `65-setup-ai` (optional)
+### AI (manual tool)
 
-- Installs Opencode and Codex only when missing.
+- `scripts/tools/niriland-setup-ai` installs Opencode and Codex only when missing.
 - Installs/enables Ollama and Docker.
 - Detects NVIDIA and chooses:
   - NVIDIA service template + CUDA OpenWebUI image + larger model

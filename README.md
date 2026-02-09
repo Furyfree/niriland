@@ -1,6 +1,6 @@
 # Niriland
 
-Niriland is an Arch Linux post-install/bootstrap setup for a Niri + DMS desktop, packages, configs, tooling, browser setup, certs, and optional AI/gaming stacks.
+Niriland is an Arch Linux post-install/bootstrap setup for a Niri + DMS desktop, packages, configs, tooling, browser setup, and certificates.
 
 ## Quick Start
 
@@ -76,33 +76,6 @@ Important:
 - The template uses `"wipe": true` and is destructive for the selected disk.
 - Do not keep Denmark/Copenhagen values unless you are actually in that locale.
 
-## Install Options
-
-You can run fully interactive (default) or set options via environment variables.
-
-### Gaming
-
-- Variable: `NIRILAND_INSTALL_GAMING`
-- Truthy values: `1`, `true`, `yes`, `y` (case-insensitive variants supported)
-- If unset: interactive prompt (default `No`)
-
-### AI
-
-- Variable: `NIRILAND_INSTALL_AI`
-- Truthy values: `1`, `true`, `yes`, `y` (case-insensitive variants supported)
-- If unset: interactive prompt (default `No`)
-
-AI model overrides (optional):
-
-- `NIRILAND_OLLAMA_MODEL_NVIDIA` (default: `qwen2.5-coder:14b`)
-- `NIRILAND_OLLAMA_MODEL_CPU` (default: `qwen2.5-coder:3b`)
-
-Example:
-
-```bash
-NIRILAND_INSTALL_GAMING=true NIRILAND_INSTALL_AI=true ./install
-```
-
 ## What `install` Runs
 
 In order:
@@ -118,28 +91,33 @@ In order:
 9. `30-setup-shell`
 10. `32-setup-keyring`
 11. `35-setup-tools`
-12. `40-setup-gaming` (optional)
-13. `45-setup-dev`
-14. `50-setup-browser`
-15. `60-setup-certificates`
-16. `65-setup-ai` (optional)
-17. `70-setup-desktop-entries`
-18. `85-optimize-system`
-19. `99-post-install`
+12. `45-setup-dev`
+13. `50-setup-browser`
+14. `60-setup-certificates`
+15. `70-setup-desktop-entries`
+16. `85-optimize-system`
+17. `99-post-install`
 
 Virtualization is intentionally not configured by default.
 
-Optional VM helper tools (after `35-setup-tools`):
+Optional helper tools (run after `35-setup-tools` or after the full install):
 
 - `niriland-vm-libvirt setup`
 - `niriland-vm-vmware setup`
+- `niriland-setup-gaming`
+- `niriland-setup-ai`
+
+AI model overrides (optional):
+
+- `NIRILAND_OLLAMA_MODEL_NVIDIA` (default: `qwen2.5-coder:14b`)
+- `NIRILAND_OLLAMA_MODEL_CPU` (default: `qwen2.5-coder:3b`)
 
 ## Repository Layout
 
 - `bootstrap`: clone/update + run installer entrypoint
 - `install`: main orchestrator
 - `scripts/install/steps/`: numbered install steps
-- `scripts/install/lib/`: shared functions and options
+- `scripts/install/lib/`: shared functions
 - `configs/base/`: user-level files copied to `$HOME`
 - `configs/system/`: system-level files used by steps
 - `packages/*.packages`: package manifests for pacman/paru
@@ -172,5 +150,9 @@ bash scripts/install/steps/50-setup-browser
   - `15-install-packages` for base/chaotic/AUR packages
 
 - For AI setup:
+  - run `niriland-setup-ai`
   - confirm Docker and Ollama services are running
   - confirm the selected OpenWebUI service template exists in `configs/system/etc/systemd/system/`
+
+- For gaming setup:
+  - run `niriland-setup-gaming`

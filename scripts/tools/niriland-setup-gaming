@@ -50,6 +50,9 @@ Commands:
   setup   Install gaming packages and launchers (default)
   status  Show whether expected packages are installed
   help    Show this help
+
+Note:
+  setup is intended to be run once per machine.
 EOF
 }
 

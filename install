@@ -27,7 +27,6 @@ STEPS=(
   "$STEPS_DIR/36-setup-lazyvim"
   "$STEPS_DIR/45-setup-dev"
   "$STEPS_DIR/50-setup-browser"
-  "$STEPS_DIR/60-setup-certificates"
 )
 
 STEPS+=(

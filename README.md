@@ -1,6 +1,6 @@
 # Niriland
 
-Niriland is an Arch Linux post-install/bootstrap setup for a Niri + DMS desktop, packages, configs, tooling, browser setup, and certificates.
+Niriland is an Arch Linux post-install/bootstrap setup for a Niri + DMS desktop, packages, configs, tooling, browser setup, and optional helper tools.
 
 ## Quick Start
 
@@ -91,9 +91,9 @@ In order:
 9. `30-setup-shell`
 10. `32-setup-keyring`
 11. `35-setup-tools`
-12. `45-setup-dev`
-13. `50-setup-browser`
-14. `60-setup-certificates`
+12. `36-setup-lazyvim`
+13. `45-setup-dev`
+14. `50-setup-browser`
 15. `70-setup-desktop-entries`
 16. `85-optimize-system`
 17. `99-post-install`
@@ -106,6 +106,7 @@ Optional helper tools (run after `35-setup-tools` or after the full install):
 - `niriland-vm-vmware setup`
 - `niriland-setup-gaming`
 - `niriland-setup-ai`
+- `niriland-setup-certificates setup`
 
 AI model overrides (optional):
 

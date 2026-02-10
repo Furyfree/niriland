@@ -66,9 +66,9 @@ Current `install` execution order:
 9. `30-setup-shell`
 10. `32-setup-keyring`
 11. `35-setup-tools`
-12. `45-setup-dev`
-13. `50-setup-browser`
-14. `60-setup-certificates`
+12. `36-setup-lazyvim`
+13. `45-setup-dev`
+14. `50-setup-browser`
 15. `70-setup-desktop-entries`
 16. `85-optimize-system`
 17. `99-post-install`
@@ -137,6 +137,12 @@ Current `install` execution order:
 - Syncs `scripts/tools/*` to `~/.local/bin/niriland`.
 - Ensures PATH entries in `~/.zprofile` and `~/.profile`.
 
+### `36-setup-lazyvim`
+
+- Skips setup when an existing LazyVim config is already detected.
+- Backs up existing Neovim directories under `~/.config`, `~/.local/share`, `~/.local/state`, and `~/.cache`.
+- Clones `https://github.com/LazyVim/starter` into `~/.config/nvim` and removes its `.git` directory.
+
 ### `45-setup-dev`
 
 - Installs and enables Docker.
@@ -164,10 +170,10 @@ Current `install` execution order:
 
 - `scripts/tools/niriland-setup-gaming` installs gaming packages (Steam, launchers, etc.).
 
-### `60-setup-certificates`
+### Certificates (manual tool)
 
-- Copies `configs/system/etc/certs/Eduroam_aug2020.pem` to `/etc/certs/`.
-- Runs `update-ca-trust`.
+- `scripts/tools/niriland-setup-certificates` copies `configs/system/etc/certs/Eduroam_aug2020.pem` to `/etc/certs/`.
+- Refreshes trust store with `update-ca-trust`.
 
 ### AI (manual tool)
 

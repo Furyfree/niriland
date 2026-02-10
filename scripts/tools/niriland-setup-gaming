@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+PRISMLAUNCHER_MRPACK="${REPO_ROOT}/configs/base/.local/share/minecraft/Main 1.0.0.mrpack"
+
 PACMAN_PACKAGES=(
   steam
   prismlauncher
@@ -23,10 +27,6 @@ PACMAN_PACKAGES=(
   xdotool
   xorg-xwininfo
   yad
-)
-
-AUR_PACKAGES=(
-  modrinth-app-bin
 )
 
 log() {
@@ -75,20 +75,6 @@ install_package_if_missing() {
   done
 }
 
-install_aur_package_if_missing() {
-  local pkg
-
-  for pkg in "$@"; do
-    if pacman -Qq "$pkg" >/dev/null 2>&1; then
-      log "$pkg already installed, skipping."
-      continue
-    fi
-
-    log "Installing $pkg from AUR..."
-    paru -S --needed --noconfirm "$pkg"
-  done
-}
-
 show_package_status() {
   local pkg
 
@@ -104,12 +90,18 @@ show_package_status() {
 setup_gaming() {
   require_cmd pacman
   require_cmd sudo
-  require_cmd paru
   require_sudo
 
   log "Installing gaming apps..."
   install_package_if_missing "${PACMAN_PACKAGES[@]}"
-  install_aur_package_if_missing "${AUR_PACKAGES[@]}"
+
+  if [[ -f "${PRISMLAUNCHER_MRPACK}" ]]; then
+    log "Importing PrismLauncher pack: ${PRISMLAUNCHER_MRPACK}"
+    prismlauncher -I "${PRISMLAUNCHER_MRPACK}"
+  else
+    warn "PrismLauncher pack not found, skipping import: ${PRISMLAUNCHER_MRPACK}"
+  fi
+
   log "Gaming apps setup complete."
 }
 

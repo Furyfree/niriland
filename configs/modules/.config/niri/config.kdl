@@ -5,7 +5,6 @@
 
 include "modular/core.kdl"
 include "modular/input.kdl"
-include "modular/monitors.kdl"
 include "modular/layout.kdl"
 include "modular/env.kdl"
 include "modular/animations.kdl"

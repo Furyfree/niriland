@@ -36,7 +36,7 @@ git -C "$REPO_ROOT" pull --ff-only
 # 15-* and 99-* include privileged operations.
 read_system_pass
 
-for pattern in 15-* 20-* 70-* 99-*; do
+for pattern in 15-* 20-* 35-* 70-* 99-*; do
   found=false
 
   for step in "$REPO_ROOT/scripts/install/steps"/$pattern; do

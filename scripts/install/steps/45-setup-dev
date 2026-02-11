@@ -90,6 +90,13 @@ require_cmd cargo
 cargo install cargo-update 2>/dev/null || true
 cargo install nirius 2>/dev/null || true
 
+# Niri user session PATH may omit ~/.cargo/bin.
+# Expose nirius from ~/.local/bin so keybind spawns can resolve it reliably.
+if [[ -x "$HOME/.cargo/bin/nirius" ]]; then
+  mkdir -p "$HOME/.local/bin"
+  ln -sf "$HOME/.cargo/bin/nirius" "$HOME/.local/bin/nirius"
+fi
+
 if [[ "$GROUP_CHANGES" == "true" ]]; then
   warn "Log out and back in (or reboot) for new group memberships to take effect."
 fi

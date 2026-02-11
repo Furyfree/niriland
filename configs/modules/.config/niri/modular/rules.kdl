@@ -41,6 +41,7 @@ window-rule {
     match app-id=r#"^org\.wezfurlong\.wezterm$"#
     match app-id="Alacritty"
     match app-id="zen"
+    match app-id="helium"
     match app-id="com.mitchellh.ghostty"
     match app-id="kitty"
     draw-border-with-background false
@@ -48,6 +49,7 @@ window-rule {
 
 window-rule {
     match app-id=r#"firefox$"# title="^Picture-in-Picture$"
+    match app-id=r#"helium$"# title="^Picture-in-Picture$"
     match app-id="zoom"
     open-floating true
 }

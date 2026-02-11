@@ -7,38 +7,33 @@ source "$SCRIPT_DIR/../lib/common"
 
 log "Running post-install tasks"
 
-if command -v fc-cache >/dev/null 2>&1; then
-  log "Refreshing font cache"
-  fc-cache -fv >/dev/null
-else
-  warn "fc-cache not found, skipping font cache refresh."
-fi
+require_cmd fc-cache
+log "Refreshing font cache"
+fc-cache -fv >/dev/null
 
 if [[ -d "$HOME/.local/share/applications" ]]; then
-  if command -v update-desktop-database >/dev/null 2>&1; then
-    log "Refreshing desktop entry database"
-    run_sudo update-desktop-database "$HOME/.local/share/applications" >/dev/null
-  else
-    warn "update-desktop-database not found, skipping desktop database refresh."
-  fi
+  require_cmd update-desktop-database
+  log "Refreshing desktop entry database"
+  update-desktop-database "$HOME/.local/share/applications" >/dev/null
 fi
 
 if [[ -f "$HOME/.local/share/icons/hicolor/index.theme" ]]; then
-  if command -v gtk-update-icon-cache >/dev/null 2>&1; then
-    log "Refreshing icon cache"
-    gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor"
-  else
-    warn "gtk-update-icon-cache not found, skipping icon cache refresh."
-  fi
+  require_cmd gtk-update-icon-cache
+  log "Refreshing icon cache"
+  gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor"
 fi
 
-
-if command -v limine-snapper-sync >/dev/null 2>&1; then
-  log "Syncing limine-snapper"
-  run_sudo limine-snapper-sync
+require_cmd dms
+log "Restarting DMS user service"
+if dms restart >/dev/null 2>&1; then
+  log "DMS restarted."
 else
-  warn "limine-snapper-sync not found, skipping limine-snapper sync."
+  warn "Failed to restart dms user service (no active user session?)."
 fi
+
+require_cmd limine-snapper-sync
+log "Syncing limine-snapper"
+run_sudo limine-snapper-sync
 
 log_success "Post-install tasks complete."
 warn "Log out or reboot to ensure shell, group, and PAM changes are fully applied."

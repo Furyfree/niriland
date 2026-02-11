@@ -1,3 +1,6 @@
+// Niriland config
+include "../../.local/share/niriland/configs/modules/.config/niri/config.kdl"
+
 // DMS managed files
 include "dms/colors.kdl"
 include "dms/layout.kdl"
@@ -6,5 +9,7 @@ include "dms/binds.kdl"
 include "dms/outputs.kdl"
 include "dms/cursor.kdl"
 
-// Niriland config
-include "../../.local/share/niriland/configs/modules/.config/niri/config.kdl"
+// User overrides
+// Include custom files below this line.
+// Later includes override settings defined above.
+// include "user/overrides.kdl"

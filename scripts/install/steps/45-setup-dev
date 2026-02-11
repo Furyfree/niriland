@@ -81,6 +81,15 @@ else
   fi
 fi
 
+# ====================
+# Cargo Tools
+# ====================
+log "Installing Cargo tools..."
+require_cmd cargo
+
+cargo install cargo-update 2>/dev/null || true
+cargo install nirius 2>/dev/null || true
+
 if [[ "$GROUP_CHANGES" == "true" ]]; then
   warn "Log out and back in (or reboot) for new group memberships to take effect."
 fi

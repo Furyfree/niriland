@@ -1,6 +1,7 @@
 binds {
     // === System & Overview ===
     Mod+D repeat=false { toggle-overview; }
+    Mod+O repeat=false { toggle-overview; }
     Mod+Tab repeat=false { toggle-overview; }
     Mod+Shift+Slash { show-hotkey-overlay; }
 
@@ -15,8 +16,9 @@ binds {
     Mod+M hotkey-overlay-title="Task Manager" {
         spawn "dms" "ipc" "call" "processlist" "focusOrToggle";
     }
+    Mod+Shift+O hotkey-overlay-title="Obsidian" { spawn "nirius" "focus-or-spawn" "--app-id" "obsidian" "--" "obsidian"; }
 
-    Super+X hotkey-overlay-title="Power Menu: Toggle" { spawn "dms" "ipc" "call" "powermenu" "toggle"; }
+    Mod+Shift+L hotkey-overlay-title="Power Menu: Toggle" { spawn "dms" "ipc" "call" "powermenu" "toggle"; }
     Mod+Comma hotkey-overlay-title="Settings" {
         spawn "dms" "ipc" "call" "settings" "focusOrToggle";
     }
@@ -70,32 +72,25 @@ binds {
     }
 
     // === Window Management ===
-    Mod+Q repeat=false { close-window; }
+    Mod+W repeat=false { close-window; }
     Mod+F { maximize-column; }
-    Mod+Shift+F { fullscreen-window; }
-    Mod+Shift+T { toggle-window-floating; }
+    F11 { fullscreen-window; }
+    Mod+Shift+F hotkey-overlay-title="Files" { spawn "nautilus"; }
+    Super+Shift+Q { toggle-window-floating; }
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
-    Mod+W { toggle-column-tabbed-display; }
+    Super+Shift+T { toggle-column-tabbed-display; }
 
     // === Focus Navigation ===
     Mod+Left  { focus-column-left; }
     Mod+Down  { focus-window-down; }
     Mod+Up    { focus-window-up; }
     Mod+Right { focus-column-right; }
-    Mod+H     { focus-column-left; }
-    Mod+J     { focus-window-down; }
-    Mod+K     { focus-window-up; }
-    Mod+L     { focus-column-right; }
 
     // === Window Movement ===
     Mod+Shift+Left  { move-column-left; }
     Mod+Shift+Down  { move-window-down; }
     Mod+Shift+Up    { move-window-up; }
     Mod+Shift+Right { move-column-right; }
-    Mod+Shift+H     { move-column-left; }
-    Mod+Shift+J     { move-window-down; }
-    Mod+Shift+K     { move-window-up; }
-    Mod+Shift+L     { move-column-right; }
 
     // === Column Navigation ===
     Mod+Home { focus-column-first; }

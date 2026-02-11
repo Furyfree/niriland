@@ -7,3 +7,49 @@ recent-windows {
         Alt+Shift+grave { previous-window filter="app-id"; }
     }
 }
+
+binds {
+    // === Application Focus-or-Spawn (single-instance apps) ===
+    Mod+Shift+P hotkey-overlay-title="1Password" {
+        spawn "nirius" "focus-or-spawn" "--app-id" "1password" "--" "1password";
+    }
+    Mod+Shift+G hotkey-overlay-title="Signal" {
+        spawn "nirius" "focus-or-spawn" "--app-id" "signal" "--" "signal-desktop";
+    }
+    Mod+Shift+E hotkey-overlay-title="Fastmail" {
+        spawn "nirius" "focus-or-spawn" "--title" "Fastmail" "--" "niriland-launch-webapp" "https://app.fastmail.com/";
+    }
+    Mod+Shift+B hotkey-overlay-title="Browser" {
+        spawn "sh" "-lc" "nirius focus-or-spawn --app-id \"$(niriland-get-default-browser)\" -- niriland-launch-browser";
+    }
+
+    // === Editors & Terminal: Spawn (always new instance) ===
+    Mod+Shift+Z hotkey-overlay-title="Zed (new)" {
+        spawn "env" "WAYLAND_DISPLAY=" "zeditor";
+    }
+    Mod+Shift+V hotkey-overlay-title="VSCodium (new)" {
+        spawn "codium" "--enable-features=UseOzonePlatform,WaylandWindowDecorations" "--ozone-platform=wayland";
+    }
+    Mod+Return hotkey-overlay-title="Terminal (new)" {
+        spawn "ghostty";
+    }
+
+    // === Editors & Terminal: Focus-or-Spawn (reuse existing) ===
+    Mod+Alt+Z hotkey-overlay-title="Zed (focus)" {
+        spawn "nirius" "focus-or-spawn" "--app-id" "dev.zed.Zed" "--" "env" "WAYLAND_DISPLAY=" "zeditor";
+    }
+    Mod+Alt+V hotkey-overlay-title="VSCodium (focus)" {
+        spawn "nirius" "focus-or-spawn" "--app-id" "codium-url-handler" "--" "codium" "--enable-features=UseOzonePlatform,WaylandWindowDecorations" "--ozone-platform=wayland";
+    }
+    Mod+Alt+Return hotkey-overlay-title="Terminal (focus)" {
+        spawn "nirius" "focus-or-spawn" "--app-id" "com.mitchellh.ghostty" "--" "ghostty";
+    }
+
+    // === Screenshots (override DMS defaults) ===
+    Mod+Shift+S { screenshot; }
+
+    // === Lock ===
+    Mod+L hotkey-overlay-title="Lock Screen" {
+        spawn "dms" "ipc" "call" "lock" "lock";
+    }
+}

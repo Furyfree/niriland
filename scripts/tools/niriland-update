@@ -64,4 +64,9 @@ done
 
 clean_system_pass
 
+if command -v cargo-install-update >/dev/null 2>&1; then
+  log "Updating Cargo-installed tools..."
+  cargo install-update --all || warn "Cargo install-update failed."
+fi
+
 log_success "Update complete."

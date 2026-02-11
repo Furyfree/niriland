@@ -108,6 +108,7 @@ Optional helper tools (run after `35-setup-tools` or after the full install):
 - `niriland-setup-gaming`
 - `niriland-setup-ai`
 - `niriland-setup-certificates setup`
+- `niriland-focus-or-launch '^signal$' -- signal-desktop`
 
 AI model overrides (optional):
 

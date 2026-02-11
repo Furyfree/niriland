@@ -93,10 +93,11 @@ In order:
 11. `35-setup-tools`
 12. `36-setup-lazyvim`
 13. `45-setup-dev`
-14. `50-setup-browser`
-15. `70-setup-desktop-entries`
-16. `85-optimize-system`
-17. `99-post-install`
+14. `46-setup-vscodium`
+15. `50-setup-browser`
+16. `70-setup-desktop-entries`
+17. `85-optimize-system`
+18. `99-post-install`
 
 Virtualization is intentionally not configured by default.
 
@@ -131,6 +132,7 @@ Most steps are written to be safe on re-run:
 - package installs use `--needed`
 - file copy steps skip unchanged files
 - many system edits check before appending/changing
+- `46-setup-vscodium` installs only missing extensions from `packages/vscodium.extensions`; already-installed entries are skipped quietly, and only new installs/failures are logged
 
 ## What You May Still Need To Do Manually
 

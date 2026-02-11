@@ -68,10 +68,11 @@ Current `install` execution order:
 11. `35-setup-tools`
 12. `36-setup-lazyvim`
 13. `45-setup-dev`
-14. `50-setup-browser`
-15. `70-setup-desktop-entries`
-16. `85-optimize-system`
-17. `99-post-install`
+14. `46-setup-vscodium`
+15. `50-setup-browser`
+16. `70-setup-desktop-entries`
+17. `85-optimize-system`
+18. `99-post-install`
 
 ## Step Responsibilities
 
@@ -149,6 +150,16 @@ Current `install` execution order:
 - Adds target user to required groups.
 - Installs mise + platformio-core.
 - Installs PlatformIO udev rules when missing.
+
+### `46-setup-vscodium`
+
+- Installs VSCodium extensions listed in `packages/vscodium.extensions`.
+- Skips blank/comment lines in the extension list.
+- Skips already-installed extensions quietly.
+- Logs each extension only when a new install is attempted.
+- Warns and continues if an extension install fails.
+- Logs a completion summary with installed/skipped/failed counts.
+- Warns and skips when the extensions file is missing.
 
 ### `50-setup-browser`
 

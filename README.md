@@ -1,12 +1,14 @@
 # Niriland
 
-Niriland is an Arch Linux post-install/bootstrap setup for a Niri + DMS desktop, packages, configs, tooling, browser setup, and optional helper tools.
+Niriland is an Arch Linux post-install setup for a Niri + DMS desktop with curated packages, configs, and helper tooling.
 
 ## Quick Start
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Furyfree/niriland/main/bootstrap | bash
 ```
+
+`bootstrap` clones (or updates) the repo into `~/.local/share/niriland` by default, then runs `install`.
 
 ## Local Usage
 
@@ -16,26 +18,6 @@ cd niriland
 ./install
 ```
 
-## Updating Existing Installs
-
-Use the updater tool to pull the latest repo changes and run the update subset:
-
-```bash
-scripts/tools/niriland-update
-```
-
-What it runs (in order):
-
-- `15-*`
-- `20-*`
-- `35-*`
-- `70-*`
-- `99-*`
-
-During update step `20-*`, existing `~/.config/*` files are preserved (not overwritten).
-
-`niriland-update` uses the current repo when run inside one, otherwise falls back to `NIRILAND_DIR` or `~/.local/share/niriland`.
-
 ## Requirements
 
 - Arch Linux with `systemd`
@@ -43,49 +25,21 @@ During update step `20-*`, existing `~/.config/*` files are preserved (not overw
 - `sudo` access
 - `git` installed (required by `bootstrap`)
 
-Notes:
+Installer prompts:
 
-- The installer prompts for your sudo password and disk encryption password.
-- `05-setup-fde` configures TPM unlock for existing LUKS2 root setups.
+- System password for `sudo`
+- LUKS password (empty input reuses system password)
+- Git name/email confirmation or optional override
 
-## Recommended Archinstall Baseline
+## Install Flow
 
-Use `configs/system/archinstall/recommended.json` as a starting profile before running Niriland.
-
-Fetch template:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Furyfree/niriland/main/configs/system/archinstall/recommended.json -o archinstall-recommended.json
-```
-
-Edit these fields before installing:
-
-- `disk_config.device_modifications[].device`: set your actual disk (for example `/dev/nvme0n1`)
-- `hostname`: set your machine hostname
-- `locale_config.kb_layout`: set your keyboard layout
-- `mirror_config.mirror_regions`: set your country/region mirrors
-- `timezone`: set your timezone (for example `America/New_York`)
-
-Then run Archinstall with the edited profile:
-
-```bash
-archinstall --config archinstall-recommended.json
-```
-
-Important:
-
-- The template uses `"wipe": true` and is destructive for the selected disk.
-- Do not keep Denmark/Copenhagen values unless you are actually in that locale.
-
-## What `install` Runs
-
-In order:
+`install` runs these steps in order:
 
 1. `00-setup-pacman`
-2. `01-setup-dms` (interactive)
-3. `05-setup-fde`
-4. `10-install-drivers`
-5. `15-install-packages`
+2. `05-setup-fde`
+3. `10-install-drivers`
+4. `15-install-packages`
+5. `17-setup-dms`
 6. `20-deploy-configs`
 7. `25-setup-backgrounds`
 8. `28-setup-theming`
@@ -100,69 +54,108 @@ In order:
 17. `85-optimize-system`
 18. `99-post-install`
 
-Virtualization is intentionally not configured by default.
+Notes:
 
-Optional helper tools (run after `35-setup-tools` or after the full install):
+- `05-setup-fde` skips automatically if no TPM device is present.
+- Several DMS/systemd user operations warn (instead of failing) when no active user session exists.
+- Virtualization is intentionally opt-in via helper tools.
 
-- `niriland-vm-libvirt setup`
-- `niriland-vm-vmware setup`
-- `niriland-setup-gaming`
-- `niriland-setup-ai`
-- `niriland-setup-certificates setup`
-- `niriland-focus-or-launch '^signal$' -- signal-desktop`
+## Updating Existing Installs
 
-AI model overrides (optional):
+Use:
 
-- `NIRILAND_OLLAMA_MODEL_NVIDIA` (default: `qwen2.5-coder:14b`)
-- `NIRILAND_OLLAMA_MODEL_CPU` (default: `qwen2.5-coder:3b`)
+```bash
+scripts/tools/niriland-update
+```
+
+Update behavior:
+
+- Resolves repo from current script location, current directory, or `NIRILAND_DIR`.
+- Requires a clean git worktree (fails if local changes exist).
+- Runs `git pull --ff-only`.
+- Runs step subsets in order: `15-*`, `20-*`, `35-*`, `70-*`, `99-*`.
+- Forces `NIRILAND_CONFIG_DEPLOY_MODE=preserve` for `20-*` so existing `~/.config/*` files are not overwritten.
+- If `cargo-install-update` is installed, runs `cargo install-update --all` at the end.
+
+## Optional Helper Tools
+
+After `35-setup-tools`, scripts are copied to `~/.local/bin/niriland` and PATH is added in `~/.zprofile` and `~/.profile`.
+
+- `niriland-update`
+- `niriland-setup-ai [setup|status]`
+- `niriland-setup-gaming [setup|status]`
+- `niriland-setup-certificates [setup|status]`
+- `niriland-setup-fingerprint [--remove]`
+- `niriland-vm-libvirt [setup|status]`
+- `niriland-vm-vmware [setup|status]`
+- `niriland-get-default-browser`
+- `niriland-launch-browser [args]`
+- `niriland-launch-webapp <url> [args]`
+
+AI model overrides:
+
+- `NIRILAND_OLLAMA_MODEL_NVIDIA` (default `qwen2.5-coder:14b`)
+- `NIRILAND_OLLAMA_MODEL_CPU` (default `qwen2.5-coder:3b`)
+
+## Recommended Archinstall Baseline
+
+Use `configs/system/archinstall/recommended.json` as a starting profile before running Niriland.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Furyfree/niriland/main/configs/system/archinstall/recommended.json -o archinstall-recommended.json
+```
+
+Edit these fields before install:
+
+- `disk_config.device_modifications[].device` (for example `/dev/nvme0n1`)
+- `hostname`
+- `locale_config.kb_layout`
+- `mirror_config.mirror_regions`
+- `timezone`
+
+Then:
+
+```bash
+archinstall --config archinstall-recommended.json
+```
+
+Important: the template sets `"wipe": true` for the selected disk and is destructive.
 
 ## Repository Layout
 
-- `bootstrap`: clone/update + run installer entrypoint
-- `install`: main orchestrator
+- `bootstrap`: clone/update repo and run installer entrypoint
+- `install`: installer orchestrator
+- `scripts/install/lib/common`: shared installer helpers
 - `scripts/install/steps/`: numbered install steps
-- `scripts/install/lib/`: shared functions
-- `configs/base/`: user-level files copied to `$HOME`
-- `configs/system/`: system-level files used by steps
-- `packages/*.packages`: package manifests for pacman/paru
-- `scripts/tools/`: utility scripts copied to `~/.local/bin/niriland`
+- `scripts/tools/`: helper scripts copied to `~/.local/bin/niriland`
+- `configs/base/`: files deployed to `$HOME`
+- `configs/modules/`: modular shared config fragments (Niri/Zsh/Ghostty)
+- `configs/system/`: system-level assets used by steps/tools
+- `packages/*.packages`: package manifests
+- `packages/vscodium.extensions`: VSCodium extension list
 
-## Additional Docs
+## Re-run and Caveats
 
-- `friend-guide.md`: high-level guide for sharing Niriland with others
-- `postinstall.md`: personal manual checklist after install
-
-## Re-run Behavior
-
-Most steps are written to be safe on re-run:
-
-- package installs use `--needed`
-- file copy steps skip unchanged files
-- many system edits check before appending/changing
-- `46-setup-vscodium` installs only missing extensions from `packages/vscodium.extensions`; already-installed entries are skipped quietly, and only new installs/failures are logged
-
-## What You May Still Need To Do Manually
-
-- Log out or reboot after install (recommended).
-- Validate hardware-specific behavior (GPU drivers, TPM/FDE, printer devices).
-- If running headless/no session, re-run `bash scripts/install/steps/25-setup-backgrounds` later if you still need wallpaper files copied.
+- Most steps are idempotent (`--needed`, compare-before-copy, check-before-append).
+- `20-deploy-configs` creates backups in `~/.config/backups/niriland/<timestamp>`.
+- The deployed Niri config includes `~/.local/share/niriland/configs/modules/...`; if the repo lives elsewhere, adjust `configs/base/.config/niri/config.kdl`.
+- Log out/reboot after install to apply shell/group/PAM changes.
 
 ## Troubleshooting
 
-- Run a single step manually:
+Run one step directly:
 
 ```bash
 bash scripts/install/steps/50-setup-browser
 ```
 
-- If a command is missing, ensure previous foundational steps completed:
-  - `00-setup-pacman` for `paru` and repo setup
-  - `15-install-packages` for base/chaotic/AUR packages
+If commands are missing, verify foundational steps completed:
 
-- For AI setup:
-  - run `niriland-setup-ai`
-  - confirm Docker and Ollama services are running
-  - confirm the selected OpenWebUI service template exists in `configs/system/etc/systemd/system/`
+- `00-setup-pacman` for repo/bootstrap package manager setup (`paru`, Chaotic AUR, timers)
+- `15-install-packages` for package manifests
 
-- For gaming setup:
-  - run `niriland-setup-gaming`
+For AI issues:
+
+- run `niriland-setup-ai status`
+- verify `ollama`, `docker.service`, and `openwebui` are active
+- verify service templates under `configs/system/etc/systemd/system/`

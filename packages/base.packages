@@ -3,6 +3,9 @@ xwayland-satellite
 xdg-desktop-portal-gnome
 xdg-desktop-portal-gtk
 matugen
+git
+accountsservice
+dgop
 cava
 qt6-multimedia-ffmpeg
 brightnessctl
@@ -19,6 +22,7 @@ woff2-font-awesome
 polkit-gnome
 seahorse
 starship
+gum
 zsh
 zoxide
 fzf

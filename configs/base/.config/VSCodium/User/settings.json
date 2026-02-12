@@ -37,4 +37,5 @@
     "window.openFoldersInNewWindow": "on",
     "accessibility.underlineLinks": true,
     "git-graph.commitDetailsView.location": "Docked to Bottom",
+    "chatgpt.followUpQueueMode": "steer",
 }

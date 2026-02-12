@@ -1,0 +1,4 @@
+// Optional startup apps (user-editable).
+// Comment this line out to disable 1Password autostart.
+spawn-at-startup "1password"
+spawn-at-startup "jetbrains-toolbox"

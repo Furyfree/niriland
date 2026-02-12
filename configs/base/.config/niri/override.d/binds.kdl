@@ -1,0 +1,8 @@
+// ! USER-EDITABLE FILE !
+// Add personal keybind overrides here.
+// This file is loaded after modular and DMS binds.
+
+// Example:
+// binds {
+//     Mod+Shift+T { toggle-column-tabbed-display; }
+// }

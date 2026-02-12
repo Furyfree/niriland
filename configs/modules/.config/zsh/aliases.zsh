@@ -18,6 +18,7 @@ alias c='clear'
 alias e='exit'
 alias f='fastfetch'
 alias help='tldr'
+alias history='history 1'
 alias copy="wl-copy"
 alias paste="wl-paste"
 

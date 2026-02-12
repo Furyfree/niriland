@@ -91,10 +91,16 @@ cargo install cargo-update 2>/dev/null || true
 cargo install nirius 2>/dev/null || true
 
 # Niri user session PATH may omit ~/.cargo/bin.
-# Expose nirius from ~/.local/bin so keybind spawns can resolve it reliably.
-if [[ -x "$HOME/.cargo/bin/nirius" ]]; then
+# Expose nirius/niriusd from ~/.local/bin so keybinds and startup spawns
+# resolve reliably inside the compositor session.
+if [[ -x "$HOME/.cargo/bin/nirius" || -x "$HOME/.cargo/bin/niriusd" ]]; then
   mkdir -p "$HOME/.local/bin"
+fi
+if [[ -x "$HOME/.cargo/bin/nirius" ]]; then
   ln -sf "$HOME/.cargo/bin/nirius" "$HOME/.local/bin/nirius"
+fi
+if [[ -x "$HOME/.cargo/bin/niriusd" ]]; then
+  ln -sf "$HOME/.cargo/bin/niriusd" "$HOME/.local/bin/niriusd"
 fi
 
 if [[ "$GROUP_CHANGES" == "true" ]]; then

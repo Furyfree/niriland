@@ -31,5 +31,13 @@
 	{
 		"key": "ctrl+shift+o",
 		"command": "workbench.action.openRecent"
+	},
+	{
+		"key": "ctrl+shift+j",
+		"command": "workbench.action.gotoSymbol"
+	},
+	{
+		"key": "ctrl+shift+y",
+		"command": "workbench.action.showAllSymbols"
 	}
 ]

@@ -5,6 +5,17 @@ This covers manual setup that is intentionally not fully automated.
 
 ---
 
+## Repo Setup
+
+Switch repo remote to SSH and create the `~/git` shortcut:
+
+```bash
+git -C ~/.local/share/niriland remote set-url origin git@github.com:Furyfree/niriland.git
+ln -sfn ~/.local/share/niriland ~/git
+```
+
+---
+
 ## Browser Configuration
 
 ### Helium Browser Extensions

@@ -2,6 +2,10 @@
 [
 	{
 		"key": "ctrl+shift+t",
+		"command": "workbench.action.terminal.toggleTerminal"
+	},
+	{
+		"key": "ctrl+alt+g",
 		"command": "git-graph.view"
 	},
 	{

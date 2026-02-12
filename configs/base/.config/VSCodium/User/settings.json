@@ -17,7 +17,6 @@
     "window.menuBarVisibility": "compact",
     "workbench.statusBar.visible": true,
     "editor.stickyScroll.enabled": false,
-    "terminal.integrated.tabs.enabled": false,
     "editor.fontFamily": "'JetBrainsMono Nerd Font', 'JetBrainsMono NFM', 'JetBrains Mono', 'Font Awesome 7 Free', 'Font Awesome 7 Brands', monospace",
     "editor.fontLigatures": false,
     "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font Mono', 'JetBrainsMono Nerd Font', 'JetBrainsMono NFM', 'JetBrains Mono', 'Font Awesome 7 Free', 'Font Awesome 7 Brands', monospace",

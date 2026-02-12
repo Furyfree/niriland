@@ -32,9 +32,17 @@ window-rule {
     match app-id=r#"^galculator$"#
     match app-id=r#"^blueman-manager$"#
     match app-id=r#"^org\.gnome\.Nautilus$"#
-    match app-id=r#"^steam$"#
     match app-id=r#"^xdg-desktop-portal$"#
+    match app-id="1password"
     open-floating true
+}
+
+// Keep 1Password floating and open it at a consistent centered size.
+window-rule {
+    match app-id="1password"
+    open-floating true
+    default-column-width { fixed 1100; }
+    default-window-height { fixed 760; }
 }
 
 window-rule {

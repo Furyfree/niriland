@@ -127,6 +127,11 @@ AI model overrides (optional):
 - `packages/*.packages`: package manifests for pacman/paru
 - `scripts/tools/`: utility scripts copied to `~/.local/bin/niriland`
 
+## Additional Docs
+
+- `friend-guide.md`: high-level guide for sharing Niriland with others
+- `postinstall.md`: personal manual checklist after install
+
 ## Re-run Behavior
 
 Most steps are written to be safe on re-run:

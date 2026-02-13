@@ -94,7 +94,6 @@ pick_packages() {
 
   local -a fzf_args=(
     --multi
-    --exact
     --tiebreak=length
     --prompt "$prompt"
     --preview "$preview_cmd"

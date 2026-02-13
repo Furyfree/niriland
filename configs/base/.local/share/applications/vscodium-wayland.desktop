@@ -8,7 +8,7 @@ Type=Application
 StartupNotify=false
 StartupWMClass=codium-url-handler
 Categories=Utility;Development;IDE;
-MimeType=text/plain;inode/directory;
+MimeType=text/plain;inode/directory;text/x-csrc;text/x-chdr;text/x-c++src;text/x-c++hdr;text/x-python;text/x-python3;text/x-java;text/x-shellscript;text/x-script.python;text/x-rust;text/x-go;text/x-lua;text/x-ruby;text/x-perl;text/x-cmake;text/x-makefile;text/x-meson;text/x-diff;text/x-patch;text/x-log;text/markdown;text/css;text/xml;text/x-yaml;text/x-toml;application/json;application/javascript;application/x-shellscript;application/x-yaml;application/toml;application/xml;application/xhtml+xml;
 Actions=new-empty-window;
 Keywords=vscode;
 

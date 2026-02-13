@@ -95,7 +95,7 @@ binds {
 
     // === Editors & Terminal ===
     Mod+Shift+Z hotkey-overlay-title=null {
-        spawn "env" "WAYLAND_DISPLAY=" "zeditor";
+        spawn "zeditor" "--new";
     }
     Mod+Shift+V hotkey-overlay-title=null {
         spawn "codium" "--enable-features=UseOzonePlatform,WaylandWindowDecorations" "--ozone-platform=wayland";

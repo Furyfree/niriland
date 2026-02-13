@@ -28,9 +28,6 @@ STEPS=(
   "$STEPS_DIR/45-setup-dev"
   "$STEPS_DIR/46-setup-vscodium"
   "$STEPS_DIR/50-setup-browser"
-)
-
-STEPS+=(
   "$STEPS_DIR/70-setup-desktop-entries"
   "$STEPS_DIR/85-optimize-system"
   "$STEPS_DIR/99-post-install"

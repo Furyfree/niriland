@@ -25,20 +25,5 @@ run_sudo mkdir -p /etc/1password
 log "Allowing Helium browser"
 printf "helium\n" | run_sudo tee /etc/1password/custom_allowed_browsers >/dev/null
 
-log "Setting Helium as default browser"
-if command -v xdg-settings >/dev/null 2>&1 && command -v xdg-mime >/dev/null 2>&1; then
-  xdg-settings set default-web-browser helium.desktop || true
-
-  if xdg-mime default helium.desktop text/html \
-    && xdg-mime default helium.desktop x-scheme-handler/http \
-    && xdg-mime default helium.desktop x-scheme-handler/https; then
-    log "Helium default browser associations updated."
-  else
-    warn "Failed to set one or more Helium default MIME associations."
-  fi
-else
-  warn "xdg-settings or xdg-mime not found; skipping default browser setup."
-fi
-
 log_success "1Password trusted browsers updated"
 log_success "Browser setup complete."

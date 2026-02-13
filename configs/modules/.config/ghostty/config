@@ -11,6 +11,9 @@ confirm-close-surface=false
 resize-overlay = never
 gtk-toolbar-style = flat
 
+background-opacity = 0.95
+background-blur = true
+
 # Cursor styling
 cursor-style = "block"
 cursor-style-blink = false

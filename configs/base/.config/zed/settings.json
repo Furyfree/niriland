@@ -1,120 +1,101 @@
 {
-  // --- Tab bar UI ---
-  "tab_bar": {
-    "show": true, // you like it clean, keep the bar hidden
-    "show_nav_history_buttons": false,
-    "show_tab_bar_buttons": false,
+  // --- Startup & Window Lifecycle ---
+  "restore_on_startup": "last_workspace", // Re-open last project when launching Zed.
+  "on_last_window_closed": "quit_app",
+
+  // --- AI & Assistant ---
+  "edit_predictions": {
+    "mode": "subtle"
   },
-
-  // --- Editor tabs behavior ---
-  "tabs": {
-    "close_position": "right", // close button on the right
-    "file_icons": false, // no icons in tabs
-    "git_status": false, // no git decorations in tabs
-    "activate_on_close": "history", // go back to last-used tab when closing
-    "show_close_button": "hover",
-    "show_diagnostics": "off",
-  },
-
-  // --- Preview tabs (THIS is what made tabs auto-close) ---
-  "preview_tabs": {
-    "enabled": false, // disable preview tabs → every file opens as a real tab
-  },
-
-  // --- STARTUP ---
-  "restore_on_startup": "last_workspace", // re-open last project when launching Zed
-
-  // --- AI AGENT DEFAULT MODEL ---
   "agent": {
     "always_allow_tool_actions": true,
     "default_model": {
       "provider": "copilot_chat",
-      "model": "gpt-4.1",
-    },
+      "model": "gpt-5.3-codex"
+    }
+  },
+  "agent_ui_font_size": 13.0,
+  "agent_buffer_font_size": 12.0,
+
+  // --- Tabs & Top UI ---
+  "tab_bar": {
+    "show": true, // Keep the tab bar visible.
+    "show_nav_history_buttons": false,
+    "show_tab_bar_buttons": false
+  },
+  "tabs": {
+    "close_position": "right", // Close button on the right.
+    "file_icons": false, // No icons in tabs.
+    "git_status": false, // No git decorations in tabs.
+    "activate_on_close": "history", // Return to last-used tab when closing.
+    "show_close_button": "hover",
+    "show_diagnostics": "off"
+  },
+  "preview_tabs": {
+    "enabled": false // Disable preview tabs so files open as real tabs.
+  },
+  "toolbar": {
+    "agent_review": false,
+    "selections_menu": false,
+    "quick_actions": false,
+    "breadcrumbs": true // Show breadcrumbs at the top.
+  },
+  "scrollbar": {
+    "axes": { "vertical": true, "horizontal": true },
+    "diagnostics": "warning", // Only show warning-level markers.
+    "show": "auto"
   },
 
-  // --- EDITOR VISUALS ---
-  "show_whitespaces": "trailing", // only show trailing whitespace
+  // --- Editing Behavior ---
+  "show_whitespaces": "trailing", // Only show trailing whitespace.
   "jsx_tag_auto_close": { "enabled": true },
   "always_treat_brackets_as_autoclosed": false,
   "use_auto_surround": true,
   "use_autoclose": true,
+  "inline_code_actions": false, // Disable noisy lightbulbs.
+  "auto_signature_help": true,
 
-  // --- FORMATTING ---
-  "format_on_save": "on", // run formatter on save
+  // --- Formatting & Save ---
+  "format_on_save": "off", // Keep format-on-save disabled.
   "remove_trailing_whitespace_on_save": true,
   "ensure_final_newline_on_save": true,
-  "use_on_type_format": false, // avoid lag when typing
+  "use_on_type_format": false, // Avoid lag while typing.
+  "autosave": "off",
 
-  // --- INDENT GUIDES ---
+  // --- Structure & Guides ---
   "indent_guides": {
     "background_coloring": "indent_aware",
     "coloring": "fixed",
     "active_line_width": 2,
     "line_width": 1,
-    "enabled": true,
+    "enabled": true
   },
-
-  // --- TEXT WIDTH / WRAPPING ---
-  "soft_wrap": "none",
-  "preferred_line_length": 100, // soft indicator only
-  "show_wrap_guides": false,
-
-  // --- TOP TOOLBAR ---
-  "toolbar": {
-    "agent_review": false,
-    "selections_menu": false,
-    "quick_actions": false,
-    "breadcrumbs": true, // show breadcrumbs at top
-  },
-
-  // --- SCROLLBAR ---
-  "scrollbar": {
-    "axes": { "vertical": true, "horizontal": true },
-    "diagnostics": "warning", // only show warning-level markers
-    "show": "auto",
-  },
-
-  // --- CODE ACTION POPUPS ---
-  "inline_code_actions": false, // disable noisy lightbulbs
-
-  // --- GUTTER (LINE NUMBERS) ---
   "gutter": {
-    "min_line_number_digits": 2, // nicer alignment
-    "folds": false, // no folding icons
-    "runnables": false, // hide run icons
+    "min_line_number_digits": 2, // Cleaner line-number alignment.
+    "folds": false, // No folding icons.
+    "runnables": false // Hide run icons.
   },
+  "relative_line_numbers": "enabled", // Vim-style relative numbers.
+  "soft_wrap": "none",
+  "preferred_line_length": 100, // Soft indicator only.
+  "show_wrap_guides": false,
+  "outline_panel": {
+    "button": false,
+    "expand_outlines_with_depth": 50 // Auto-expand nested blocks.
+  },
+  "excerpt_context_lines": 1,
+  "expand_excerpt_lines": 3,
 
-  "relative_line_numbers": "enabled", // vim-like relative numbers
-
-  // --- MOUSE / INTERACTION ---
+  // --- Input & Scrolling ---
   "drag_and_drop_selection": { "delay": 200 },
   "hover_popover_delay": 200,
-  "auto_signature_help": true,
-
-  // --- SCROLLING ---
   "fast_scroll_sensitivity": 3.0,
   "scroll_sensitivity": 1.0,
   "horizontal_scroll_margin": 2.0,
   "vertical_scroll_margin": 2.0,
 
-  // --- OUTLINE PANEL / SYMBOL TREE ---
-  "outline_panel": {
-    "button": false,
-    "expand_outlines_with_depth": 50, // auto-expand nested blocks
-  },
-
-  // --- PREVIEW / EXCERPT CONFIG ---
-  "excerpt_context_lines": 1,
-  "expand_excerpt_lines": 3,
-
-  // --- AUTOSAVE ---
-  "autosave": "off",
-
-  // --- VISUAL ACCESSIBILITY ---
+  // --- Visual Accessibility & Cursor ---
   "minimum_contrast_for_highlights": 40.0,
-
-  // --- CURSOR & SELECTION ---
   "rounded_selection": false,
   "current_line_highlight": "line",
   "unnecessary_code_fade": 0.0,
@@ -122,21 +103,26 @@
   "cursor_shape": "block",
   "cursor_blink": false,
 
-  // --- FONTS ---
-  "agent_buffer_font_size": 14.0,
-  "ui_font_family": ".ZedSans",
+  // --- Fonts ---
+  "ui_font_family": "Inter",
+  "ui_font_fallbacks": ["JetBrains Mono", "Noto Color Emoji"],
   "ui_font_weight": 400.0,
   "ui_font_size": 13.0,
-
-  "buffer_font_family": ".ZedMono",
+  "buffer_font_family": "JetBrainsMono Nerd Font Mono",
+  "buffer_font_fallbacks": ["JetBrainsMono Nerd Font", "JetBrains Mono", "Noto Color Emoji"],
   "buffer_font_weight": 400.0,
   "buffer_font_size": 13.0,
-
   "buffer_font_features": {
-    "liga": false, // disable ligatures for cleaner code
-    "calt": false,
+    "liga": false, // Disable ligatures for cleaner code.
+    "calt": false
   },
 
+  // --- Terminal ---
+  "terminal": {
+    "font_family": "JetBrainsMono Nerd Font Mono"
+  },
+
+  // --- Extensions ---
   "auto_install_extensions": {
     "catppuccin": true,
     "rose-pine": true,
@@ -180,7 +166,7 @@
     "log": true,
     "nginx": true,
     "rainbow-csv": true,
-    "sql": true,
+    "sql": true
   },
   "auto_update_extensions": {
     "html": true,
@@ -213,31 +199,27 @@
     "log": true,
     "nginx": true,
     "rainbow-csv": true,
-    "sql": true,
+    "sql": true
   },
 
-  // --- ICONS + THEMES ---
+  // --- Theme & Icons ---
   "icon_theme": {
     "mode": "system",
     "light": "Material Icon Theme",
-    "dark": "Material Icon Theme",
+    "dark": "Material Icon Theme"
   },
-
   "theme": {
     "mode": "system",
     "light": "GitHub Dark",
-    "dark": "GitHub Dark",
+    "dark": "GitHub Dark"
   },
 
-  // --- WINDOW MANAGEMENT ---
-  "on_last_window_closed": "quit_app",
-
-  // --- PRIVACY ---
+  // --- Privacy ---
   "telemetry": {
     "diagnostics": false,
-    "metrics": false,
+    "metrics": false
   },
 
-  // --- KEYMAP ---
-  "base_keymap": "VSCode", // safest & cleanest with Vim mode enabled
+  // --- Keymap ---
+  "base_keymap": "VSCode" // Keeps keybindings aligned with your VSCodium setup.
 }

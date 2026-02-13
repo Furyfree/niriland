@@ -18,7 +18,7 @@ inter-font
 gnome-themes-extra
 adw-gtk-theme
 bibata-cursor-theme
-woff2-font-awesome
+noto-fonts-emoji
 polkit-gnome
 seahorse
 starship
@@ -86,3 +86,6 @@ ghostty
 zed
 uwsm
 gnome-text-editor
+showtime
+loupe
+evince

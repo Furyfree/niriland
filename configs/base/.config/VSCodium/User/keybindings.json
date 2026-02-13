@@ -1,43 +1,54 @@
 // Place your key bindings in this file to override the defaults
 [
-	{
-		"key": "ctrl+shift+t",
-		"command": "workbench.action.terminal.toggleTerminal"
-	},
-	{
-		"key": "ctrl+alt+g",
-		"command": "git-graph.view"
-	},
-	{
-		"key": "ctrl+shift+b",
-		"command": "workbench.action.toggleAuxiliaryBar"
-	},
-	{
-		"key": "ctrl+,",
-		"command": "workbench.action.openSettings"
-	},
-	{
-		"key": "ctrl+shift+x",
-		"command": "workbench.view.extensions"
-	},
-	{
-		"key": "ctrl+k ctrl+k",
-		"command": "workbench.action.openGlobalKeybindings"
-	},
-	{
-		"key": "ctrl+shift+f",
-		"command": "search.action.openNewEditor"
-	},
-	{
-		"key": "ctrl+shift+o",
-		"command": "workbench.action.openRecent"
-	},
-	{
-		"key": "ctrl+shift+j",
-		"command": "workbench.action.gotoSymbol"
-	},
-	{
-		"key": "ctrl+shift+y",
-		"command": "workbench.action.showAllSymbols"
-	}
+    // --- Preferences & Keymaps ---
+    {
+        "key": "ctrl+,",
+        "command": "workbench.action.openSettings"
+    },
+    {
+        "key": "ctrl+k ctrl+k",
+        "command": "workbench.action.openGlobalKeybindings"
+    },
+
+    // --- Workbench Views & Panels ---
+    {
+        "key": "ctrl+shift+b",
+        "command": "workbench.action.toggleAuxiliaryBar"
+    },
+    {
+        "key": "ctrl+shift+t",
+        "command": "workbench.action.terminal.toggleTerminal"
+    },
+    {
+        "key": "ctrl+shift+x",
+        "command": "workbench.view.extensions"
+    },
+
+    // --- Navigation & Search ---
+    {
+        "key": "ctrl+shift+f",
+        "command": "search.action.openNewEditor"
+    },
+    {
+        "key": "ctrl+shift+j",
+        "command": "workbench.action.gotoSymbol"
+    },
+    {
+        "key": "ctrl+shift+o",
+        "command": "workbench.action.openRecent"
+    },
+    {
+        "key": "ctrl+shift+y",
+        "command": "workbench.action.showAllSymbols"
+    },
+
+    // --- Git ---
+    {
+        "key": "ctrl+shift+g",
+        "command": "workbench.view.scm"
+    },
+    {
+        "key": "ctrl+alt+g",
+        "command": "git-graph.view"
+    }
 ]

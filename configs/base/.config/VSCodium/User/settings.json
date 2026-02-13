@@ -1,26 +1,41 @@
 {
-    "workbench.startupEditor": "none",
+    // --- AI & Chat ---
     "chat.disableAIFeatures": false,
+    "chat.model": "copilot:gpt-5.3-codex",
+    "chatgpt.followUpQueueMode": "steer",
     "claudeCode.preferredLocation": "panel",
     "github.copilot.nextEditSuggestions.enabled": true,
-    "git.autofetch": true,
-    "explorer.confirmDelete": false,
-    "workbench.iconTheme": "material-icon-theme",
-    "redhat.telemetry.enabled": false,
     "gitlens.ai.model": "vscode",
     "gitlens.ai.vscode.model": "copilot:gpt-5.3-codex",
-    "chat.model": "copilot:gpt-5.3-codex",
-    "workbench.colorTheme": "Dynamic Base16 DankShell",
-    "workbench.activityBar.location": "top",
+
+    // --- Startup & Window ---
+    "workbench.startupEditor": "none",
+    "window.openFoldersInNewWindow": "on",
     "window.commandCenter": false,
-    "workbench.layoutControl.enabled": true,
     "window.menuBarVisibility": "compact",
+    "workbench.editor.enablePreview": false,
+    "workbench.editor.enablePreviewFromQuickOpen": false,
+
+    // --- Workbench Layout ---
+    "workbench.activityBar.location": "top",
+    "workbench.layoutControl.enabled": true,
     "workbench.statusBar.visible": true,
-    "editor.stickyScroll.enabled": false,
-    "editor.fontFamily": "'JetBrainsMono Nerd Font', 'JetBrainsMono NFM', 'JetBrains Mono', 'Font Awesome 7 Free', 'Font Awesome 7 Brands', monospace",
+    "workbench.tips.enabled": false,
+    "workbench.iconTheme": "material-icon-theme",
+
+    // --- Theme ---
+    "workbench.colorTheme": "Dynamic Base16 DankShell",
+    "workbench.preferredDarkColorTheme": "Dynamic Base16 DankShell (Dark)",
+    "workbench.preferredHighContrastColorTheme": "Dynamic Base16 DankShell (Dark)",
+    "workbench.preferredHighContrastLightColorTheme": "Dynamic Base16 DankShell (Light)",
+    "workbench.preferredLightColorTheme": "Dynamic Base16 DankShell (Light)",
+
+    // --- Editor: Typography ---
+    "editor.fontFamily": "'JetBrainsMono Nerd Font Mono', 'JetBrainsMono Nerd Font', 'JetBrains Mono', 'Noto Color Emoji', monospace",
     "editor.fontLigatures": false,
-    "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font Mono', 'JetBrainsMono Nerd Font', 'JetBrainsMono NFM', 'JetBrains Mono', 'Font Awesome 7 Free', 'Font Awesome 7 Brands', monospace",
-    "files.autoSave": "afterDelay",
+
+    // --- Editor: Behavior ---
+    "editor.stickyScroll.enabled": false,
     "editor.mouseWheelZoom": true,
     "editor.formatOnPaste": true,
     "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
@@ -29,13 +44,19 @@
     "editor.lineNumbers": "relative",
     "editor.smoothScrolling": true,
     "editor.minimap.enabled": false,
-    "workbench.preferredDarkColorTheme": "Dynamic Base16 DankShell (Dark)",
-    "workbench.preferredHighContrastColorTheme": "Dynamic Base16 DankShell (Dark)",
-    "workbench.preferredHighContrastLightColorTheme": "Dynamic Base16 DankShell (Light)",
-    "workbench.preferredLightColorTheme": "Dynamic Base16 DankShell (Light)",
-    "workbench.tips.enabled": false,
-    "window.openFoldersInNewWindow": "on",
-    "accessibility.underlineLinks": true,
+
+    // --- Terminal ---
+    "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font Mono', 'JetBrainsMono Nerd Font', 'JetBrains Mono', 'Noto Color Emoji', monospace",
+
+    // --- Files & Explorer ---
+    "files.autoSave": "afterDelay",
+    "explorer.confirmDelete": false,
+
+    // --- Git ---
+    "git.autofetch": true,
     "git-graph.commitDetailsView.location": "Docked to Bottom",
-    "chatgpt.followUpQueueMode": "steer",
+
+    // --- Accessibility & Telemetry ---
+    "accessibility.underlineLinks": true,
+    "redhat.telemetry.enabled": false
 }

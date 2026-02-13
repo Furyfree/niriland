@@ -36,3 +36,8 @@ alias find='fd'
 
 # AUR Helpers
 alias yay='paru'
+alias npi='niriland-pkg install'
+alias npr='niriland-pkg remove'
+alias npu='niriland-pkg upgrade'
+alias npl='niriland-pkg installed'
+alias clean='niriland-pkg clean'

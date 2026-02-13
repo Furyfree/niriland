@@ -1,0 +1,328 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+log() {
+  printf '==> %s\n' "$*"
+}
+
+warn() {
+  printf 'WARN: %s\n' "$*" >&2
+}
+
+die() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage: niriland-pkg <command> [query]
+
+Commands:
+  install [query] Omarchy-style picker for repo + AUR packages
+  remove          Fuzzy-pick installed explicit packages and remove them
+  upgrade         Upgrade everything (no fzf)
+  installed       Browse installed explicit packages with preview
+  clean [options] Smart cache/dependency cleanup
+  help            Show this help
+EOF
+}
+
+clean_usage() {
+  cat <<'EOF'
+Usage: niriland-pkg clean [options]
+
+Options:
+  -c, --deep-cache  Remove all package cache files (aggressive)
+      --no-orphans  Skip removing unneeded dependencies
+      --no-builds   Skip clearing AUR build/cache directories
+  -h, --help        Show this help
+EOF
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+# --- Preview functions (exported for fzf to call directly) ---
+
+_niriland_preview_sync() {
+  local pkg="${1:-}"
+  [[ -n "$pkg" ]] || return 0
+
+  if pacman -Si -- "$pkg" 2>/dev/null; then
+    return 0
+  fi
+
+  if paru -Si -- "$pkg" 2>/dev/null; then
+    return 0
+  fi
+
+  printf 'No package info found for: %s\n' "$pkg"
+}
+
+_niriland_preview_installed() {
+  local pkg="${1:-}"
+  [[ -n "$pkg" ]] || return 0
+  pacman -Qi -- "$pkg" 2>/dev/null || printf 'Package not installed: %s\n' "$pkg"
+}
+
+_niriland_preview_pkgbuild() {
+  local pkg="${1:-}"
+  [[ -n "$pkg" ]] || return 0
+
+  if paru -Gp --print --aur -- "$pkg" 2>/dev/null; then
+    return 0
+  fi
+
+  printf 'PKGBUILD preview is available only for AUR packages.\n'
+}
+
+export -f _niriland_preview_sync _niriland_preview_installed _niriland_preview_pkgbuild
+
+# --- Core helpers ---
+
+pick_packages() {
+  local color="$1"
+  local preview_cmd="$2"
+  local prompt="$3"
+  local preview_label="$4"
+  local query="$5"
+  shift 5 || true
+  local -a extra_args=("$@")
+
+  local -a fzf_args=(
+    --multi
+    --exact
+    --tiebreak=length
+    --prompt "$prompt"
+    --preview "$preview_cmd"
+    --preview-label "$preview_label"
+    --preview-label-pos bottom
+    --preview-window 'right:60%:wrap'
+    --bind 'alt-p:toggle-preview'
+    --bind 'alt-d:preview-half-page-down,alt-u:preview-half-page-up'
+    --bind 'alt-k:preview-up,alt-j:preview-down'
+    --color "pointer:${color},marker:${color}"
+  )
+
+  if [[ -n "$query" ]]; then
+    fzf_args+=(--query "$query")
+  fi
+
+  if [[ ${#extra_args[@]} -gt 0 ]]; then
+    fzf_args+=("${extra_args[@]}")
+  fi
+
+  SHELL="$(command -v bash)" fzf "${fzf_args[@]}" || true
+}
+
+fetch_aur_list() {
+  local aur_list
+  aur_list="$(paru -Slqa 2>/dev/null)" || return 1
+
+  # paru v2.1.0 bug: -Slqa can dump the compressed AUR cache as raw binary.
+  # Detect this by checking if the first line looks like a package name.
+  local first_line
+  first_line="$(head -1 <<<"$aur_list")"
+  if [[ "$first_line" =~ ^[a-z0-9] ]]; then
+    printf '%s\n' "$aur_list"
+    return 0
+  fi
+
+  # Fallback: download directly from AUR
+  if command -v curl >/dev/null 2>&1; then
+    curl -sfL 'https://aur.archlinux.org/packages.gz' | gunzip 2>/dev/null
+    return "${PIPESTATUS[0]}"
+  fi
+
+  return 1
+}
+
+build_install_candidates() {
+  local aur_list
+  aur_list="$(mktemp)"
+  # shellcheck disable=SC2064
+  trap "rm -f '$aur_list'" RETURN
+
+  if fetch_aur_list >"$aur_list" 2>/dev/null && [[ -s "$aur_list" ]]; then
+    {
+      pacman -Slq
+      cat "$aur_list"
+    } | sort -u
+  else
+    warn "AUR list unavailable; showing repo packages only."
+    pacman -Slq | sort -u
+  fi
+}
+
+# --- Commands ---
+
+install_packages() {
+  local query="${*:-}"
+  local -a selected=()
+
+  local preview_info_cmd='_niriland_preview_sync {1}'
+  local preview_pkgbuild_cmd='_niriland_preview_pkgbuild {1}'
+
+  mapfile -t selected < <(
+    build_install_candidates | pick_packages \
+      green \
+      "$preview_info_cmd" \
+      'install> ' \
+      'alt-p: toggle description, alt-b/B: toggle PKGBUILD, alt-j/k: scroll, tab: multi-select' \
+      "$query" \
+      --bind "alt-b:change-preview:${preview_pkgbuild_cmd}" \
+      --bind "alt-B:change-preview:${preview_info_cmd}"
+  )
+
+  if [[ ${#selected[@]} -eq 0 ]]; then
+    log "No packages selected."
+    return 0
+  fi
+
+  paru -S --needed --noconfirm -- "${selected[@]}"
+}
+
+remove_packages() {
+  local -a selected=()
+
+  local preview_installed_cmd='_niriland_preview_installed {1}'
+
+  mapfile -t selected < <(
+    paru -Qqe | sort -u | pick_packages \
+      red \
+      "$preview_installed_cmd" \
+      'remove> ' \
+      'alt-p: toggle description, alt-j/k: scroll, tab: multi-select' \
+      ''
+  )
+
+  if [[ ${#selected[@]} -eq 0 ]]; then
+    log "No packages selected."
+    return 0
+  fi
+
+  paru -Rns --noconfirm -- "${selected[@]}"
+}
+
+upgrade_packages() {
+  paru -Syu --noconfirm
+}
+
+browse_installed_packages() {
+  local preview_installed_cmd='_niriland_preview_installed {1}'
+
+  pacman -Qqe | sort -f | pick_packages \
+    blue \
+    "$preview_installed_cmd" \
+    'installed> ' \
+    'alt-p: toggle description, alt-j/k: scroll' \
+    '' \
+    --no-multi
+}
+
+clean_packages() {
+  local deep_cache=false
+  local clean_orphans=true
+  local clean_builds=true
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -c|--deep-cache)
+        deep_cache=true
+        ;;
+      --no-orphans)
+        clean_orphans=false
+        ;;
+      --no-builds)
+        clean_builds=false
+        ;;
+      -h|--help)
+        clean_usage
+        return 0
+        ;;
+      *)
+        clean_usage
+        die "Unknown clean option: $1"
+        ;;
+    esac
+    shift
+  done
+
+  require_cmd sudo
+  sudo -v >/dev/null
+
+  if [[ "$deep_cache" == "true" ]]; then
+    log "Deep-cleaning package cache (paru -Scc)"
+    paru -Scc --noconfirm
+  else
+    if command -v paccache >/dev/null 2>&1; then
+      log "Pruning package cache with paccache (keep latest 3 installed versions)"
+      sudo paccache -r
+      log "Removing all cached versions of uninstalled packages"
+      sudo paccache -ruk0
+    else
+      warn "paccache not found (install pacman-contrib for smarter cache pruning)"
+      log "Falling back to paru -Sc"
+      paru -Sc --noconfirm
+    fi
+  fi
+
+  if [[ "$clean_orphans" == "true" ]]; then
+    log "Removing unneeded dependencies (paru -c)"
+    paru -c --noconfirm || true
+  fi
+
+  if [[ "$clean_builds" == "true" ]]; then
+    log "Removing AUR build/cache directories"
+    rm -rf -- "$HOME/.cache/paru/build" "$HOME/.cache/paru/clone" "$HOME/.cache/yay"
+  fi
+
+  log "Cleanup complete."
+}
+
+main() {
+  local cmd="${1:-help}"
+  shift || true
+
+  if [[ "$cmd" == "help" || "$cmd" == "--help" || "$cmd" == "-h" ]]; then
+    usage
+    return 0
+  fi
+
+  case "$cmd" in
+    install|i)
+      require_cmd paru
+      require_cmd pacman
+      require_cmd fzf
+      install_packages "$@"
+      ;;
+    remove|r|uninstall)
+      require_cmd paru
+      require_cmd pacman
+      require_cmd fzf
+      remove_packages
+      ;;
+    upgrade|u|update)
+      require_cmd paru
+      upgrade_packages
+      ;;
+    installed|list|l)
+      require_cmd pacman
+      require_cmd fzf
+      browse_installed_packages
+      ;;
+    clean|c)
+      require_cmd paru
+      clean_packages "$@"
+      ;;
+    *)
+      usage
+      die "Unknown command: $cmd"
+      ;;
+  esac
+}
+
+main "$@"

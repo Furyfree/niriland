@@ -88,6 +88,7 @@ After `35-setup-tools`, scripts are copied to `~/.local/bin/niriland` and PATH i
 - `niriland-setup-fingerprint [--remove]`
 - `niriland-vm-libvirt [setup|status]`
 - `niriland-vm-vmware [setup|status]`
+- `niriland-pkg [install|remove|upgrade|installed|clean]`
 - `niriland-get-default-browser`
 - `niriland-launch-browser [args]`
 - `niriland-launch-webapp <url> [args]`

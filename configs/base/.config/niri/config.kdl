@@ -12,6 +12,7 @@ include "dms/outputs.kdl"
 include "override.d/cursor.kdl"
 include "override.d/binds.kdl"
 include "override.d/autostart.kdl"
+include "override.d/env.kdl"
 
 // User overrides
 // Include custom files below this line.

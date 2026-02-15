@@ -3,8 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-PRISMLAUNCHER_MRPACK="${REPO_ROOT}/configs/base/.local/share/minecraft/Main 1.0.0.mrpack"
+PRISMLAUNCHER_MRPACK="${SCRIPT_DIR}/configs/base/.local/share/minecraft/Main.mrpack"
 
 PACMAN_PACKAGES=(
   steam

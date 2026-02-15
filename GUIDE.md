@@ -275,3 +275,10 @@ For AI issues:
 - Run `niriland-setup-ai status`
 - Verify `ollama`, `docker.service`, and `openwebui` are active
 - Verify service templates under `configs/system/etc/systemd/system/`
+
+For ghostty theme issues:
+
+- Ghostty will fail to find/apply themes until you add a background image to its config
+- Preinstalled wallpapers are available in `~/Pictures/Wallpapers`
+- To set a wallpaper: click the clock at the top → Wallpapers → press the folder icon → point to one of the wallpapers in `~/Pictures/Wallpapers`
+- Once set, all wallpapers in that folder will be available next time you want to change it

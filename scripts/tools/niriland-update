@@ -2,15 +2,13 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT_REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+NIRILAND_ROOT="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
 
-if [[ -d "$SCRIPT_REPO_ROOT/scripts/install/steps" && -f "$SCRIPT_REPO_ROOT/install" ]]; then
-  REPO_ROOT="$SCRIPT_REPO_ROOT"
-elif [[ -d "$PWD/scripts/install/steps" && -f "$PWD/install" ]]; then
+# Allow running from repo directory as fallback
+if [[ -d "$PWD/scripts/install/steps" && -f "$PWD/install" ]]; then
   REPO_ROOT="$PWD"
 else
-  REPO_ROOT="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
+  REPO_ROOT="$NIRILAND_ROOT"
 fi
 
 [[ -d "$REPO_ROOT/scripts/install/steps" ]] || {

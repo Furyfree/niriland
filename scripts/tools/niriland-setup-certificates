@@ -2,17 +2,14 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT_REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-
+NIRILAND_ROOT="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
 CERT_NAME="Eduroam_aug2020.pem"
 
-if [[ -f "$SCRIPT_REPO_ROOT/configs/system/etc/certs/$CERT_NAME" ]]; then
-  REPO_ROOT="$SCRIPT_REPO_ROOT"
-elif [[ -f "$PWD/configs/system/etc/certs/$CERT_NAME" ]]; then
+# Allow running from repo directory as fallback
+if [[ -f "$PWD/configs/system/etc/certs/$CERT_NAME" ]]; then
   REPO_ROOT="$PWD"
 else
-  REPO_ROOT="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
+  REPO_ROOT="$NIRILAND_ROOT"
 fi
 
 CERT_SRC="$REPO_ROOT/configs/system/etc/certs/$CERT_NAME"

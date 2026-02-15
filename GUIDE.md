@@ -86,6 +86,7 @@ Notes:
 - `05-setup-fde` skips automatically if no TPM device is present.
 - Several DMS/systemd user operations warn (instead of failing) when no active user session exists.
 - Virtualization is intentionally opt-in via helper tools.
+- After the first successful boot/login into Niri, reboot one more time. On some systems, not all user-session autostarts/services (`niriusd`, `1Password`, `JetBrains Toolbox`) come up until that second boot.
 
 ## Updating
 
@@ -162,13 +163,13 @@ niriland-pkg clean         # clean package cache
 
 Shell aliases (from `.zshrc`):
 
-| Alias | Command |
-|-------|---------|
-| `npi` | `niriland-pkg install` |
-| `npr` | `niriland-pkg remove` |
-| `npu` | `niriland-pkg upgrade` |
-| `npl` | `niriland-pkg installed` |
-| `clean` | `niriland-pkg clean` |
+| Alias   | Command                  |
+| ------- | ------------------------ |
+| `npi`   | `niriland-pkg install`   |
+| `npr`   | `niriland-pkg remove`    |
+| `npu`   | `niriland-pkg upgrade`   |
+| `npl`   | `niriland-pkg installed` |
+| `clean` | `niriland-pkg clean`     |
 
 ### AI Tooling
 

@@ -21,6 +21,8 @@ git clone https://github.com/Furyfree/niriland.git ~/.local/share/niriland
 ~/.local/share/niriland/install
 ```
 
+Post-install note: after your first successful login into Niri, reboot one more time. Some systems do not start all user-session autostarts/services (`niriusd`, `1Password`, `JetBrains Toolbox`) until the second boot.
+
 ## Requirements
 
 - Arch Linux with `systemd`

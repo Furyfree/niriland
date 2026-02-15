@@ -67,3 +67,11 @@ window-rule {
     match app-id=r#"org.quickshell$"#
     open-floating true
 }
+
+// Hide Battle.net / Wine splash screens (empty-title floating windows).
+window-rule {
+    match app-id="steam_app_0" title=""
+    exclude title="."  // exclude anything with an actual title
+    opacity 0.0
+    open-focused false
+}

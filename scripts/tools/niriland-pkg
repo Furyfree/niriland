@@ -181,6 +181,7 @@ install_packages() {
     return 0
   fi
 
+  log "Installing ${#selected[@]} package(s): ${selected[*]}"
   paru -S --needed --noconfirm -- "${selected[@]}"
 }
 
@@ -203,6 +204,7 @@ remove_packages() {
     return 0
   fi
 
+  log "Removing ${#selected[@]} package(s): ${selected[*]}"
   paru -Rns --noconfirm -- "${selected[@]}"
 }
 

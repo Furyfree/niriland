@@ -101,11 +101,17 @@ Toolbox configuration:
 
 ### Rider Dotnet setup
 
-Go to **File → Settings → Build, Execution, Deployment → Toolset and Build** and set:
+Go to **File → Settings → Build, Execution, Deployment → Toolset and Build** and configure:
 
-- **.NET CLI executable path**: `/usr/share/dotnet/dotnet`
+#### Toolset
 - **Mono executable path**: leave blank
+- **.NET CLI executable path**: `/home/pby/.local/share/mise/installs/dotnet/latest/dotnet`
+- **MSBuild version**: Auto detected (18.0)
 - Uncheck **"Automatically download .NET SDK if necessary"**
+
+#### Build
+- Check **"Use ReSharper Build"**
+- Leave other build options unchecked
 
 > Rider does not inherit mise's PATH when launched from the app menu. The `/usr/share/dotnet/dotnet` symlink points to the mise-managed dotnet and is automatically created during system setup.
 

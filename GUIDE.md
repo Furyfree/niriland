@@ -22,21 +22,25 @@ Niriland is an Arch Linux setup around:
 
 Recommended `archinstall` choices before running Niriland:
 
-- **Mirrors**: Set your region
 - **Locales**: Set keyboard layout, system language (`en_US.UTF-8`), encoding (`UTF-8`)
+- **Mirrors**: Set your region (also add worldwide for safety as second mirror)
 - **Disk configuration**: Use best-effort partition layout, select your disk, choose `btrfs`, enable `LUKS2` encryption, enable compression (`zstd`), choose `Snapper` for snapshots
+- **Swap**: zram, `zstd` compression (should be default)
 - **Bootloader**: Limine (removable: no unless you have Windows boot as well)
-- **Swap**: zram, `zstd` compression
+- **Kernels**: `linux` (should be default)
 - **Hostname**: Set your hostname
-- **Root password**: Set a root password
-- **User account**: Create your user with sudo privileges
+- **Authentication**:
+   - **Root password**: Set a root password
+   - **User account**: Create your user with sudo privileges
 - **Profile**: Minimal
-- **Audio**: PipeWire
-- **Kernels**: `linux`
-- **Additional packages**: `iwd`, `curl`, `git` (required for bootstrap)
+- **Applications**:
+   - **Bluetooth**: Yes
+   - **Audio**: PipeWire
+   - **Print service**: Yes
 - **Network configuration**: NetworkManager with IWD backend
+- **Additional packages**: `iwd`, `curl`, `git` (required for bootstrap)
 - **Timezone**: Set your timezone
-- **NTP**: Enabled
+- **NTP**: Enabled (should be default)
 
 Important: this wipes the selected disk. Review before confirming.
 

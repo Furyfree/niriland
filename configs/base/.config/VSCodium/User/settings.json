@@ -58,5 +58,11 @@
 
     // --- Accessibility & Telemetry ---
     "accessibility.underlineLinks": true,
-    "redhat.telemetry.enabled": false
+    "redhat.telemetry.enabled": false,
+
+    // --- F# & .NET ---
+    "FSharp.dotnetRoot": "/usr/share/dotnet",
+    "code-runner.executorMap": {
+        "fsharp": "/usr/share/dotnet/dotnet fsi"
+    }
 }

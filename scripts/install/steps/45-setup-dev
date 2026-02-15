@@ -56,6 +56,13 @@ else
   echo "Unsupported shell: $(ps -p $$ -o comm=)"
 fi
 
+# ====================
+# .NET SDK Symlink
+# ====================
+log "Creating .NET SDK symlink..."
+run_sudo mkdir -p /usr/share/dotnet
+run_sudo ln -sfn /home/pby/.local/share/mise/shims/dotnet /usr/share/dotnet/dotnet
+log_success ".NET SDK symlink created."
 
 # ====================
 # PlatformIO Setup

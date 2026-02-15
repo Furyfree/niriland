@@ -99,6 +99,18 @@ Toolbox configuration:
 2. Log in with your JetBrains account.
 3. Enable Settings Sync for automatic configuration sharing.
 
+### Rider Dotnet setup
+
+Go to **File → Settings → Build, Execution, Deployment → Toolset and Build** and set:
+
+- **.NET CLI executable path**: `/home/pby/.local/share/mise/installs/dotnet/<version>/dotnet`
+  - Find the exact path with: `mise which dotnet`
+- **Mono executable path**: leave blank
+- Uncheck **"Automatically download .NET SDK if necessary"**
+
+> Rider does not inherit mise's PATH when launched from the app menu. If the path stops working after a dotnet version bump via mise, re-run `mise which dotnet` and update the setting.
+
+
 ---
 
 ## VPN Configuration

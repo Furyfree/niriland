@@ -1,3 +1,4 @@
 // Optional startup apps (user-editable).
 // Comment this line out to disable 1Password autostart.
+spawn-at-startup "dbus-update-activation-environment" "--systemd" "--all"
 spawn-at-startup "sh" "-lc" "sleep 5; /usr/bin/1password --silent"

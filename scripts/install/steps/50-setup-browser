@@ -22,8 +22,9 @@ log "Adding Helium to 1Password trusted browsers"
 log "Creating 1Password config directory"
 run_sudo mkdir -p /etc/1password
 
-log "Allowing Helium browser"
+log "Allowing Helium and Zen browser"
 printf "helium\n" | run_sudo tee /etc/1password/custom_allowed_browsers >/dev/null
+printf "zen-bin\n" | run_sudo tee /etc/1password/custom_allowed_browsers >/dev/null
 
 log_success "1Password trusted browsers updated"
 log_success "Browser setup complete."

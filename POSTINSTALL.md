@@ -44,6 +44,7 @@ ln -sfn ~/.local/share/niriland ~/git
 - Tab Preview Images: Enabled.
 - Tab Memory Usage: Enabled.
 - Use System Title Bar and Borders: Enabled.
+- Use GTK Theme
 
 #### Languages and Spell Check
 

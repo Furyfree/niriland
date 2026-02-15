@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/../lib/common"
 
 log "Installing DankMaterialShell and dependencies..."
 install_package niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk matugen cava qt6-multimedia-ffmpeg
+install_aur_package quickshell-git
 install_aur_package dms-shell-bin
 
 TARGET_USER="${SUDO_USER:-${USER:-}}"

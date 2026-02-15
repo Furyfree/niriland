@@ -1,7 +1,6 @@
-# PBY's Postinstall Guide
+# PBY's Postinstall Checklist
 
-Post-install checklist after running Niriland (`bootstrap` or `./install`).
-This covers manual setup that is intentionally not fully automated.
+Manual setup after running Niriland (`bootstrap` or `./install`).
 
 ---
 
@@ -19,18 +18,21 @@ ln -sfn ~/.local/share/niriland ~/git
 ## Browser Configuration
 
 ### Helium Browser Extensions
-- 1Password: Password manager integration.
-- uBlock Origin: Ad/tracker blocker.
-- Dark Reader: Universal dark mode.
-- Bookmarkhub: Centralized bookmark management (credentials stored in 1Password).
+
+1. **1Password** — password manager integration.
+2. **uBlock Origin** — ad/tracker blocker.
+3. **Dark Reader** — universal dark mode. Set default to **off** for new websites.
+4. **Bookmarkhub** — centralized bookmark management (credentials stored in 1Password).
 
 ### Helium Preferences
 
 #### Search
+
 - Default Search Engine: Google.
 - Suggestions from Search Engine: Disabled.
 
 #### Appearance
+
 - Theme: Helium Colors.
 - Mode: Device.
 - Show Home Button: Disabled.
@@ -44,6 +46,7 @@ ln -sfn ~/.local/share/niriland ~/git
 - Use System Title Bar and Borders: Enabled.
 
 #### Languages and Spell Check
+
 - Preferred Languages:
   - English (United States)
   - English
@@ -52,54 +55,70 @@ ln -sfn ~/.local/share/niriland ~/git
   - English (United States)
   - Danish
 
+#### Flags (`helium://flags/`)
+
+- Omnibox Autocomplete Filtering: **Search suggestions, bookmarks, and internal chrome pages**.
+
 #### Start Page Customization
+
 - Toolbar: Only Extensions and Main Menu enabled.
 - Show Shortcuts: Disabled.
 
 ---
 
-## JetBrains Setup
+## Optional Tools
 
-Toolbox configuration:
-- Launch JetBrains Toolbox after install.
-- Log in with your JetBrains account.
-- Enable Settings Sync for automatic configuration sharing.
+Run these after install as needed:
+
+```bash
+niriland-setup-ai setup
+niriland-setup-certificates setup
+niriland-setup-fingerprint          # laptop only
+niriland-setup-gaming setup
+```
 
 ---
 
-## Limine (If Dualboot)
+## WoW Addon Setup
 
-If dual-booting with Windows, add the Windows EFI entry to Limine:
+Requires WoW to be installed first.
 
-```bash
-sudo limine-scan
-```
+1. Get WoWUp addon credentials from 1Password.
+2. Import addons into WoWUp.
 
-Select the Windows Boot Manager entry (typically option 1).
+---
+
+## JetBrains Setup
+
+Install IDEs via JetBrains Toolbox: **IntelliJ**, **GoLand**, **PyCharm**, **CLion**, **Rider**.
+
+Toolbox configuration:
+
+1. Launch JetBrains Toolbox after install.
+2. Log in with your JetBrains account.
+3. Enable Settings Sync for automatic configuration sharing.
 
 ---
 
 ## VPN Configuration
 
-### Proton VPN
-
-Log in and set preferences manually in the app.
-
 ### WireGuard (Unifi)
 
 1. Go to Unifi Console -> Settings -> VPN -> VPN Server -> Byrne VPN WireGuard.
-2. Add a new client and download config.
+2. Add a new client, name it `home`, and download the config.
 3. Import into NetworkManager:
 
 ```bash
-nmcli connection import type wireguard file ~/Downloads/wg0.conf
+nmcli connection import type wireguard file ~/Downloads/home.conf
 ```
 
 4. Rename the connection:
 
 ```bash
-nmcli connection modify wg0 connection.id "unifi-wg"
+nmcli connection modify home connection.id "unifi-wg"
 ```
+
+Alternatively, import via DankMaterialShell Settings -> VPN.
 
 Usage:
 
@@ -108,7 +127,7 @@ nmcli connection up unifi-wg
 nmcli connection down unifi-wg
 ```
 
-### DTU VPN Setup
+### DTU VPN
 
 ```bash
 nmcli connection add type vpn vpn-type openconnect con-name dtu-vpn +vpn.data "gateway=vpn.dtu.dk,protocol=anyconnect"
@@ -125,4 +144,12 @@ nmcli connection down dtu-vpn
 
 ---
 
-System ready - enjoy your Niriland setup.
+## Limine (If Dualboot)
+
+If dual-booting with Windows, add the Windows EFI entry to Limine:
+
+```bash
+sudo limine-scan
+```
+
+Select the Windows Boot Manager entry (typically option 1).

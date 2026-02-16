@@ -162,6 +162,37 @@ nmcli connection down dtu-vpn
 
 ---
 
+## Hide Unused Audio Inputs (WirePlumber)
+
+Disable unwanted ALSA input nodes (e.g. unused line/mic on USB audio interface):
+
+```bash
+mkdir -p ~/.config/wireplumber/wireplumber.conf.d
+cat > ~/.config/wireplumber/wireplumber.conf.d/hide-inputs.conf << 'EOF'
+monitor.alsa.rules = [
+  {
+    matches = [
+      { node.name = "alsa_input.usb-Generic_USB_Audio-00.HiFi__Line__source" }
+      { node.name = "alsa_input.usb-Generic_USB_Audio-00.HiFi__Mic__source" }
+    ]
+    actions = {
+      update-props = {
+        node.disabled = true
+      }
+    }
+  }
+]
+EOF
+```
+
+Then restart the audio stack:
+
+```bash
+systemctl --user restart wireplumber pipewire pipewire-pulse
+```
+
+---
+
 ## Limine (If Dualboot)
 
 If dual-booting with Windows, add the Windows EFI entry to Limine:

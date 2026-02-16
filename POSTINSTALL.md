@@ -105,7 +105,7 @@ Go to **File → Settings → Build, Execution, Deployment → Toolset and Build
 
 #### Toolset
 - **Mono executable path**: leave blank
-- **.NET CLI executable path**: `/home/pby/.local/share/mise/installs/dotnet/latest/dotnet`
+- **.NET CLI executable path**: `mise which dotnet` --> PATH
 - **MSBuild version**: Auto detected (18.0)
 - Uncheck **"Automatically download .NET SDK if necessary"**
 

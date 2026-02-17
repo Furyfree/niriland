@@ -72,18 +72,19 @@ Steps run in order:
 4. `15-install-packages` — install from base/chaotic/AUR manifests
 5. `17-setup-dms` — DMS shell and greeter setup
 6. `20-deploy-configs` — copy configs to `$HOME` with backups
-7. `25-setup-backgrounds` — sync wallpapers
-8. `28-setup-theming` — GTK theme, icons, cursor, fonts
-9. `30-setup-shell` — install zsh, set as default
-10. `32-setup-keyring` — GNOME keyring + PAM integration
-11. `35-setup-tools` — deploy helper scripts to `~/.local/bin/niriland`
-12. `36-setup-lazyvim` — Neovim + LazyVim starter
-13. `45-setup-dev` — Docker, mise, PlatformIO, cargo tools
-14. `46-setup-vscodium` — VSCodium + extensions
-15. `50-setup-browser` — Helium, 1Password, Widevine
-16. `70-setup-desktop-entries` — desktop files and icon cache
-17. `85-optimize-system` — enable fstrim/paccache timers
-18. `99-post-install` — font/icon cache refresh, DMS restart, reboot reminders
+7. `21-restart-portals` — restart xdg-desktop-portal services after config deploy
+8. `25-setup-backgrounds` — sync wallpapers
+9. `28-setup-theming` — GTK theme, icons, cursor, fonts
+10. `30-setup-shell` — install zsh, set as default
+11. `32-setup-keyring` — GNOME keyring + PAM integration
+12. `35-setup-tools` — deploy helper scripts to `~/.local/bin/niriland`
+13. `36-setup-lazyvim` — Neovim + LazyVim starter
+14. `45-setup-dev` — Docker, mise, PlatformIO, cargo tools
+15. `46-setup-vscodium` — VSCodium + extensions
+16. `50-setup-browser` — Helium, 1Password, Widevine
+17. `70-setup-desktop-entries` — desktop files and icon cache
+18. `85-optimize-system` — enable fstrim/paccache timers
+19. `99-post-install` — font/icon cache refresh, DMS restart, reboot reminders
 
 Notes:
 

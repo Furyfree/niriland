@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common"
+
+require_cmd systemctl
+
+PORTAL_CONFIG="$HOME/.config/xdg-desktop-portal/portals.conf"
+if [[ ! -f "$PORTAL_CONFIG" ]]; then
+  log "Portal config not found at $PORTAL_CONFIG, skipping xdg-desktop-portal restarts."
+  exit 0
+fi
+
+log "Restarting xdg-desktop-portal-gtk user service"
+if systemctl --user restart xdg-desktop-portal-gtk >/dev/null 2>&1; then
+  log "xdg-desktop-portal-gtk restarted."
+else
+  warn "Failed to restart xdg-desktop-portal-gtk user service (no active user session?)."
+fi
+
+log "Restarting xdg-desktop-portal user service"
+if systemctl --user restart xdg-desktop-portal >/dev/null 2>&1; then
+  log "xdg-desktop-portal restarted."
+else
+  warn "Failed to restart xdg-desktop-portal user service (no active user session?)."
+fi
+
+log_success "Portal restart step complete."

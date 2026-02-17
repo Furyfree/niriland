@@ -64,5 +64,8 @@
     "FSharp.dotnetRoot": "/usr/share/dotnet",
     "code-runner.executorMap": {
         "fsharp": "/usr/share/dotnet/dotnet fsi"
-    }
+    },
+
+    // --- Python ---
+    "python.terminal.activateEnvironment": false
 }

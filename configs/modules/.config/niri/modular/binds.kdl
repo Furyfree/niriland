@@ -220,6 +220,12 @@ binds {
     }
 
     // === Monitor Navigation ===
+    Mod+Ctrl+Left hotkey-overlay-title="Focus Monitor Left" {
+        focus-monitor-left;
+    }
+    Mod+Ctrl+Down hotkey-overlay-title="Focus Monitor Down" {
+        focus-monitor-down;
+    }
     Mod+Ctrl+Up hotkey-overlay-title="Focus Monitor Up" {
         focus-monitor-up;
     }

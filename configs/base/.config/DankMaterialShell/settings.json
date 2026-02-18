@@ -28,7 +28,7 @@
   "customAnimationDuration": 500,
   "wallpaperFillMode": "Fill",
   "blurredWallpaperLayer": false,
-  "blurWallpaperOnOverview": false,
+  "blurWallpaperOnOverview": true,
   "showLauncherButton": true,
   "showWorkspaceSwitcher": true,
   "showFocusedWindow": true,
@@ -117,13 +117,13 @@
   ],
   "showWorkspaceIndex": true,
   "showWorkspaceName": false,
-  "showWorkspacePadding": false,
+  "showWorkspacePadding": true,
   "workspaceScrolling": false,
   "showWorkspaceApps": false,
   "maxWorkspaceIcons": 3,
   "groupWorkspaceApps": true,
   "workspaceFollowFocus": false,
-  "showOccupiedWorkspacesOnly": false,
+  "showOccupiedWorkspacesOnly": true,
   "reverseScrolling": false,
   "dwlShowAllTags": false,
   "workspaceColorMode": "default",
@@ -171,8 +171,8 @@
     }
   ],
   "centeringMode": "index",
-  "clockDateFormat": "",
-  "lockDateFormat": "",
+  "clockDateFormat": "ddd d MMM yyyy",
+  "lockDateFormat": "ddd d MMM yyyy",
   "mediaSize": 1,
   "appLauncherViewMode": "list",
   "spotlightModalViewMode": "grid",
@@ -184,9 +184,9 @@
   "weatherEnabled": true,
   "networkPreference": "auto",
   "vpnLastConnected": "",
-  "iconTheme": "System Default",
+  "iconTheme": "Papirus-Dark",
   "cursorSettings": {
-    "theme": "System Default",
+    "theme": "Bibata-Modern-Ice",
     "size": 24,
     "niri": {
       "hideWhenTyping": false,
@@ -303,9 +303,9 @@
   "notificationTimeoutLow": 5000,
   "notificationTimeoutNormal": 5000,
   "notificationTimeoutCritical": 0,
-  "notificationCompactMode": false,
+  "notificationCompactMode": true,
   "notificationPopupPosition": 0,
-  "notificationHistoryEnabled": true,
+  "notificationHistoryEnabled": false,
   "notificationHistoryMaxCount": 50,
   "notificationHistoryMaxAgeDays": 7,
   "notificationHistorySaveLow": true,
@@ -339,7 +339,7 @@
   "customPowerActionHibernate": "",
   "customPowerActionReboot": "",
   "customPowerActionPowerOff": "",
-  "updaterHideWidget": false,
+  "updaterHideWidget": true,
   "updaterUseCustomCommand": false,
   "updaterCustomCommand": "",
   "updaterTerminalAdditionalParams": "",
@@ -359,7 +359,14 @@
       ],
       "showOnLastDisplay": true,
       "leftWidgets": [
-        "workspaceSwitcher"
+        {
+          "id": "workspaceSwitcher",
+          "enabled": true
+        },
+        {
+          "id": "systemUpdate",
+          "enabled": true
+        }
       ],
       "centerWidgets": [
         "music",
@@ -367,11 +374,26 @@
         "weather"
       ],
       "rightWidgets": [
-        "systemTray",
-        "clipboard",
-        "notificationButton",
-        "battery",
-        "controlCenterButton"
+        {
+          "id": "systemTray",
+          "enabled": true
+        },
+        {
+          "id": "clipboard",
+          "enabled": true
+        },
+        {
+          "id": "notificationButton",
+          "enabled": true
+        },
+        {
+          "id": "battery",
+          "enabled": true
+        },
+        {
+          "id": "controlCenterButton",
+          "enabled": true
+        }
       ],
       "spacing": 4,
       "innerPadding": 4,
@@ -389,12 +411,14 @@
       "borderThickness": 1,
       "fontScale": 1,
       "autoHide": false,
-      "autoHideDelay": 250,
+      "autoHideDelay": 0,
       "openOnOverview": false,
       "visible": true,
       "popupGapsAuto": true,
       "popupGapsManual": 4,
-      "shadowOpacity": 60
+      "shadowOpacity": 60,
+      "widgetOutlineEnabled": false,
+      "shadowColorMode": "text"
     }
   ],
   "desktopClockEnabled": false,

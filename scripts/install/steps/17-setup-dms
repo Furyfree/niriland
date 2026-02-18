@@ -7,6 +7,10 @@ source "$SCRIPT_DIR/../lib/common"
 
 log "Installing DankMaterialShell and dependencies..."
 install_package niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk matugen cava qt6-multimedia-ffmpeg
+
+log "Installing and enabling power-profiles-daemon..."
+install_package power-profiles-daemon
+run_sudo systemctl enable --now power-profiles-daemon
 install_aur_package quickshell-git
 install_aur_package dms-shell-bin
 

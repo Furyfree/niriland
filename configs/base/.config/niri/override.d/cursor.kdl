@@ -1,5 +1,0 @@
-// Cursor overrides (user-editable).
-cursor {
-    xcursor-theme "Bibata-Modern-Ice"
-    xcursor-size 24
-}

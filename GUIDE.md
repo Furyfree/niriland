@@ -104,7 +104,8 @@ Update behavior:
 - Resolves repo from current script location, current directory, or `NIRILAND_DIR`.
 - Requires a clean git worktree (fails if local changes exist).
 - Runs `git pull --ff-only`.
-- Runs step subsets in order: `15-*`, `20-*`, `35-*`, `70-*`, `99-*`.
+- Runs full package upgrade via `niriland-pkg upgrade` (`paru -Syu --noconfirm`).
+- Runs step subsets in order: `15-*`, `17-*`, `20-*`, `35-*`, `70-*`, `99-*`.
 - Forces `NIRILAND_CONFIG_DEPLOY_MODE=preserve` for `20-*` so existing `~/.config/*` files are not overwritten.
 - Runs `cargo install-update --all` at the end to update Rust tools.
 

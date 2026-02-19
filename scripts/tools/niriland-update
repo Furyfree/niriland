@@ -31,10 +31,13 @@ log "Using repo: $REPO_ROOT"
 log "Pulling latest changes"
 git -C "$REPO_ROOT" pull --ff-only
 
-# 15-* and 99-* include privileged operations.
+# Package upgrades and 15-*/17-*/99-* include privileged operations.
 read_system_pass
 
-for pattern in 15-* 20-* 35-* 70-* 99-*; do
+log "Upgrading packages (niriland-pkg upgrade)..."
+bash "$REPO_ROOT/scripts/tools/niriland-pkg" upgrade
+
+for pattern in 15-* 17-* 20-* 35-* 70-* 99-*; do
   found=false
 
   for step in "$REPO_ROOT/scripts/install/steps"/$pattern; do

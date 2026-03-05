@@ -95,7 +95,7 @@ binds {
 
     // === Editors & Terminal ===
     Mod+Shift+Z hotkey-overlay-title=null {
-        spawn "zeditor" "--new";
+        spawn "zed" "--new";
     }
     Mod+Shift+V hotkey-overlay-title=null {
         spawn "codium" "--enable-features=UseOzonePlatform,WaylandWindowDecorations" "--ozone-platform=wayland";
@@ -154,9 +154,6 @@ binds {
     }
     Mod+F hotkey-overlay-title="Maximize Column" {
         maximize-column;
-    }
-    F11 hotkey-overlay-title="Fullscreen" {
-        fullscreen-window;
     }
     Mod+Q hotkey-overlay-title="Toggle Floating" {
         toggle-window-floating;

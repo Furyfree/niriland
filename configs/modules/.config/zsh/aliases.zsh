@@ -26,7 +26,7 @@ alias paste="wl-paste"
 alias nvimconfig="cd ~/.config/nvim && nvim ."
 alias n="nvim"
 alias ld='lazydocker'
-alias zed='zeditor'
+# alias zed='zeditor'
 alias code='vscodium'
 
 # Search and Find

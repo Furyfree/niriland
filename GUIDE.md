@@ -30,7 +30,7 @@ Recommended baseline before running Niriland:
   - `git`
   - `curl`
   - working network access
-- Niriland now layers desktop/session packages, DMS, config deployment, and CachyOS tweaks on top of that base
+- Niriland now layers desktop/session packages, DMS, and config deployment on top of that base
 
 See [CACHYOS_HEADLESS_INSTALL.md](CACHYOS_HEADLESS_INSTALL.md) for the preferred installer choices, including LUKS2 FDE, Btrfs + Snapper, and what to keep or skip in the CachyOS package selection screens.
 
@@ -61,23 +61,22 @@ Steps run in order:
 1. `00-setup-pacman` — pacman/paru config, live pacman.conf patching, Chaotic AUR
 2. `05-setup-fde` — validate existing CachyOS LUKS boot config, enroll TPM2 auto-unlock, and create a recovery key (skips if no TPM)
 3. `15-install-packages` — install from base/CachyOS/Chaotic/AUR manifests
-4. `16-setup-cachyos` — install CachyOS tools, install recommended drivers via `chwd -a`, and apply CachyOS tweaks
-5. `17-setup-dms` — DMS shell and greeter setup
-6. `20-deploy-configs` — copy configs to `$HOME` with backups
-7. `21-restart-portals` — restart xdg-desktop-portal services after config deploy
-8. `25-setup-backgrounds` — sync wallpapers
-9. `28-setup-theming` — GTK theme, icons, cursor, fonts
-10. `30-setup-shell` — install zsh, set as default
-11. `32-setup-keyring` — GNOME keyring + PAM integration
-12. `35-setup-tools` — deploy helper scripts to `~/.local/bin/niriland`
-13. `36-setup-lazyvim` — Neovim + LazyVim starter
-14. `45-setup-dev` — Docker, mise, PlatformIO, cargo tools
-15. `46-setup-vscodium` — VSCodium + extensions
-16. `47-setup-zed` — install Zed via upstream installer
-17. `50-setup-browser` — Helium, 1Password, Widevine
-18. `70-setup-desktop-entries` — desktop files and icon cache
-19. `85-optimize-system` — enable fstrim/paccache timers
-20. `99-post-install` — font/icon cache refresh, DMS restart, reboot reminders
+4. `17-setup-dms` — DMS shell and greeter setup
+5. `20-deploy-configs` — copy configs to `$HOME` with backups
+6. `21-restart-portals` — restart xdg-desktop-portal services after config deploy
+7. `25-setup-backgrounds` — sync wallpapers
+8. `28-setup-theming` — GTK theme, icons, cursor, fonts
+9. `30-setup-shell` — install zsh, set as default
+10. `32-setup-keyring` — GNOME keyring + PAM integration
+11. `35-setup-tools` — deploy helper scripts to `~/.local/bin/niriland`
+12. `36-setup-lazyvim` — Neovim + LazyVim starter
+13. `45-setup-dev` — Docker, mise, PlatformIO, cargo tools
+14. `46-setup-vscodium` — VSCodium + extensions
+15. `47-setup-zed` — install Zed via upstream installer
+16. `50-setup-browser` — Helium, 1Password, Widevine
+17. `70-setup-desktop-entries` — desktop files and icon cache
+18. `85-optimize-system` — enable fstrim/paccache timers
+19. `99-post-install` — font/icon cache refresh, DMS restart, reboot reminders
 
 Notes:
 

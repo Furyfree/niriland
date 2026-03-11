@@ -16,7 +16,6 @@ STEPS=(
   "$STEPS_DIR/00-setup-pacman"
   "$STEPS_DIR/05-setup-fde"
   "$STEPS_DIR/15-install-packages"
-  "$STEPS_DIR/16-setup-cachyos"
   "$STEPS_DIR/17-setup-dms"
   "$STEPS_DIR/20-deploy-configs"
   "$STEPS_DIR/21-restart-portals"

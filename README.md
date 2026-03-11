@@ -5,7 +5,7 @@ CachyOS post-install setup for a Niri + DankMaterialShell desktop with curated p
 > **Warning**
 >
 > - This is a **fresh-install tool**. It overwrites system and user configs. Do not run on an existing customized system without understanding what each step does.
-> - Step `05-setup-fde` enrolls TPM2 keys for LUKS auto-unlock. Read the step before running if you use full-disk encryption.
+> - Step `05-setup-fde` augments an existing CachyOS LUKS setup with TPM2 auto-unlock and a recovery key. Read the step before running if you use full-disk encryption.
 > - The repo **must** live at `~/.local/share/niriland`. Niri configs reference this path directly.
 
 ## Quick Start
@@ -35,6 +35,7 @@ Post-install note: after your first successful login into Niri, reboot one more 
 Installs curated base, CachyOS, Chaotic, and AUR packages; applies CachyOS tweaks; deploys Niri/DMS/Ghostty/Zsh configs; sets up theming (GTK, cursors, fonts, Matugen color generation); configures dev tools (Docker, mise, Neovim/LazyVim, VSCodium, Zed); and installs optional helper scripts for AI, gaming, VMs, fingerprint auth, and more.
 
 See [GUIDE.md](GUIDE.md) for the full reference.
+For the recommended fresh-install baseline, see [CACHYOS_HEADLESS_INSTALL.md](CACHYOS_HEADLESS_INSTALL.md).
 
 ## Repository Layout
 

@@ -20,7 +20,38 @@ trap cleanup EXIT
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common"
 
-log "Setting up FDE auto-unlock with TPM2..."
+mkinitcpio_has_hook() {
+  local hook_name="$1"
+  local file
+
+  for file in /etc/mkinitcpio.conf /etc/mkinitcpio.conf.d/*.conf; do
+    [[ -e "$file" ]] || continue
+    if grep -Eq "(^|[^[:alnum:]_-])${hook_name}([^[:alnum:]_-]|$)" "$file"; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+upsert_crypttab_entry() {
+  local crypttab="$1"
+  local mapper_name="$2"
+  local entry="$3"
+  local temp_file
+
+  temp_file="$(mktemp -t crypttab.XXXXXX)"
+
+  if run_sudo test -f "$crypttab"; then
+    run_sudo cat "$crypttab" | grep -Ev "^${mapper_name}[[:space:]]" >"$temp_file" || true
+  fi
+
+  printf '%s\n' "$entry" >>"$temp_file"
+  run_sudo install -m 644 "$temp_file" "$crypttab"
+  rm -f "$temp_file"
+}
+
+log "Configuring TPM2 auto-unlock for the existing CachyOS FDE setup..."
 
 # --- TPM presence check (skip if unavailable) ---
 if [ ! -e /dev/tpmrm0 ] && [ ! -e /dev/tpm0 ]; then
@@ -30,6 +61,11 @@ fi
 
 # Check prerequisites
 require_paru
+require_cmd cryptsetup
+require_cmd findmnt
+require_cmd mkinitcpio
+require_cmd systemd-cryptenroll
+require_cmd limine-update
 
 # Install required packages
 for pkg in limine-mkinitcpio-hook limine-snapper-sync; do
@@ -73,6 +109,14 @@ fi
 
 log "LUKS UUID: $LUKS_UUID"
 
+if ! mkinitcpio_has_hook systemd; then
+  warn "mkinitcpio does not appear to use the systemd hook. CachyOS defaults may have changed."
+fi
+
+if ! mkinitcpio_has_hook sd-encrypt; then
+  warn "mkinitcpio does not appear to include sd-encrypt. TPM2 auto-unlock may not work until that is fixed."
+fi
+
 # --- Check existing tokens ---
 HAVE_RECOVERY=false
 HAVE_TPM2=false
@@ -87,39 +131,12 @@ if run_sudo cryptsetup luksDump --dump-json-metadata "$LUKS_DEV" | grep -q '"typ
   log "TPM2 auto-unlock already enrolled"
 fi
 
-# --- Configure mkinitcpio for systemd + sd-encrypt ---
-log "Configuring mkinitcpio (systemd-based initramfs)"
-
-CONF_DIR="/etc/mkinitcpio.conf.d"
-CONF_FILE="$CONF_DIR/fde-systemd.conf"
-
-run_sudo mkdir -p "$CONF_DIR"
-run_sudo touch "$CONF_FILE"
-
-run_sudo tee "$CONF_FILE" >/dev/null <<'EOF'
-# systemd-based initramfs for TPM2 auto-unlock
-HOOKS=(base systemd autodetect microcode modconf kms keyboard sd-vconsole block sd-encrypt filesystems fsck)
-EOF
-
-log "Written $CONF_FILE"
-
-# --- Kernel cmdline ---
-CMDLINE="/etc/kernel/cmdline"
-run_sudo mkdir -p "$(dirname "$CMDLINE")"
-
-# Simple format that actually works
-NEW_CMDLINE="root=/dev/mapper/$MAPPER_NAME rw quiet rootfstype=btrfs rootflags=subvol=@"
-
-echo "$NEW_CMDLINE" | run_sudo tee "$CMDLINE" >/dev/null
-log "Updated kernel cmdline"
-
 # --- Crypttab (use "-" not "none") ---
 CRYPTTAB="/etc/crypttab.initramfs"
 ENTRY="$MAPPER_NAME UUID=$LUKS_UUID - tpm2-device=auto"
 
-run_sudo touch "$CRYPTTAB"
-echo "$ENTRY" | run_sudo tee "$CRYPTTAB" >/dev/null
-log "Updated crypttab"
+upsert_crypttab_entry "$CRYPTTAB" "$MAPPER_NAME" "$ENTRY"
+log "Updated $CRYPTTAB"
 
 # --- Create and store recovery key (idempotent) ---
 RECOVERY_FILE="/root/luks-recovery-key.txt"
@@ -162,13 +179,9 @@ if [ "$HAVE_TPM2" != "true" ]; then
 fi
 
 # --- Final rebuild ---
-log "Updating bootloader and initramfs"
+log "Rebuilding initramfs and updating Limine"
+run_sudo mkinitcpio -P
 run_sudo limine-update
-
-if [[ -d /boot/limine ]]; then
-  log "Removing conflicting entry"
-  run_sudo rm -rf /boot/limine
-fi
 
 log "FDE auto-unlock setup complete"
 log "Recovery key is stored in $RECOVERY_FILE (keep this safe!)"

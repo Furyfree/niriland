@@ -15,7 +15,7 @@ Niriland is a CachyOS-first setup around:
 ## Warnings
 
 - This is a **fresh-install tool**. It overwrites system and user configs. Do not run on an existing customized system without understanding what each step does.
-- Step `05-setup-fde` enrolls TPM2 keys for LUKS auto-unlock. Read the step before running if you use full-disk encryption.
+- Step `05-setup-fde` augments an existing CachyOS LUKS setup with TPM2 auto-unlock and a recovery key. Read the step before running if you use full-disk encryption.
 - The repo **must** live at `~/.local/share/niriland`. The deployed Niri config includes modular fragments from this path directly. If the repo lives elsewhere, the Niri config will fail to load.
 
 ## CachyOS Baseline
@@ -31,6 +31,8 @@ Recommended baseline before running Niriland:
   - `curl`
   - working network access
 - Niriland now layers desktop/session packages, DMS, config deployment, and CachyOS tweaks on top of that base
+
+See [CACHYOS_HEADLESS_INSTALL.md](CACHYOS_HEADLESS_INSTALL.md) for the preferred installer choices, including LUKS2 FDE, Btrfs + Snapper, and what to keep or skip in the CachyOS package selection screens.
 
 Important: use this on a fresh install target. It is not designed to preserve an already customized system.
 
@@ -57,7 +59,7 @@ The installer prompts for:
 Steps run in order:
 
 1. `00-setup-pacman` — pacman/paru config, live pacman.conf patching, Chaotic AUR
-2. `05-setup-fde` — TPM2/LUKS2 full-disk encryption (skips if no TPM)
+2. `05-setup-fde` — validate existing CachyOS LUKS boot config, enroll TPM2 auto-unlock, and create a recovery key (skips if no TPM)
 3. `15-install-packages` — install from base/CachyOS/Chaotic/AUR manifests
 4. `16-setup-cachyos` — install CachyOS tools, install recommended drivers via `chwd -a`, and apply CachyOS tweaks
 5. `17-setup-dms` — DMS shell and greeter setup

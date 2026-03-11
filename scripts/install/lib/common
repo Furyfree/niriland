@@ -118,6 +118,7 @@ require_cmd() {
 
 install_package() {
   local pkg
+  local -a missing_packages=()
 
   for pkg in "$@"; do
     if pacman -Qq "$pkg" >/dev/null 2>&1; then
@@ -125,13 +126,21 @@ install_package() {
       continue
     fi
 
-    log "Installing $pkg..."
-    run_sudo pacman -S --needed --noconfirm "$pkg" || die "Failed to install $pkg"
+    missing_packages+=("$pkg")
   done
+
+  if [[ ${#missing_packages[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  log "Installing packages: ${missing_packages[*]}"
+  run_sudo pacman -S --needed --noconfirm "${missing_packages[@]}" \
+    || die "Failed to install packages: ${missing_packages[*]}"
 }
 
 install_aur_package() {
   local pkg
+  local -a missing_packages=()
 
   for pkg in "$@"; do
     if pacman -Qq "$pkg" >/dev/null 2>&1; then
@@ -139,9 +148,16 @@ install_aur_package() {
       continue
     fi
 
-    log "Installing $pkg from AUR..."
-    paru -S --needed --noconfirm "$pkg" || die "Failed to install $pkg"
+    missing_packages+=("$pkg")
   done
+
+  if [[ ${#missing_packages[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  log "Installing AUR packages: ${missing_packages[*]}"
+  paru -S --needed --noconfirm "${missing_packages[@]}" \
+    || die "Failed to install AUR packages: ${missing_packages[*]}"
 }
 
 ##############################################################################

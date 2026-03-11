@@ -66,6 +66,8 @@ if ! grep -q '^SkipReview' /etc/paru.conf; then
     echo 'SkipReview' | run_sudo tee -a /etc/paru.conf >/dev/null
 fi
 
+run_sudo pacman -Sy --needed archlinux-keyring cachyos-keyring
+
 # --- Cleanup cache timer ---
 install_package pacman-contrib
 run_sudo systemctl enable --now paccache.timer

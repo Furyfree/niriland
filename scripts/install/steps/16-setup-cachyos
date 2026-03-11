@@ -47,10 +47,10 @@ else
 fi
 
 log "Applying CachyOS tweaks..."
-set_tweak_state enable Psd enabled
-set_tweak_state disable Oomd disabled
-set_tweak_state disable Bpftune disabled
-set_tweak_state enable Bluetooth enabled
-set_tweak_state enable Ananicy enabled
+set_tweak_state enable psd enabled
+set_tweak_state disable oomd disabled
+set_tweak_state disable bpftune disabled
+set_tweak_state enable bluetooth enabled
+set_tweak_state enable ananicy enabled
 
 log_success "CachyOS setup complete."

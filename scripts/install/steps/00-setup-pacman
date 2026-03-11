@@ -6,8 +6,30 @@ source "$SCRIPT_DIR/../lib/common"
 
 install_package base-devel
 
-# Deploy our pacman.conf (Color, ILoveCandy, ParallelDownloads, multilib, etc.)
-copy_file "$REPO_ROOT/configs/system/etc/pacman.conf" "/etc/pacman.conf"
+# Patch the existing distro pacman.conf instead of overwriting it.
+if ! run_sudo test -f /etc/pacman.conf.bak; then
+    run_sudo cp /etc/pacman.conf /etc/pacman.conf.bak
+fi
+
+run_sudo sed -i \
+    -e 's/^#Color$/Color/' \
+    -e 's/^#CheckSpace$/CheckSpace/' \
+    -e 's/^#VerbosePkgLists$/VerbosePkgLists/' \
+    -e 's/^#DisableDownloadTimeout$/DisableDownloadTimeout/' \
+    -e 's/^#ParallelDownloads = 5$/ParallelDownloads = 10/' \
+    -e 's/^ParallelDownloads = .*$/ParallelDownloads = 10/' \
+    -e 's/^#DownloadUser = alpm$/DownloadUser = alpm/' \
+    /etc/pacman.conf
+
+if ! grep -q '^ILoveCandy$' /etc/pacman.conf; then
+    run_sudo sed -i '/^Color$/a ILoveCandy' /etc/pacman.conf
+fi
+
+run_sudo sed -i \
+    '/^#\[multilib\]$/,/^#Include = \/etc\/pacman.d\/mirrorlist$/ {
+        s/^#\[multilib\]$/[multilib]/
+        s/^#Include = \/etc\/pacman.d\/mirrorlist$/Include = \/etc\/pacman.d\/mirrorlist/
+    }' /etc/pacman.conf
 
 # --- Chaotic AUR ---
 if ! grep -q '^\[chaotic-aur\]' /etc/pacman.conf; then

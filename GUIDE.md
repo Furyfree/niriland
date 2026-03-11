@@ -56,10 +56,10 @@ The installer prompts for:
 
 Steps run in order:
 
-1. `00-setup-pacman` — pacman/paru config, repo pacman.conf, Chaotic AUR
+1. `00-setup-pacman` — pacman/paru config, live pacman.conf patching, Chaotic AUR
 2. `05-setup-fde` — TPM2/LUKS2 full-disk encryption (skips if no TPM)
 3. `15-install-packages` — install from base/CachyOS/Chaotic/AUR manifests
-4. `16-setup-cachyos` — install CachyOS tools and apply CachyOS tweaks
+4. `16-setup-cachyos` — install CachyOS tools, install recommended drivers via `chwd -a`, and apply CachyOS tweaks
 5. `17-setup-dms` — DMS shell and greeter setup
 6. `20-deploy-configs` — copy configs to `$HOME` with backups
 7. `21-restart-portals` — restart xdg-desktop-portal services after config deploy
@@ -260,7 +260,7 @@ Notes:
 
 If commands are missing, verify foundational steps completed:
 
-- `00-setup-pacman` for repo/bootstrap package manager setup (`paru`, repo pacman.conf, Chaotic AUR, timers)
+- `00-setup-pacman` for repo/bootstrap package manager setup (`paru`, live pacman.conf patching, Chaotic AUR, timers)
 - `15-install-packages` for package manifests
 
 For AI issues:

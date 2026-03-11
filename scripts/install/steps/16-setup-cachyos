@@ -30,6 +30,14 @@ log "Installing CachyOS tools..."
 install_package cachyos-hello cachyos-settings cachyos-packageinstaller cachy-update cachyos-rate-mirrors chwd
 require_cmd cachyos-hello
 require_cmd cachyos-rate-mirrors
+require_cmd chwd
+
+log "Installing recommended drivers..."
+if run_sudo chwd -a; then
+  log_success "Recommended drivers installed."
+else
+  warn "chwd -a failed. You may need to install drivers manually."
+fi
 
 log "Ranking CachyOS mirrors..."
 if run_sudo cachyos-rate-mirrors; then

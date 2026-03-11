@@ -47,8 +47,15 @@ upsert_crypttab_entry() {
   fi
 
   printf '%s\n' "$entry" >>"$temp_file"
+
+  if run_sudo test -f "$crypttab" && run_sudo cmp -s "$temp_file" "$crypttab"; then
+    rm -f "$temp_file"
+    return 1
+  fi
+
   run_sudo install -m 644 "$temp_file" "$crypttab"
   rm -f "$temp_file"
+  return 0
 }
 
 log "Configuring TPM2 auto-unlock for the existing CachyOS FDE setup..."
@@ -134,9 +141,14 @@ fi
 # --- Crypttab (use "-" not "none") ---
 CRYPTTAB="/etc/crypttab.initramfs"
 ENTRY="$MAPPER_NAME UUID=$LUKS_UUID - tpm2-device=auto"
+NEEDS_REBUILD=false
 
-upsert_crypttab_entry "$CRYPTTAB" "$MAPPER_NAME" "$ENTRY"
-log "Updated $CRYPTTAB"
+if upsert_crypttab_entry "$CRYPTTAB" "$MAPPER_NAME" "$ENTRY"; then
+  NEEDS_REBUILD=true
+  log "Updated $CRYPTTAB"
+else
+  log "$CRYPTTAB already up to date"
+fi
 
 # --- Create and store recovery key (idempotent) ---
 RECOVERY_FILE="/root/luks-recovery-key.txt"
@@ -165,6 +177,7 @@ if [ "$HAVE_RECOVERY" != "true" ]; then
     die "Failed to enroll recovery key"
   fi
 
+  NEEDS_REBUILD=true
   log "Recovery key saved to $RECOVERY_FILE"
   run_sudo chmod 600 "$RECOVERY_FILE"
 fi
@@ -176,12 +189,18 @@ if [ "$HAVE_TPM2" != "true" ]; then
   if ! run_sudo systemd-cryptenroll "$LUKS_DEV" --unlock-key-file="$TEMP_KEYFILE" --tpm2-device=auto; then
     die "Failed to enroll TPM2"
   fi
+
+  NEEDS_REBUILD=true
 fi
 
 # --- Final rebuild ---
-log "Rebuilding initramfs and updating Limine"
-run_sudo mkinitcpio -P
-run_sudo limine-update
+if [ "$NEEDS_REBUILD" = "true" ]; then
+  log "Rebuilding initramfs and updating Limine"
+  run_sudo mkinitcpio -P
+  run_sudo limine-update
+else
+  log "FDE auto-unlock already configured; skipping initramfs rebuild and Limine update"
+fi
 
 log "FDE auto-unlock setup complete"
 log "Recovery key is stored in $RECOVERY_FILE (keep this safe!)"

@@ -23,7 +23,7 @@ set_tweak_state() {
   fi
 
   log "Setting CachyOS tweak ${tweak_name} -> ${desired_state}..."
-  cachyos-hello tweak "$action" "$tweak_name"
+  run_sudo cachyos-hello tweak "$action" "$tweak_name"
 }
 
 log "Installing CachyOS tools..."
@@ -47,10 +47,10 @@ else
 fi
 
 log "Applying CachyOS tweaks..."
-run_sudo set_tweak_state enable psd enabled
-run_sudo set_tweak_state disable oomd disabled
-run_sudo set_tweak_state disable bpftune disabled
-run_sudo set_tweak_state enable bluetooth enabled
-run_sudo set_tweak_state enable ananicy enabled
+set_tweak_state enable psd enabled
+set_tweak_state disable oomd disabled
+set_tweak_state disable bpftune disabled
+set_tweak_state enable bluetooth enabled
+set_tweak_state enable ananicy enabled
 
 log_success "CachyOS setup complete."

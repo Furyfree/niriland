@@ -1,9 +1,3 @@
-spawn-at-startup "niriusd"
-
-config-notification {
-    disable-failed
-}
-
 gestures {
     hot-corners {
         off

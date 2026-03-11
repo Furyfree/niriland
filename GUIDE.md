@@ -4,7 +4,7 @@ Practical reference for using and maintaining a Niriland setup.
 
 ## What Niriland Is
 
-Niriland is an Arch Linux setup around:
+Niriland is a CachyOS-first setup around:
 
 - Niri compositor
 - DankMaterialShell (DMS)
@@ -18,31 +18,21 @@ Niriland is an Arch Linux setup around:
 - Step `05-setup-fde` enrolls TPM2 keys for LUKS auto-unlock. Read the step before running if you use full-disk encryption.
 - The repo **must** live at `~/.local/share/niriland`. The deployed Niri config includes modular fragments from this path directly. If the repo lives elsewhere, the Niri config will fail to load.
 
-## Archinstall Baseline
+## CachyOS Baseline
 
-Recommended `archinstall` choices before running Niriland:
+Recommended baseline before running Niriland:
 
-- **Locales**: Set keyboard layout, system language (`en_US.UTF-8`), encoding (`UTF-8`)
-- **Mirrors**: Set your region (also add worldwide for safety as second mirror)
-- **Disk configuration**: Use best-effort partition layout, select your disk, choose `btrfs`, enable `LUKS2` encryption, enable compression (`zstd`), choose `Snapper` for snapshots
-- **Swap**: zram, `zstd` compression (should be default)
-- **Bootloader**: Limine (removable: no unless you have Windows boot as well)
-- **Kernels**: `linux` (should be default)
-- **Hostname**: Set your hostname
-- **Authentication**:
-   - **Root password**: Set a root password
-   - **User account**: Create your user with sudo privileges
-- **Profile**: Minimal
-- **Applications**:
-   - **Bluetooth**: Yes
-   - **Audio**: PipeWire
-   - **Print service**: Yes
-- **Network configuration**: NetworkManager with IWD backend
-- **Additional packages**: `iwd`, `curl`, `git` (required for bootstrap)
-- **Timezone**: Set your timezone
-- **NTP**: Enabled (should be default)
+- Start from a fresh CachyOS install
+- Keep CachyOS defaults for drivers, bootloader, and base system integration
+- A headless/minimal CachyOS install is acceptable as long as you have:
+  - `systemd`
+  - `sudo`
+  - `git`
+  - `curl`
+  - working network access
+- Niriland now layers desktop/session packages, DMS, config deployment, and CachyOS tweaks on top of that base
 
-Important: this wipes the selected disk. Review before confirming.
+Important: use this on a fresh install target. It is not designed to preserve an already customized system.
 
 ## Install Flow
 
@@ -66,10 +56,10 @@ The installer prompts for:
 
 Steps run in order:
 
-1. `00-setup-pacman` — pacman/paru config, Chaotic AUR
+1. `00-setup-pacman` — pacman/paru config, repo pacman.conf, Chaotic AUR
 2. `05-setup-fde` — TPM2/LUKS2 full-disk encryption (skips if no TPM)
-3. `10-install-drivers` — GPU driver auto-detection (AMD/Intel/NVIDIA)
-4. `15-install-packages` — install from base/chaotic/AUR manifests
+3. `15-install-packages` — install from base/CachyOS/Chaotic/AUR manifests
+4. `16-setup-cachyos` — install CachyOS tools and apply CachyOS tweaks
 5. `17-setup-dms` — DMS shell and greeter setup
 6. `20-deploy-configs` — copy configs to `$HOME` with backups
 7. `21-restart-portals` — restart xdg-desktop-portal services after config deploy
@@ -81,10 +71,11 @@ Steps run in order:
 13. `36-setup-lazyvim` — Neovim + LazyVim starter
 14. `45-setup-dev` — Docker, mise, PlatformIO, cargo tools
 15. `46-setup-vscodium` — VSCodium + extensions
-16. `50-setup-browser` — Helium, 1Password, Widevine
-17. `70-setup-desktop-entries` — desktop files and icon cache
-18. `85-optimize-system` — enable fstrim/paccache timers
-19. `99-post-install` — font/icon cache refresh, DMS restart, reboot reminders
+16. `47-setup-zed` — install Zed via upstream installer
+17. `50-setup-browser` — Helium, 1Password, Widevine
+18. `70-setup-desktop-entries` — desktop files and icon cache
+19. `85-optimize-system` — enable fstrim/paccache timers
+20. `99-post-install` — font/icon cache refresh, DMS restart, reboot reminders
 
 Notes:
 
@@ -184,7 +175,7 @@ niriland-setup-ai setup
 niriland-setup-ai status
 ```
 
-Installs/configures Opencode, Codex, Ollama, Docker, and OpenWebUI.
+Installs/configures Opencode, Codex, Claude Code, Ollama, Docker, and OpenWebUI.
 
 ### Gaming Bundle
 
@@ -193,7 +184,7 @@ niriland-setup-gaming setup
 niriland-setup-gaming status
 ```
 
-Installs gaming packages and launchers.
+Installs CachyOS gaming packages plus Niriland gaming extras. If available, use `game-performance %command%` in Steam launch options.
 
 ### Certificates (DTU Eduroam)
 
@@ -269,7 +260,7 @@ Notes:
 
 If commands are missing, verify foundational steps completed:
 
-- `00-setup-pacman` for repo/bootstrap package manager setup (`paru`, Chaotic AUR, timers)
+- `00-setup-pacman` for repo/bootstrap package manager setup (`paru`, repo pacman.conf, Chaotic AUR, timers)
 - `15-install-packages` for package manifests
 
 For AI issues:

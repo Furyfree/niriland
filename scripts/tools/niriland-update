@@ -31,7 +31,7 @@ log "Using repo: $REPO_ROOT"
 log "Pulling latest changes"
 git -C "$REPO_ROOT" pull --ff-only
 
-# Package upgrades and 15-*/17-*/99-* include privileged operations.
+# Package upgrades and selected install-step replays include privileged operations.
 read_system_pass
 
 log "Upgrading packages (niriland-pkg upgrade)..."

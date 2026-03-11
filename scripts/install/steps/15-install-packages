@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/../lib/common"
 
 BASE="$REPO_ROOT/packages/base.packages"
 AUR="$REPO_ROOT/packages/aur.packages"
+CACHY="$REPO_ROOT/packages/cachyos.packages"
 CHAOTIC="$REPO_ROOT/packages/chaotic.packages"
 
 if [ ! -f "$BASE" ]; then
@@ -15,6 +16,9 @@ fi
 if [ ! -f "$AUR" ]; then
     die "Missing $AUR"
 fi
+if [ ! -f "$CACHY" ]; then
+    die "Missing $CACHY"
+fi
 if [ ! -f "$CHAOTIC" ]; then
     die "Missing $CHAOTIC"
 fi
@@ -22,6 +26,10 @@ fi
 # Install base packages
 mapfile -t packages < <(grep -Ev '^\s*(#|$)' "$BASE")
 install_package "${packages[@]}"
+
+# Install CachyOS repo packages
+mapfile -t cachy_packages < <(grep -Ev '^\s*(#|$)' "$CACHY")
+install_package "${cachy_packages[@]}"
 
 # Install Chaotic AUR packages
 mapfile -t chaotic_packages < <(grep -Ev '^\s*(#|$)' "$CHAOTIC")

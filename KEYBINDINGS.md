@@ -128,7 +128,7 @@ All media and brightness keys work even when the screen is locked (`allow-when-l
 |------------|--------|-------------|
 | `Mod+W` | Close Window | Close the focused window (no repeat) |
 | `Mod+F` | Maximize Column | Maximize the current column |
-| `F11` | Fullscreen | Toggle fullscreen for current window |
+| `Mod+Shift+Return` | Fullscreen | Toggle fullscreen for current window |
 | `Mod+Q` | Toggle Floating | Toggle floating mode for current window |
 | `Mod+Shift+Q` | - | Switch focus between floating and tiling windows |
 | `Mod+Shift+T` | - | Toggle column tabbed display |

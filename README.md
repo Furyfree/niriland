@@ -1,6 +1,6 @@
 # Niriland
 
-Arch Linux post-install setup for a Niri + DankMaterialShell desktop with curated packages, configs, and helper tooling.
+CachyOS post-install setup for a Niri + DankMaterialShell desktop with curated packages, configs, and helper tooling.
 
 > **Warning**
 >
@@ -25,14 +25,14 @@ Post-install note: after your first successful login into Niri, reboot one more 
 
 ## Requirements
 
-- Arch Linux with `systemd`
+- CachyOS with `systemd`
 - Internet access
 - `sudo` access
 - `git` installed
 
 ## What It Does
 
-Installs ~100 packages (base, Chaotic AUR, AUR), deploys Niri/DMS/Ghostty/Zsh configs, sets up theming (GTK, cursors, fonts, Matugen color generation), configures dev tools (Docker, mise, Neovim/LazyVim, VSCodium), and installs optional helper scripts for AI, gaming, VMs, fingerprint auth, and more.
+Installs curated base, CachyOS, Chaotic, and AUR packages; applies CachyOS tweaks; deploys Niri/DMS/Ghostty/Zsh configs; sets up theming (GTK, cursors, fonts, Matugen color generation); configures dev tools (Docker, mise, Neovim/LazyVim, VSCodium, Zed); and installs optional helper scripts for AI, gaming, VMs, fingerprint auth, and more.
 
 See [GUIDE.md](GUIDE.md) for the full reference.
 

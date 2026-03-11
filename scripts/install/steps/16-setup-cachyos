@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common"
+
+tweak_has_state() {
+  local tweak_name="$1"
+  local desired_state="$2"
+
+  cachyos-hello tweak list | grep -Eq "^- ${tweak_name}[[:space:]]+\\[${desired_state}\\]$"
+}
+
+set_tweak_state() {
+  local action="$1"
+  local tweak_name="$2"
+  local desired_state="$3"
+
+  if tweak_has_state "$tweak_name" "$desired_state"; then
+    log "CachyOS tweak ${tweak_name} already ${desired_state}, skipping."
+    return 0
+  fi
+
+  log "Setting CachyOS tweak ${tweak_name} -> ${desired_state}..."
+  cachyos-hello tweak "$action" "$tweak_name"
+}
+
+log "Installing CachyOS tools..."
+install_package cachyos-hello cachyos-settings cachyos-packageinstaller cachy-update cachyos-rate-mirrors chwd
+require_cmd cachyos-hello
+require_cmd cachyos-rate-mirrors
+
+log "Ranking CachyOS mirrors..."
+if run_sudo cachyos-rate-mirrors; then
+  log_success "CachyOS mirrors updated."
+else
+  warn "cachyos-rate-mirrors failed. You may need to run it manually."
+fi
+
+log "Applying CachyOS tweaks..."
+set_tweak_state enable Psd enabled
+set_tweak_state disable Oomd disabled
+set_tweak_state disable Bpftune disabled
+set_tweak_state enable Bluetooth enabled
+set_tweak_state enable Ananicy enabled
+
+log_success "CachyOS setup complete."

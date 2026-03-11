@@ -8,14 +8,6 @@ source "$SCRIPT_DIR/../lib/common"
 log "Installing DankMaterialShell and dependencies..."
 install_package niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk matugen cava qt6-multimedia-ffmpeg wtype
 
-NIRI_SESSION_OVERRIDE="$REPO_ROOT/configs/system/usr/local/bin/niri-session"
-if [[ -f "$NIRI_SESSION_OVERRIDE" ]]; then
-  log "Installing niri-session override to avoid deprecated import-environment warnings..."
-  run_sudo install -Dm755 "$NIRI_SESSION_OVERRIDE" /usr/local/bin/niri-session
-else
-  warn "niri-session override missing: $NIRI_SESSION_OVERRIDE"
-fi
-
 log "Installing and enabling power-profiles-daemon..."
 install_package power-profiles-daemon
 run_sudo systemctl enable --now power-profiles-daemon

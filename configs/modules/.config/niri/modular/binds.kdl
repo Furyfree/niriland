@@ -155,6 +155,9 @@ binds {
     Mod+F hotkey-overlay-title="Maximize Column" {
         maximize-column;
     }
+    Mod+Shift+Return hotkey-overlay-title="Fullscreen" {
+        fullscreen-window;
+    }
     Mod+Q hotkey-overlay-title="Toggle Floating" {
         toggle-window-floating;
     }

@@ -37,7 +37,7 @@ usage() {
 Usage: niriland-setup-ai [setup|status|help]
 
 Commands:
-  setup   Install and configure Opencode, Codex, Ollama, and OpenWebUI (default)
+  setup   Install and configure Opencode, Codex, Claude Code, Ollama, and OpenWebUI (default)
   status  Show service/tool status
   help    Show this help
 
@@ -121,6 +121,21 @@ install_codex_if_missing() {
   fi
 }
 
+install_claude_if_missing() {
+  if command -v claude >/dev/null 2>&1 || [[ -x "$HOME/.local/bin/claude" ]]; then
+    log "Claude Code already installed, skipping."
+    return 0
+  fi
+
+  install_package_if_missing npm
+  log "Installing Claude Code..."
+  if npm i -g @anthropic-ai/claude-code --prefix "$HOME/.local"; then
+    log "Claude Code installed."
+  else
+    warn "Claude Code installation failed, continuing."
+  fi
+}
+
 pull_model_if_missing() {
   local model="$1"
 
@@ -188,6 +203,7 @@ setup_ai() {
   log "Setting up local AI tools"
   install_opencode_if_missing
   install_codex_if_missing
+  install_claude_if_missing
 
   log "Setting up Ollama and Docker"
   install_package_if_missing ollama docker

@@ -59,7 +59,7 @@ These defaults come from [`configs/base/.config/mimeapps.list`](../configs/base/
 - JetBrains Toolbox is installed for JetBrains IDE management rather than pinning a single JetBrains IDE into the default install.
 - Obsidian is the standard notes app in the curated package set.
 - Typst in VSCodium is a good alternative writing workflow to Obsidian if you want fast live PDF preview while editing; the default VSCodium extension set includes Tinymist for that setup.
-- The intended virtualization split is: libvirt as the long-term, consistent VM path; `quickemu-git`/Quickgui as the faster path for trying other systems or testing installs.
+- The virtualization split is: libvirt as the long-term, consistent VM path; `quickemu-git`/Quickgui as the faster path for trying other systems or testing installs.
 
 ### Common Installed Apps
 
@@ -328,14 +328,13 @@ Sets up/removes fingerprint auth for sudo/polkit. This is optional machine-speci
 ### Virtualization
 
 ```bash
-niriland-vm-libvirt setup
-niriland-vm-libvirt status
-
-niriland-vm-vmware setup
-niriland-vm-vmware status
+niriland-setup-vm
 ```
 
-These helpers are optional and are kept outside the default install path on purpose.
+This helper is optional and is kept outside the default install path on purpose.
+
+- `niriland-setup-vm` configures the supported long-term libvirt path around `qemu-full`, `virt-manager`, `swtpm`, `libvirtd`, the libvirt default network, and the expected firewall/group setup.
+- It also installs `quickemu-git` and `quickgui` for fast throwaway VM/testing workflows.
 
 ### Browser Utilities
 

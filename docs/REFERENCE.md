@@ -371,15 +371,10 @@ Or run a single step directly from the repo root:
 bash scripts/install/steps/75-setup-browser
 ```
 
-If you run steps manually and they use `run_sudo`, you may need to initialize credentials first:
-
-```bash
-bash -c 'source ./scripts/install/lib/common && read_system_pass && bash ./scripts/install/steps/75-setup-browser && clean_system_pass'
-```
-
 Notes:
 
 - Most steps are idempotent (`--needed`, compare-before-copy, check-before-append).
+- Steps that need `sudo` now prompt for it through the shared install helper when run directly.
 - `20-deploy-configs` creates backups in `~/.config/backups/niriland/<timestamp>`.
 - Log out/reboot after install to apply shell/group/PAM changes.
 

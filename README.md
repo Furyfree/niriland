@@ -100,8 +100,6 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
   - [x] Fix the snapper + limine-snapper-sync defaults so snapshot retention matches the intended setup.
     - [x] Set `MAX_SNAPSHOT_ENTRIES=15` in `/etc/limine-snapper-sync.conf`.
     - [x] Set `NUMBER_MIN_AGE="86400"`, `NUMBER_LIMIT="15"`, and `NUMBER_LIMIT_IMPORTANT="15"` in `/etc/snapper/configs/root`.
-  - [ ] Keep reviewing hidden assumptions in installer steps and helper scripts, then either remove them or document them explicitly.
-  - [ ] Keep polishing the current CachyOS-first setup without turning it into a universal installer.
 
 ## Repository Layout
 

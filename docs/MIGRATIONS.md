@@ -9,6 +9,26 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 2026-03 Refresh Zed Keymap
+
+Who:
+Existing installs whose local `~/.config/zed/keymap.json` was preserved and therefore did not pick up the current tracked Zed shortcuts.
+
+Run:
+
+```bash
+cp ~/.local/share/niriland/configs/base/.config/zed/keymap.json ~/.config/zed/keymap.json
+```
+
+What it changes:
+
+- Updates Zed to the current tracked shortcuts from Niriland
+- Picks up the current `Ctrl+K Ctrl+K` keymap shortcut
+- Picks up the current `Ctrl+Shift+X` extensions shortcut
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy the current tracked Zed keymap.
+
 ## 2026-03 Update DankMaterialShell Suspend Settings
 
 Who:

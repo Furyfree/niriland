@@ -1,6 +1,6 @@
 # Niri Keybindings Reference
 
-This document provides a comprehensive reference for all keyboard shortcuts configured in the niriland setup for the niri window manager.
+This document provides a comprehensive reference for the keyboard shortcuts configured in the Niriland setup, with the bound command and a short description for each one.
 
 ## About the Mod Key
 
@@ -15,245 +15,219 @@ Keybindings are defined in the following locations:
 - **User overrides**: [../configs/base/.config/niri/override.d/binds.kdl](../configs/base/.config/niri/override.d/binds.kdl) (user-editable)
 - **VSCodium**: [../configs/base/.config/VSCodium/User/keybindings.json](../configs/base/.config/VSCodium/User/keybindings.json)
 
-## Table of Contents
-
-- [Recent Windows Switcher](#recent-windows-switcher)
-- [System & Overview](#system--overview)
-- [Core Launchers](#core-launchers)
-- [Application Launchers](#application-launchers)
-- [Editors & Terminal](#editors--terminal)
-- [Security](#security)
-- [Media & Brightness](#media--brightness)
-- [Window Management](#window-management)
-- [Focus Navigation](#focus-navigation)
-- [Window Movement](#window-movement)
-- [Column Navigation](#column-navigation)
-- [Monitor Navigation](#monitor-navigation)
-- [Move to Monitor](#move-to-monitor)
-- [Workspace Navigation](#workspace-navigation)
-- [Move Workspaces](#move-workspaces)
-- [Mouse Wheel Navigation](#mouse-wheel-navigation)
-- [Numbered Workspaces](#numbered-workspaces)
-- [Sizing & Layout](#sizing--layout)
-- [Screenshots](#screenshots)
-- [VSCodium Keybindings](#vscodium-keybindings)
-- [Customization](#customization)
-
----
-
 ## Recent Windows Switcher
 
 These bindings are active when the Alt+Tab switcher overlay is open.
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Alt+Tab` | Next Window | Switch to next window on current output |
-| `Alt+Shift+Tab` | Previous Window | Switch to previous window on current output |
-| `Alt+Grave` | Next Window (Same App) | Switch to next window of the same application |
-| `Alt+Shift+Grave` | Previous Window (Same App) | Switch to previous window of the same application |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Alt+Tab` | `next-window scope="output"` | Switch to next window on current output |
+| `Alt+Shift+Tab` | `previous-window scope="output"` | Switch to previous window on current output |
+| `Alt+Grave` | `next-window filter="app-id"` | Switch to next window of the same application |
+| `Alt+Shift+Grave` | `previous-window filter="app-id"` | Switch to previous window of the same application |
 
 ## System & Overview
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+O` | Overview | Toggle workspace overview (no repeat) |
-| `Mod+Escape` | Keyboard Shortcuts | Show hotkey overlay with all keybindings |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+O` | `toggle-overview` | Toggle workspace overview (no repeat) |
+| `Mod+Escape` | `show-hotkey-overlay` | Show hotkey overlay with all keybindings |
 
 ## Core Launchers
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Return` | Terminal | Open terminal (xdg-terminal-exec) |
-| `Mod+Space` | Launcher | Open application launcher (DMS spotlight) |
-| `Mod+V` | Clipboard Manager | Toggle clipboard history |
-| `Mod+M` | Task Manager | Open or focus process list |
-| `Mod+Shift+F` | Files | Open Nautilus file manager |
-| `Mod+Shift+L` | Power Menu | Open power menu (logout, shutdown, etc.) |
-| `Mod+Comma` | Settings | Open or focus DMS settings |
-| `Mod+Y` | - | Change wallpaper (DMS dankdash) |
-| `Mod+N` | Notification Center | Toggle notification center |
-| `Mod+Shift+N` | - | Toggle notepad |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Return` | `spawn "xdg-terminal-exec"` | Open terminal |
+| `Mod+Space` | `spawn "dms" "ipc" "call" "spotlight" "toggle"` | Open application launcher |
+| `Mod+V` | `spawn "dms" "ipc" "call" "clipboard" "toggle"` | Toggle clipboard history |
+| `Mod+M` | `spawn "dms" "ipc" "call" "processlist" "focusOrToggle"` | Open or focus process list |
+| `Mod+Shift+F` | `spawn "nautilus"` | Open Nautilus file manager |
+| `Mod+Shift+L` | `spawn "dms" "ipc" "call" "powermenu" "toggle"` | Open power menu |
+| `Mod+Comma` | `spawn "dms" "ipc" "call" "settings" "focusOrToggle"` | Open or focus DMS settings |
+| `Mod+Y` | `spawn "dms" "ipc" "call" "dankdash" "wallpaper"` | Change wallpaper |
+| `Mod+N` | `spawn "dms" "ipc" "call" "notifications" "toggle"` | Toggle notification center |
+| `Mod+Shift+N` | `spawn "dms" "ipc" "call" "notepad" "toggle"` | Toggle notepad |
 
 ## Application Launchers
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Alt+B` | Browser (Focus) | Focus default browser or launch if not running |
-| `Mod+Shift+B` | Browser (New) | Launch new browser window |
-| `Mod+Shift+C` | - | Focus or launch Claude AI |
-| `Mod+Alt+C` | - | Launch new Claude AI window |
-| `Mod+Shift+A` | - | Focus or launch ChatGPT |
-| `Mod+Alt+A` | - | Launch new ChatGPT window |
-| `Mod+Shift+E` | - | Focus or launch Fastmail |
-| `Mod+Shift+O` | - | Focus or launch Obsidian |
-| `Mod+Shift+P` | - | Focus or launch 1Password |
-| `Mod+Shift+G` | - | Focus or launch Signal |
-| `Mod+Shift+M` | - | Focus or launch Spotify |
-| `Mod+Shift+Y` | - | Focus or launch Typst |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Alt+B` | `spawn "sh" "-lc" "nirius focus-or-spawn --app-id \"$(niriland-get-default-browser)\" -- niriland-launch-browser"` | Focus default browser or launch if not running |
+| `Mod+Shift+B` | `spawn "niriland-launch-browser"` | Launch new browser window |
+| `Mod+Shift+C` | `spawn "nirius" "focus-or-spawn" "--title" "Claude" "--" "niriland-launch-webapp" "https://claude.ai/new"` | Focus or launch Claude AI |
+| `Mod+Alt+C` | `spawn "niriland-launch-webapp" "https://claude.ai/new"` | Launch new Claude AI window |
+| `Mod+Shift+A` | `spawn "nirius" "focus-or-spawn" "--title" "ChatGPT" "--" "niriland-launch-webapp" "https://chatgpt.com/"` | Focus or launch ChatGPT |
+| `Mod+Alt+A` | `spawn "niriland-launch-webapp" "https://chatgpt.com/"` | Launch new ChatGPT window |
+| `Mod+Shift+E` | `spawn "nirius" "focus-or-spawn" "--title" "Fastmail" "--" "niriland-launch-webapp" "https://app.fastmail.com/"` | Focus or launch Fastmail |
+| `Mod+Shift+O` | `spawn "nirius" "focus-or-spawn" "--app-id" "obsidian" "--" "obsidian"` | Focus or launch Obsidian |
+| `Mod+Shift+P` | `spawn "nirius" "focus-or-spawn" "--app-id" "1password" "--" "1password"` | Focus or launch 1Password |
+| `Mod+Shift+G` | `spawn "nirius" "focus-or-spawn" "--app-id" "signal" "--" "signal-desktop"` | Focus or launch Signal |
+| `Mod+Shift+M` | `spawn "nirius" "focus-or-spawn" "--app-id" "spotify" "--" "spotify-launcher"` | Focus or launch Spotify |
+| `Mod+Shift+Y` | `spawn "nirius" "focus-or-spawn" "--title" "Typst" "--" "niriland-launch-webapp" "https://typst.app/"` | Focus or launch Typst |
 
 ## Editors & Terminal
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Shift+Z` | - | Open new Zed editor window |
-| `Mod+Shift+V` | - | Launch VSCodium with Wayland support |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Shift+Z` | `spawn "zed" "--new"` | Open new Zed editor window |
+| `Mod+Shift+V` | `spawn "codium" "--enable-features=UseOzonePlatform,WaylandWindowDecorations" "--ozone-platform=wayland"` | Launch VSCodium with Wayland support |
 
 ## Security
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+L` | Lock Screen | Lock the screen |
-| `Mod+Shift+Alt+Escape` | Quit Niri | Exit the niri window manager (no repeat) |
-| `Ctrl+Alt+Delete` | - | Open task manager |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+L` | `spawn "dms" "ipc" "call" "lock" "lock"` | Lock the screen |
+| `Mod+Shift+Alt+Escape` | `quit` | Exit the niri window manager (no repeat) |
+| `Ctrl+Alt+Delete` | `spawn "dms" "ipc" "call" "processlist" "focusOrToggle"` | Open task manager |
 
 ## Media & Brightness
 
 All media and brightness keys work even when the screen is locked (`allow-when-locked=true`).
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `XF86AudioRaiseVolume` | - | Increase volume by 3% |
-| `XF86AudioLowerVolume` | - | Decrease volume by 3% |
-| `XF86AudioMute` | - | Toggle audio mute |
-| `XF86AudioMicMute` | - | Toggle microphone mute |
-| `XF86AudioPause` | - | Play/pause media |
-| `XF86AudioPlay` | - | Play/pause media |
-| `XF86AudioPrev` | - | Previous track |
-| `XF86AudioNext` | - | Next track |
-| `XF86MonBrightnessUp` | - | Increase brightness by 5% |
-| `XF86MonBrightnessDown` | - | Decrease brightness by 5% |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `XF86AudioRaiseVolume` | `spawn "dms" "ipc" "call" "audio" "increment" "3"` | Increase volume by 3% |
+| `XF86AudioLowerVolume` | `spawn "dms" "ipc" "call" "audio" "decrement" "3"` | Decrease volume by 3% |
+| `XF86AudioMute` | `spawn "dms" "ipc" "call" "audio" "mute"` | Toggle audio mute |
+| `XF86AudioMicMute` | `spawn "dms" "ipc" "call" "audio" "micmute"` | Toggle microphone mute |
+| `XF86AudioPause` | `spawn "dms" "ipc" "call" "mpris" "playPause"` | Play/pause media |
+| `XF86AudioPlay` | `spawn "dms" "ipc" "call" "mpris" "playPause"` | Play/pause media |
+| `XF86AudioPrev` | `spawn "dms" "ipc" "call" "mpris" "previous"` | Previous track |
+| `XF86AudioNext` | `spawn "dms" "ipc" "call" "mpris" "next"` | Next track |
+| `XF86MonBrightnessUp` | `spawn "dms" "ipc" "call" "brightness" "increment" "5" ""` | Increase brightness by 5% |
+| `XF86MonBrightnessDown` | `spawn "dms" "ipc" "call" "brightness" "decrement" "5" ""` | Decrease brightness by 5% |
 
 ## Window Management
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+W` | Close Window | Close the focused window (no repeat) |
-| `Mod+F` | Maximize Column | Maximize the current column |
-| `Mod+Shift+Return` | Fullscreen | Toggle fullscreen for current window |
-| `Mod+Q` | Toggle Floating | Toggle floating mode for current window |
-| `Mod+Shift+Q` | - | Switch focus between floating and tiling windows |
-| `Mod+Shift+T` | - | Toggle column tabbed display |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+W` | `close-window` | Close the focused window (no repeat) |
+| `Mod+F` | `maximize-column` | Maximize the current column |
+| `Mod+Shift+Return` | `fullscreen-window` | Toggle fullscreen for current window |
+| `Mod+Q` | `toggle-window-floating` | Toggle floating mode for current window |
+| `Mod+Shift+Q` | `switch-focus-between-floating-and-tiling` | Switch focus between floating and tiling windows |
+| `Mod+Shift+T` | `toggle-column-tabbed-display` | Toggle column tabbed display |
 
 ## Focus Navigation
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Left` | Focus Left | Move focus to column on the left |
-| `Mod+Down` | Focus Down | Move focus to window below |
-| `Mod+Up` | Focus Up | Move focus to window above |
-| `Mod+Right` | Focus Right | Move focus to column on the right |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Left` | `focus-column-left` | Move focus to column on the left |
+| `Mod+Down` | `focus-window-down` | Move focus to window below |
+| `Mod+Up` | `focus-window-up` | Move focus to window above |
+| `Mod+Right` | `focus-column-right` | Move focus to column on the right |
 
 ## Window Movement
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Shift+Left` | - | Move column to the left |
-| `Mod+Shift+Down` | - | Move window down in column |
-| `Mod+Shift+Up` | - | Move window up in column |
-| `Mod+Shift+Right` | - | Move column to the right |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Shift+Left` | `move-column-left` | Move column to the left |
+| `Mod+Shift+Down` | `move-window-down` | Move window down in column |
+| `Mod+Shift+Up` | `move-window-up` | Move window up in column |
+| `Mod+Shift+Right` | `move-column-right` | Move column to the right |
 
 ## Column Navigation
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Home` | - | Focus first column |
-| `Mod+End` | - | Focus last column |
-| `Mod+Ctrl+Home` | - | Move column to first position |
-| `Mod+Ctrl+End` | - | Move column to last position |
-| `Mod+BracketLeft` | - | Consume window from left or expel to left |
-| `Mod+BracketRight` | - | Consume window from right or expel to right |
-| `Mod+Period` | - | Expel window from column |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Home` | `focus-column-first` | Focus first column |
+| `Mod+End` | `focus-column-last` | Focus last column |
+| `Mod+Ctrl+Home` | `move-column-to-first` | Move column to first position |
+| `Mod+Ctrl+End` | `move-column-to-last` | Move column to last position |
+| `Mod+BracketLeft` | `consume-or-expel-window-left` | Consume window from left or expel to left |
+| `Mod+BracketRight` | `consume-or-expel-window-right` | Consume window from right or expel to right |
+| `Mod+Period` | `expel-window-from-column` | Expel window from column |
 
 ## Monitor Navigation
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Ctrl+Left` | Focus Monitor Left | Move focus to monitor on the left |
-| `Mod+Ctrl+Down` | Focus Monitor Down | Move focus to monitor below |
-| `Mod+Ctrl+Up` | Focus Monitor Up | Move focus to monitor above |
-| `Mod+Ctrl+Right` | Focus Monitor Right | Move focus to monitor on the right |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Ctrl+Left` | `focus-monitor-left` | Move focus to monitor on the left |
+| `Mod+Ctrl+Down` | `focus-monitor-down` | Move focus to monitor below |
+| `Mod+Ctrl+Up` | `focus-monitor-up` | Move focus to monitor above |
+| `Mod+Ctrl+Right` | `focus-monitor-right` | Move focus to monitor on the right |
 
 ## Move to Monitor
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Shift+Ctrl+Left` | - | Move column to monitor on the left |
-| `Mod+Shift+Ctrl+Down` | - | Move column to monitor below |
-| `Mod+Shift+Ctrl+Up` | - | Move column to monitor above |
-| `Mod+Shift+Ctrl+Right` | - | Move column to monitor on the right |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Shift+Ctrl+Left` | `move-column-to-monitor-left` | Move column to monitor on the left |
+| `Mod+Shift+Ctrl+Down` | `move-column-to-monitor-down` | Move column to monitor below |
+| `Mod+Shift+Ctrl+Up` | `move-column-to-monitor-up` | Move column to monitor above |
+| `Mod+Shift+Ctrl+Right` | `move-column-to-monitor-right` | Move column to monitor on the right |
 
 ## Workspace Navigation
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Page_Down` | Workspace Down | Switch to workspace below |
-| `Mod+Page_Up` | Workspace Up | Switch to workspace above |
-| `Mod+U` | - | Switch to workspace below (alternative) |
-| `Mod+I` | - | Switch to workspace above (alternative) |
-| `Mod+Ctrl+U` | - | Move column to workspace below |
-| `Mod+Ctrl+I` | - | Move column to workspace above |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Page_Down` | `focus-workspace-down` | Switch to workspace below |
+| `Mod+Page_Up` | `focus-workspace-up` | Switch to workspace above |
+| `Mod+U` | `focus-workspace-down` | Switch to workspace below (alternative) |
+| `Mod+I` | `focus-workspace-up` | Switch to workspace above (alternative) |
+| `Mod+Ctrl+U` | `move-column-to-workspace-down` | Move column to workspace below |
+| `Mod+Ctrl+I` | `move-column-to-workspace-up` | Move column to workspace above |
 
 ## Move Workspaces
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Shift+Page_Down` | - | Move entire workspace down |
-| `Mod+Shift+Page_Up` | - | Move entire workspace up |
-| `Mod+Shift+U` | - | Move entire workspace down (alternative) |
-| `Mod+Shift+I` | - | Move entire workspace up (alternative) |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Shift+Page_Down` | `move-workspace-down` | Move entire workspace down |
+| `Mod+Shift+Page_Up` | `move-workspace-up` | Move entire workspace up |
+| `Mod+Shift+U` | `move-workspace-down` | Move entire workspace down (alternative) |
+| `Mod+Shift+I` | `move-workspace-up` | Move entire workspace up (alternative) |
 
 ## Mouse Wheel Navigation
 
 All wheel bindings include the `Mod` key held down.
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+WheelScrollDown` | - | Focus workspace below (150ms cooldown) |
-| `Mod+WheelScrollUp` | - | Focus workspace above (150ms cooldown) |
-| `Mod+Ctrl+WheelScrollDown` | - | Move column to workspace below (150ms cooldown) |
-| `Mod+Ctrl+WheelScrollUp` | - | Move column to workspace above (150ms cooldown) |
-| `Mod+WheelScrollRight` | - | Focus column to the right |
-| `Mod+WheelScrollLeft` | - | Focus column to the left |
-| `Mod+Ctrl+WheelScrollRight` | - | Move column to the right |
-| `Mod+Ctrl+WheelScrollLeft` | - | Move column to the left |
-| `Mod+Shift+WheelScrollDown` | - | Focus column to the right |
-| `Mod+Shift+WheelScrollUp` | - | Focus column to the left |
-| `Mod+Ctrl+Shift+WheelScrollDown` | - | Move column to the right |
-| `Mod+Ctrl+Shift+WheelScrollUp` | - | Move column to the left |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+WheelScrollDown` | `focus-workspace-down` | Focus workspace below (150ms cooldown) |
+| `Mod+WheelScrollUp` | `focus-workspace-up` | Focus workspace above (150ms cooldown) |
+| `Mod+Ctrl+WheelScrollDown` | `move-column-to-workspace-down` | Move column to workspace below (150ms cooldown) |
+| `Mod+Ctrl+WheelScrollUp` | `move-column-to-workspace-up` | Move column to workspace above (150ms cooldown) |
+| `Mod+WheelScrollRight` | `focus-column-right` | Focus column to the right |
+| `Mod+WheelScrollLeft` | `focus-column-left` | Focus column to the left |
+| `Mod+Ctrl+WheelScrollRight` | `move-column-right` | Move column to the right |
+| `Mod+Ctrl+WheelScrollLeft` | `move-column-left` | Move column to the left |
+| `Mod+Shift+WheelScrollDown` | `focus-column-right` | Focus column to the right |
+| `Mod+Shift+WheelScrollUp` | `focus-column-left` | Focus column to the left |
+| `Mod+Ctrl+Shift+WheelScrollDown` | `move-column-right` | Move column to the right |
+| `Mod+Ctrl+Shift+WheelScrollUp` | `move-column-left` | Move column to the left |
 
 ## Numbered Workspaces
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+1` through `Mod+9` | - | Switch to workspace 1-9 |
-| `Mod+Shift+1` through `Mod+Shift+9` | - | Move column to workspace 1-9 |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+1` through `Mod+9` | `focus-workspace <1-9>` | Switch to workspace 1-9 |
+| `Mod+Shift+1` through `Mod+Shift+9` | `move-column-to-workspace <1-9>` | Move column to workspace 1-9 |
 
 ## Sizing & Layout
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+R` | - | Cycle through preset column widths |
-| `Mod+Shift+R` | - | Cycle through preset window heights |
-| `Mod+Ctrl+R` | - | Reset window height to default |
-| `Mod+Ctrl+F` | - | Expand column to fill available width |
-| `Mod+C` | - | Center current column |
-| `Mod+Ctrl+C` | - | Center all visible columns |
-| `Mod+Minus` | - | Decrease column width by 10% |
-| `Mod+Equal` | - | Increase column width by 10% |
-| `Mod+Shift+Minus` | - | Decrease window height by 10% |
-| `Mod+Shift+Equal` | - | Increase window height by 10% |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+R` | `switch-preset-column-width` | Cycle through preset column widths |
+| `Mod+Shift+R` | `switch-preset-window-height` | Cycle through preset window heights |
+| `Mod+Ctrl+R` | `reset-window-height` | Reset window height to default |
+| `Mod+Ctrl+F` | `expand-column-to-available-width` | Expand column to fill available width |
+| `Mod+C` | `center-column` | Center current column |
+| `Mod+Ctrl+C` | `center-visible-columns` | Center all visible columns |
+| `Mod+Minus` | `set-column-width "-10%"` | Decrease column width by 10% |
+| `Mod+Equal` | `set-column-width "+10%"` | Increase column width by 10% |
+| `Mod+Shift+Minus` | `set-window-height "-10%"` | Decrease window height by 10% |
+| `Mod+Shift+Equal` | `set-window-height "+10%"` | Increase window height by 10% |
 
 ## Screenshots
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Mod+Shift+S` | Screenshot Tool | Open interactive screenshot tool |
-| `Print` | Screenshot | Open interactive screenshot tool |
-| `Ctrl+Print` | - | Screenshot entire screen |
-| `Alt+Print` | - | Screenshot current window |
-| `XF86Launch1` | - | Open interactive screenshot tool |
-| `Ctrl+XF86Launch1` | - | Screenshot entire screen |
-| `Alt+XF86Launch1` | - | Screenshot current window |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Mod+Shift+S` | `screenshot` | Open interactive screenshot tool |
+| `Print` | `screenshot` | Open interactive screenshot tool |
+| `Ctrl+Print` | `screenshot-screen` | Screenshot entire screen |
+| `Alt+Print` | `screenshot-window` | Screenshot current window |
+| `XF86Launch1` | `screenshot` | Open interactive screenshot tool |
+| `Ctrl+XF86Launch1` | `screenshot-screen` | Screenshot entire screen |
+| `Alt+XF86Launch1` | `screenshot-window` | Screenshot current window |
 
 ## VSCodium Keybindings
 
@@ -263,35 +237,59 @@ Configuration file: [../configs/base/.config/VSCodium/User/keybindings.json](../
 
 ### Preferences & Keymaps
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Ctrl+,` | Open Settings | Open VSCodium settings |
-| `Ctrl+K Ctrl+K` | Open Keyboard Shortcuts | Open global keybindings editor |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Ctrl+,` | `workbench.action.openSettings` | Open VSCodium settings |
+| `Ctrl+K Ctrl+K` | `workbench.action.openGlobalKeybindings` | Open global keybindings editor |
 
 ### Workbench Views & Panels
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Ctrl+B` | Toggle Sidebar | Toggle the primary sidebar (default VSCodium binding) |
-| `Ctrl+Shift+B` | Toggle Auxiliary Bar | Toggle the auxiliary/secondary sidebar |
-| `Ctrl+Shift+T` | Toggle Terminal | Toggle integrated terminal panel |
-| `Ctrl+Shift+X` | Extensions | Open extensions view |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Ctrl+B` | `workbench.action.toggleSidebarVisibility` | Toggle the primary sidebar (default VSCodium binding) |
+| `Ctrl+Shift+B` | `workbench.action.toggleAuxiliaryBar` | Toggle the auxiliary/secondary sidebar |
+| `Ctrl+Shift+T` | `workbench.action.terminal.toggleTerminal` | Toggle integrated terminal panel |
+| `Ctrl+Shift+X` | `workbench.view.extensions` | Open extensions view |
 
 ### Navigation & Search
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Ctrl+Shift+F` | Search in New Editor | Open search in a new editor tab |
-| `Ctrl+Shift+J` | Go to Symbol | Navigate to symbol in current file |
-| `Ctrl+Shift+O` | Open Recent | Open recent files/workspaces |
-| `Ctrl+Shift+Y` | Show All Symbols | Search for symbols across workspace |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Ctrl+Shift+F` | `search.action.openNewEditor` | Open search in a new editor tab |
+| `Ctrl+Shift+J` | `workbench.action.gotoSymbol` | Navigate to symbol in current file |
+| `Ctrl+Shift+O` | `workbench.action.openRecent` | Open recent files/workspaces |
+| `Ctrl+Shift+Y` | `workbench.action.showAllSymbols` | Search for symbols across workspace |
 
 ### Git
 
-| Keybinding | Action | Description |
-|------------|--------|-------------|
-| `Ctrl+Shift+G` | Source Control | Open source control view |
-| `Ctrl+Alt+G` | Git Graph | Open Git Graph view (requires extension) |
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Ctrl+Shift+G` | `workbench.view.scm` | Open source control view |
+| `Ctrl+Alt+G` | `git-graph.view` | Open Git Graph view (requires extension) |
+
+## Zed Keybindings
+
+Zed keybindings used in this setup. This section focuses on the tracked custom bindings and notable overrides from the repo keymap.
+
+Configuration file: [../configs/base/.config/zed/keymap.json](../configs/base/.config/zed/keymap.json)
+
+### Workspace & Preferences
+
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Ctrl+K Ctrl+K` | `zed::OpenKeymap` | Open the Zed keymap |
+| `Ctrl+Shift+T` | `terminal_panel::Toggle` | Toggle terminal panel |
+| `Ctrl+K Ctrl+X` | `zed::Extensions` | Open extensions |
+| `Ctrl+Shift+X` | `zed::Extensions` | Open extensions |
+| `Ctrl+Shift+B` | `workspace::ToggleRightDock` | Toggle right dock |
+| `Ctrl+Alt+B` | `outline_panel::ToggleFocus` | Toggle or focus outline panel |
+| `Ctrl+Shift+O` | `projects::OpenRecent` | Open recent projects in a new window |
+
+### AI & Agent
+
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `Ctrl+Shift+J` | `agent::ToggleFocus` | Toggle or focus the agent panel |
 
 ---
 

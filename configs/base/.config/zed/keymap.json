@@ -27,18 +27,6 @@
   {
     "context": "Workspace",
     "bindings": {
-      "ctrl-k ctrl-s": null,
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-k ctrl-t": "theme_selector::Toggle",
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
       "ctrl-shift-t": "terminal_panel::Toggle",
     },
   },
@@ -57,7 +45,7 @@
   {
     "context": "Workspace",
     "bindings": {
-      "ctrl-shift-x": null,
+      "ctrl-shift+x": "zed::Extensions",
     },
   },
   {
@@ -80,28 +68,12 @@
   {
     "context": "Workspace",
     "bindings": {
-      "alt-open": null,
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-alt-o": null,
-    },
-  },
-  {
-    "bindings": {
       "ctrl-shift-o": [
         "projects::OpenRecent",
         {
           "create_new_window": true,
         },
       ],
-    },
-  },
-  {
-    "bindings": {
-      "ctrl-p": null,
     },
   },
   {

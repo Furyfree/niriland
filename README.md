@@ -95,6 +95,9 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
     - [x] Re-add lightweight VM workflows around `quickemu-git` and `quickgui` after the base virtualization path is clean again.
   - [x] Rework `niriland-pkg` around a coherent `yay`-based flow with a combined repo + AUR picker instead of the old broken AUR-list workaround path.
   - [x] Stop setting Python globally through `mise`, because that leaks into system-tool expectations and breaks things like `virt-manager`.
+  - [ ] Fix the snapper + limine-snapper-sync defaults so snapshot retention matches the intended setup.
+    - [ ] Set `MAX_SNAPSHOT_ENTRIES=15` in `/etc/limine-snapper-sync.conf`.
+    - [ ] Set `NUMBER_MIN_AGE="86400"`, `NUMBER_LIMIT="15"`, and `NUMBER_LIMIT_IMPORTANT="15"` in `/etc/snapper/configs/root`.
   - [ ] Keep reviewing hidden assumptions in installer steps and helper scripts, then either remove them or document them explicitly.
   - [ ] Keep polishing the current CachyOS-first setup without turning it into a universal installer.
 

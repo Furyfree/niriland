@@ -89,6 +89,7 @@ These bindings are active when the Alt+Tab switcher overlay is open.
 | `Mod+Shift+P` | - | Focus or launch 1Password |
 | `Mod+Shift+G` | - | Focus or launch Signal |
 | `Mod+Shift+M` | - | Focus or launch Spotify |
+| `Mod+Shift+Y` | - | Focus or launch Typst |
 
 ## Editors & Terminal
 

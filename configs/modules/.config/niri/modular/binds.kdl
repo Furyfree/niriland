@@ -92,6 +92,9 @@ binds {
     Mod+Shift+M hotkey-overlay-title=null {
         spawn "nirius" "focus-or-spawn" "--app-id" "spotify" "--" "spotify-launcher";
     }
+    Mod+Shift+Y hotkey-overlay-title=null {
+        spawn "nirius" "focus-or-spawn" "--title" "Typst" "--" "niriland-launch-webapp" "https://typst.app/";
+    }
 
     // === Editors & Terminal ===
     Mod+Shift+Z hotkey-overlay-title=null {

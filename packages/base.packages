@@ -86,3 +86,5 @@ wireplumber
 xdg-user-dirs
 networkmanager-openconnect
 gnome-disk-utility
+efibootmgr
+fwupd

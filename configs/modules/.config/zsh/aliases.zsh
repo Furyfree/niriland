@@ -19,12 +19,22 @@ alias e='exit'
 alias f='fastfetch'
 alias help='tldr'
 alias history='history 1'
-alias copy="wl-copy"
 alias paste="wl-paste"
+
+copy() {
+  if [[ $# -eq 1 ]]; then
+    wl-copy < "$1"
+  elif [[ $# -gt 1 ]]; then
+    command cat -- "$@" | wl-copy
+  else
+    wl-copy
+  fi
+}
 
 # Development Tools
 alias nvimconfig="cd ~/.config/nvim && nvim ."
 alias n="nvim"
+alias hx='helix'
 alias ld='lazydocker'
 # alias zed='zeditor'
 alias code='vscodium'

@@ -14,7 +14,7 @@ Niriland is my personal CachyOS-first desktop setup and bootstrap repo for:
 - User/system config deployment
 - Helper scripts for extra capabilities
 
-It is public so other people can inspect it, learn from it, or try it on a fresh install target. It is not meant to be an installer that works across different Linux distributions or a general-purpose Linux installer.
+It is public so other people can inspect it, learn from it, or try it on a fresh install target. It expects a CachyOS base install to already be in place, and it is not meant to be an installer that works across different Linux distributions or a general-purpose Linux installer.
 
 ## Scope
 
@@ -55,6 +55,8 @@ These are included because they are useful for this setup, but they are not the 
 ## Install Baseline
 
 For the expected base system and installer choices before running Niriland, see [../CACHYOS_INSTALL.md](../CACHYOS_INSTALL.md).
+
+Niriland does not install CachyOS itself. It starts after that base system is already installed.
 
 ## Install Flow
 

@@ -23,10 +23,6 @@ set_or_append_line() {
 [[ -f "$SNAPPER_CONFIG" ]] || die "Missing snapper config: $SNAPPER_CONFIG"
 [[ -f "$LIMINE_SNAPPER_SYNC_CONFIG" ]] || die "Missing limine-snapper-sync config: $LIMINE_SNAPPER_SYNC_CONFIG"
 
-if [[ -z "${SYSTEM_PASS:-}" ]]; then
-  read_system_pass
-fi
-
 log "Configuring snapper retention..."
 set_or_append_line "$SNAPPER_CONFIG" "NUMBER_MIN_AGE" '"86400"'
 set_or_append_line "$SNAPPER_CONFIG" "NUMBER_LIMIT" '"15"'

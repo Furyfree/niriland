@@ -96,7 +96,7 @@ ensure_sudo_session() {
   fi
 
   if [[ -z "${SYSTEM_PASS:-}" ]]; then
-    die "System password not set. Call read_system_pass first."
+    read_system_pass
   fi
 
   sudo -S -p '' -v <<<"$SYSTEM_PASS" >/dev/null 2>&1 || die "sudo authentication failed"

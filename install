@@ -15,6 +15,7 @@ setup_git_user
 STEPS=(
   "$STEPS_DIR/00-setup-pacman"
   "$STEPS_DIR/05-setup-fde"
+  "$STEPS_DIR/07-setup-snapper"
   "$STEPS_DIR/10-install-packages"
   "$STEPS_DIR/15-setup-dms"
   "$STEPS_DIR/20-deploy-configs"

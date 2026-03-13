@@ -37,6 +37,7 @@ Post-install note: after your first successful login into Niri, reboot one more 
 After you install CachyOS by following [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md), Niriland installs the extra packages, configs, and tools used by this setup. It deploys Niri, DMS, Ghostty, and Zsh configs; sets up theming; configures dev tools like Docker, mise, Neovim/LazyVim, VSCodium, and Zed; and installs optional helper scripts for AI, gaming, VMs, fingerprint auth, and more.
 
 See [docs/REFERENCE.md](docs/REFERENCE.md) for the full reference.
+For one-time migration steps on older setups, see [docs/MIGRATIONS.md](docs/MIGRATIONS.md).
 For the expected fresh-install baseline for the default Niriland flow, see [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md).
 
 ## Who It Is For

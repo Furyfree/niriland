@@ -61,6 +61,17 @@ else
   echo "Unsupported shell: $(ps -p $$ -o comm=)"
 fi
 
+log "Installing uv tools..."
+if command -v uv >/dev/null 2>&1; then
+  if uv tool list | grep -q '^python-lsp-server '; then
+    log "python-lsp-server already installed via uv, skipping."
+  else
+    uv tool install python-lsp-server
+  fi
+else
+  warn "uv is not available after mise activation, skipping python-lsp-server install."
+fi
+
 # ====================
 # .NET SDK Symlink
 # ====================

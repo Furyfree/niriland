@@ -65,6 +65,8 @@ limine-mkinitcpio-hook
 limine-snapper-sync
 helium-browser-bin
 vscodium
+typst
+tinymist
 teams-for-linux
 zen-browser-bin
 vesktop

@@ -59,14 +59,15 @@ These defaults come from [`configs/base/.config/mimeapps.list`](../configs/base/
 - 1Password and `1password-cli` are the standard password-management tools.
 - JetBrains Toolbox is installed for JetBrains IDE management rather than pinning a single JetBrains IDE into the default install.
 - Obsidian is the standard notes app in the curated package set.
-- Typst in VSCodium is a good alternative writing workflow to Obsidian if you want fast live PDF preview while editing; the default VSCodium extension set includes Tinymist for that setup.
+- Typst and Tinymist are installed as the current document/typesetting path in VSCodium.
+- Typst in VSCodium is a good alternative writing workflow to Obsidian if you want fast live PDF preview while editing.
 - The virtualization split is: libvirt as the long-term, consistent VM path; `quickemu-git`/Quickgui as the faster path for trying other systems or testing installs.
 
 ### Common Installed Apps
 
 - Communication and web: Signal, Vesktop, Teams for Linux, Zoom, Helium, Zen
 - Media and creative: Spotify, OBS Studio, Kdenlive, GIMP, Pinta, Draw.io Desktop
-- Notes and knowledge work: Obsidian, Typst-in-VSCodium workflow
+- Notes and knowledge work: Obsidian, Typst, Tinymist, Typst-in-VSCodium workflow
 - Passwords and secrets: 1Password, `1password-cli`, Seahorse
 - IDE/editor path: Neovim, VSCodium, Zed, JetBrains Toolbox
 
@@ -269,7 +270,7 @@ After `50-setup-tools`, scripts are copied to `~/.local/bin/niriland` and PATH i
 These tools do different jobs:
 
 - `niriland-pkg` and `niriland-update` are core maintenance tools for the platform itself.
-- AI, gaming, fingerprint, certificates, and VM helpers are optional follow-up workflows.
+- AI, gaming, Helix, fingerprint, certificates, and VM helpers are optional follow-up workflows.
 - Some optional helpers are only useful on certain machines or in certain environments.
 
 ### Package Management
@@ -311,6 +312,14 @@ niriland-setup-gaming status
 ```
 
 Installs CachyOS gaming packages plus Niriland gaming extras. This is optional and matches the package choices in this repo. If available, use `game-performance %command%` in Steam launch options.
+
+### Helix Setup
+
+```bash
+niriland-setup-helix
+```
+
+Installs Helix plus the curated language-server/tooling set used for that editor path, then runs `helix --health`. This is optional and is kept outside the default install path.
 
 ### Certificates (DTU Eduroam)
 

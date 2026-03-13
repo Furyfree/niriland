@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+command -v pacman >/dev/null 2>&1 || { echo "Missing required command: pacman" >&2; exit 1; }
+command -v sudo >/dev/null 2>&1 || { echo "Missing required command: sudo" >&2; exit 1; }
+
+if [[ "${1:-}" == "help" || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+  echo "Usage: niriland-setup-helix"
+  exit 0
+fi
+
+if [[ $# -gt 0 ]]; then
+  echo "Usage: niriland-setup-helix" >&2
+  exit 1
+fi
+
+sudo -v || { echo "sudo authentication failed" >&2; exit 1; }
+
+echo "Installing Helix and language servers..."
+sudo pacman -S --needed --noconfirm \
+  bash-language-server \
+  gopls \
+  lua-language-server \
+  marksman \
+  taplo-cli \
+  vscode-html-languageserver \
+  vscode-css-languageserver \
+  vscode-json-languageserver \
+  yaml-language-server \
+  zls \
+  typescript-language-server \
+  ansible-language-server \
+  dart \
+  vue-language-server \
+  helix
+
+echo "Running helix health check..."
+helix --health

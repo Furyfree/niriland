@@ -12,6 +12,11 @@ if [[ -z "$TARGET_USER" ]]; then
   die "Could not determine target user."
 fi
 
+TARGET_HOME="$(getent passwd "$TARGET_USER" | cut -d: -f6)"
+if [[ -z "$TARGET_HOME" ]]; then
+  die "Could not determine home directory for $TARGET_USER."
+fi
+
 GROUP_CHANGES=false
 
 # ====================
@@ -61,7 +66,7 @@ fi
 # ====================
 log "Creating .NET SDK symlink..."
 run_sudo mkdir -p /usr/share/dotnet
-run_sudo ln -sfn /home/pby/.local/share/mise/shims/dotnet /usr/share/dotnet/dotnet
+run_sudo ln -sfn "$TARGET_HOME/.local/share/mise/shims/dotnet" /usr/share/dotnet/dotnet
 log_success ".NET SDK symlink created."
 
 # ====================

@@ -1,40 +1,60 @@
-# Niriland Guide
+# Niriland Reference
 
 Practical reference for using and maintaining a Niriland setup.
 
+For shortcut details, see [KEYBINDINGS.md](KEYBINDINGS.md).
+
 ## What Niriland Is
 
-Niriland is a CachyOS-first setup around:
+Niriland is my personal CachyOS-first desktop platform and bootstrap repo for:
 
 - Niri compositor
 - DankMaterialShell (DMS)
 - Curated package manifests
 - User/system config deployment
-- Optional helper scripts for extra capabilities
+- Helper scripts for extra capabilities
+
+It is public for transparency and experimentation. Other people can inspect it, learn from it, or try it on a fresh install target. It is not intended to be a distro-agnostic or general-purpose Linux installer.
+
+## Scope
+
+### Core Architecture
+
+These parts define Niriland itself:
+
+- Numbered install steps under `scripts/install/steps/`
+- Package manifests under `packages/`
+- Tracked base config deployed to `$HOME`
+- Repo-hosted modular config under `configs/modules/`
+- Helper tools under `scripts/tools/`
+
+### Expected Install Assumptions
+
+These are not optional if you want the default Niriland flow to work as designed:
+
+- The base install choices in [../CACHYOS_INSTALL.md](../CACHYOS_INSTALL.md) have already been followed
+- Repo cloned at `~/.local/share/niriland`
+- Willingness to accept Niriland's default package, browser, shell, and desktop choices
+
+### Optional Or Personal Workflows
+
+These are included because they are useful for this setup, but they are not the core of the project:
+
+- AI tooling setup
+- Gaming setup
+- Fingerprint setup
+- VM helpers
+- DTU certificate helper
 
 ## Warnings
 
 - This is a **fresh-install tool**. It overwrites system and user configs. Do not run on an existing customized system without understanding what each step does.
 - Step `05-setup-fde` augments an existing CachyOS LUKS setup with TPM2 auto-unlock and a recovery key. Read the step before running if you use full-disk encryption.
-- The repo **must** live at `~/.local/share/niriland`. The deployed Niri config includes modular fragments from this path directly. If the repo lives elsewhere, the Niri config will fail to load.
+- The repo **must** live at `~/.local/share/niriland`. The installed Niri config includes repo-hosted modular fragments from this canonical location directly. Helper scripts may support other lookup paths for direct execution, but the desktop config model depends on this path coupling.
 
-## CachyOS Baseline
+## Install Baseline
 
-Recommended baseline before running Niriland:
-
-- Start from a fresh CachyOS install
-- Keep CachyOS defaults for drivers, bootloader, and base system integration
-- A headless/minimal CachyOS install is acceptable as long as you have:
-  - `systemd`
-  - `sudo`
-  - `git`
-  - `curl`
-  - working network access
-- Niriland now layers desktop/session packages, DMS, and config deployment on top of that base
-
-See [CACHYOS_HEADLESS_INSTALL.md](CACHYOS_HEADLESS_INSTALL.md) for the preferred installer choices, including LUKS2 FDE, Btrfs + Snapper, and what to keep or skip in the CachyOS package selection screens.
-
-Important: use this on a fresh install target. It is not designed to preserve an already customized system.
+For the expected base system and installer choices before running Niriland, see [../CACHYOS_INSTALL.md](../CACHYOS_INSTALL.md).
 
 ## Install Flow
 
@@ -50,11 +70,13 @@ Or if already cloned:
 ~/.local/share/niriland/install
 ```
 
-The installer prompts for:
+The installer currently prompts for:
 
 - System password for `sudo`
 - LUKS password (empty input reuses system password)
-- Git name/email confirmation or optional override
+- Git name/email confirmation or optional override values
+
+This prompt order matches the current install routine. It is optimized for the default Niriland flow, not for minimal prompting.
 
 Steps run in order:
 
@@ -82,7 +104,7 @@ Notes:
 
 - `05-setup-fde` skips automatically if no TPM device is present.
 - Several DMS/systemd user operations warn (instead of failing) when no active user session exists.
-- Virtualization is intentionally opt-in via helper tools.
+- Virtualization is intentionally opt-in via helper tools instead of being part of the default install.
 - After the first successful boot/login into Niri, reboot one more time. On some systems, not all user-session autostarts/services (`niriusd`, `1Password`, `JetBrains Toolbox`) come up until that second boot.
 
 ## Updating
@@ -101,6 +123,8 @@ Update behavior:
 - Forces `NIRILAND_CONFIG_DEPLOY_MODE=preserve` for `20-*` so existing `~/.config/*` files are not overwritten.
 - Runs `cargo install-update --all` at the end to update Rust tools.
 
+The fallback lookup is for script execution convenience. It does not change the installed Niri config's expectation that the repo lives at `~/.local/share/niriland`.
+
 ## Config Model
 
 The deployed Niri config (`~/.config/niri/config.kdl`) layers multiple sources:
@@ -112,16 +136,18 @@ The deployed Niri config (`~/.config/niri/config.kdl`) layers multiple sources:
 
 User overrides always load last and take precedence.
 
+This layering is why the repo path is fixed: tracked shared config is loaded from the repo, while machine-local edits stay in home-directory override files outside the tracked tree. The fixed path is an architectural choice, not a temporary limitation.
+
 ## Where To Edit What
 
-Personal overrides (safe to edit on the direct repo):
+Machine-local overrides (expected place to customize behavior without editing the tracked repo):
 
 - Keybind overrides: `~/.config/niri/override.d/binds.kdl`
 - Startup apps: `~/.config/niri/override.d/autostart.kdl`
 - Cursor overrides: `~/.config/niri/override.d/cursor.kdl`
 - DMS keybind layer: `~/.config/niri/dms/binds.kdl`
 
-Repo-level config (only edit if you have forked the repo — modifying these on the direct repo will cause merge conflicts on update):
+Repo-level config (edit these only in your own fork or local branch; changing them directly in a tracked checkout will create update/merge friction):
 
 - Predefined keybinds: `configs/modules/.config/niri/modular/binds.kdl`
 - Input settings: `configs/modules/.config/niri/modular/input.kdl`
@@ -139,7 +165,7 @@ niri validate -c ~/.local/share/niriland/configs/modules/.config/niri/config.kdl
 
 It is installed in `45-setup-dev` and linked into `~/.local/bin` so Niri session keybind spawns can resolve it reliably.
 
-Typical pattern:
+Concrete example:
 
 ```bash
 nirius focus-or-spawn --app-id "obsidian" -- obsidian
@@ -148,6 +174,12 @@ nirius focus-or-spawn --app-id "obsidian" -- obsidian
 ## Helper Tools
 
 After `35-setup-tools`, scripts are copied to `~/.local/bin/niriland` and PATH is added in `~/.zprofile` and `~/.profile`.
+
+These tools are mixed in scope:
+
+- `niriland-pkg` and `niriland-update` are core maintenance tools for the platform itself.
+- AI, gaming, fingerprint, certificates, and VM helpers are optional follow-up workflows.
+- Some optional helpers are environment-specific rather than broadly useful on every machine.
 
 ### Package Management
 
@@ -176,7 +208,7 @@ niriland-setup-ai setup
 niriland-setup-ai status
 ```
 
-Installs/configures Opencode, Codex, Claude Code, Ollama, Docker, and OpenWebUI.
+Installs/configures Opencode, Codex, Claude Code, Ollama, Docker, and OpenWebUI. This is optional and not required for a base Niriland desktop.
 
 ### Gaming Bundle
 
@@ -185,7 +217,7 @@ niriland-setup-gaming setup
 niriland-setup-gaming status
 ```
 
-Installs CachyOS gaming packages plus Niriland gaming extras. If available, use `game-performance %command%` in Steam launch options.
+Installs CachyOS gaming packages plus Niriland gaming extras. This is optional and tailored to the package choices in this repo. If available, use `game-performance %command%` in Steam launch options.
 
 ### Certificates (DTU Eduroam)
 
@@ -194,7 +226,7 @@ niriland-setup-certificates setup
 niriland-setup-certificates status
 ```
 
-Installs certs and refreshes CA trust.
+Installs the DTU Eduroam cert and refreshes CA trust. This is an environment-specific helper, not a core project requirement.
 
 ### Fingerprint Auth
 
@@ -203,7 +235,7 @@ niriland-setup-fingerprint
 niriland-setup-fingerprint --remove
 ```
 
-Sets up/removes fingerprint auth for sudo/polkit.
+Sets up/removes fingerprint auth for sudo/polkit. This is optional machine-specific setup.
 
 ### Virtualization
 
@@ -214,6 +246,8 @@ niriland-vm-libvirt status
 niriland-vm-vmware setup
 niriland-vm-vmware status
 ```
+
+These helpers are optional and are kept outside the default install path on purpose.
 
 ### Browser Utilities
 
@@ -233,13 +267,13 @@ niriland-launch-webapp <url> [args]  # launch URL as browser app window
 
 ## Re-Run Strategy
 
-Re-run full installer when needed:
+Re-run the full installer from the repo root when needed:
 
 ```bash
 ./install
 ```
 
-Or run a single step directly:
+Or run a single step directly from the repo root:
 
 ```bash
 bash scripts/install/steps/50-setup-browser

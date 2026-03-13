@@ -13,28 +13,12 @@ if [[ ! -d "$TOOLS_SRC" ]]; then
   exit 0
 fi
 
-mkdir -p "$TOOLS_DST"
-
-copied_count=0
-while IFS= read -r src_path; do
-  rel_path="${src_path#$TOOLS_SRC/}"
-  dest_path="$TOOLS_DST/$rel_path"
-
-  mkdir -p "$(dirname "$dest_path")"
-
-  if [[ -e "$dest_path" ]] && cmp -s "$src_path" "$dest_path"; then
-    continue
-  fi
-
-  cp -a "$src_path" "$dest_path"
-  if [[ -f "$dest_path" ]]; then
-    chmod +x "$dest_path"
-  fi
-  copied_count=$((copied_count + 1))
-done < <(find "$TOOLS_SRC" \( -type f -o -type l \) | sort)
+rm -rf -- "$TOOLS_DST"
+mkdir -p "$(dirname "$TOOLS_DST")"
+cp -a "$TOOLS_SRC" "$TOOLS_DST"
 
 log "Tools destination: $TOOLS_DST"
-log "Tools updated: $copied_count"
+log "Tools synced from: $TOOLS_SRC"
 
 PATH_MARKER="# niriland-path"
 PATH_LINE='export PATH="$HOME/.local/bin:$HOME/.local/bin/niriland:$PATH"'

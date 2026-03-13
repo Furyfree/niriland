@@ -3,6 +3,7 @@
 set -euo pipefail
 
 NIRILAND_ROOT="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
+SCRIPT_SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 
 # Allow running from repo directory as fallback
 if [[ -d "$PWD/scripts/install/steps" && -f "$PWD/install" ]]; then
@@ -30,6 +31,12 @@ fi
 log "Using repo: $REPO_ROOT"
 log "Pulling latest changes"
 git -C "$REPO_ROOT" pull --ff-only
+
+REPO_UPDATE_SCRIPT="$REPO_ROOT/scripts/tools/niriland-update"
+if [[ "$SCRIPT_SELF" != "$REPO_UPDATE_SCRIPT" ]]; then
+  log "Handing off to repo copy of niriland-update"
+  exec bash "$REPO_UPDATE_SCRIPT" "$@"
+fi
 
 # Package upgrades and selected install-step replays include privileged operations.
 read_system_pass

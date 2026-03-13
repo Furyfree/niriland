@@ -44,7 +44,7 @@ echo "Enabling libvirtd.socket..."
 sudo systemctl enable --now libvirtd.socket
 
 if command -v virsh >/dev/null 2>&1 && sudo virsh net-info default >/dev/null 2>&1; then
-  if ! sudo virsh net-info default | grep -Eq '^Active:[[:space:]]+yes$'; then
+  if ! sudo virsh net-list --name | grep -Fxq default; then
     echo "Starting libvirt default network..."
     sudo virsh net-start default
   fi

@@ -25,6 +25,7 @@ What it changes:
 - Updates Zed to the current tracked shortcuts from Niriland
 - Picks up the current `Ctrl+K Ctrl+K` keymap shortcut
 - Picks up the current `Ctrl+Shift+X` extensions shortcut
+- Drops old tracked Zed overrides that are no longer part of the shared keymap
 
 Fresh installs:
 Not needed manually. Fresh installs already deploy the current tracked Zed keymap.

@@ -88,6 +88,9 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
   - [x] Clean up the public documentation surface by clarifying project scope, reorganizing docs out of the root, renaming the CachyOS install doc, and rechecking the keybinding reference against the current config.
 
 - [ ] Next work
+  - [ ] Add modular `niriland-launch-tui` and `niriland-launch-tui-presentation` helper scripts.
+    - [ ] `niriland-launch-tui` should just launch the requested TUI normally.
+    - [ ] `niriland-launch-tui-presentation` should handle the centered floating presentation layer and call `niriland-launch-tui`.
   - [ ] Add a TUI installer flow with Gum so the bootstrap is more guided without trying to support every Linux setup.
   - [ ] Rethink installer prompt flow so it works with less attention and fewer unnecessary prompts, instead of just moving every prompt later.
   - [ ] Rework sudo-session handling in both the installer and updater so cached sudo credentials are reused cleanly and optional or skipped functionality does not trigger avoidable prompts.

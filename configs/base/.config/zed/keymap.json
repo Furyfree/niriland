@@ -33,12 +33,6 @@
   {
     "context": "Workspace",
     "bindings": {
-      "": "file_finder::Toggle",
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
       "ctrl-k ctrl-x": "zed::Extensions",
     },
   },

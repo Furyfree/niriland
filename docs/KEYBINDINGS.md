@@ -330,4 +330,4 @@ When using mouse wheel bindings, hold the specified modifier keys (e.g., `Mod`) 
 
 ---
 
-**Note**: This documentation is based on the configuration in [../configs/modules/.config/niri/modular/binds.kdl](../configs/modules/.config/niri/modular/binds.kdl) and [../configs/base/.config/VSCodium/User/keybindings.json](../configs/base/.config/VSCodium/User/keybindings.json). If you've added custom bindings in your override files, they will also be active but may not be listed here.
+**Note**: This documentation is based on the configuration in [../configs/modules/.config/niri/modular/binds.kdl](../configs/modules/.config/niri/modular/binds.kdl), [../configs/base/.config/VSCodium/User/keybindings.json](../configs/base/.config/VSCodium/User/keybindings.json), and [../configs/base/.config/zed/keymap.json](../configs/base/.config/zed/keymap.json). If you've added custom bindings in your override files or local editor keymaps, they will also be active but may not be listed here.

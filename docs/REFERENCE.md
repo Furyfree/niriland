@@ -80,27 +80,36 @@ The installer currently asks for:
 
 This prompt order matches the current install routine. It is built for the default Niriland flow, not for the smallest possible number of prompts.
 
+Step number ranges are grouped on purpose:
+
+- `00-09` — base system preparation and disk/bootstrap follow-up
+- `10-19` — core package install and desktop session setup
+- `20-39` — config deployment and desktop appearance/session polish
+- `40-59` — shell, keyring, helper tools, and editor bootstrap
+- `60-79` — developer tools, editors, and browser setup
+- `80-99` — desktop integration, maintenance, and final cleanup
+
 Steps run in order:
 
 1. `00-setup-pacman` — pacman/paru config, live pacman.conf patching, Chaotic AUR
 2. `05-setup-fde` — validate existing CachyOS LUKS boot config, enroll TPM2 auto-unlock, and create a recovery key (skips if no TPM)
-3. `15-install-packages` — install from base/CachyOS/Chaotic/AUR manifests
-4. `17-setup-dms` — DMS shell and greeter setup
+3. `10-install-packages` — install from base/CachyOS/Chaotic/AUR manifests
+4. `15-setup-dms` — DMS shell and greeter setup
 5. `20-deploy-configs` — copy configs to `$HOME` with backups
-6. `21-restart-portals` — restart xdg-desktop-portal services after config deploy
-7. `25-setup-backgrounds` — sync wallpapers
-8. `28-setup-theming` — GTK theme, icons, cursor, fonts
-9. `30-setup-shell` — install zsh, set as default
-10. `32-setup-keyring` — GNOME keyring + PAM integration
-11. `35-setup-tools` — deploy helper scripts to `~/.local/bin/niriland`
-12. `36-setup-lazyvim` — Neovim + LazyVim starter
-13. `45-setup-dev` — Docker, mise, PlatformIO, cargo tools
-14. `46-setup-vscodium` — VSCodium + extensions
-15. `47-setup-zed` — install Zed via upstream installer
-16. `50-setup-browser` — Helium, 1Password, Widevine
-17. `70-setup-desktop-entries` — desktop files and icon cache
+6. `25-restart-portals` — restart xdg-desktop-portal services after config deploy
+7. `30-setup-backgrounds` — sync wallpapers
+8. `35-setup-theming` — GTK theme, icons, cursor, fonts
+9. `40-setup-shell` — install zsh, set as default
+10. `45-setup-keyring` — GNOME keyring + PAM integration
+11. `50-setup-tools` — deploy helper scripts to `~/.local/bin/niriland`
+12. `55-setup-lazyvim` — Neovim + LazyVim starter
+13. `60-setup-dev` — Docker, mise, PlatformIO, cargo tools
+14. `65-setup-vscodium` — VSCodium + extensions
+15. `70-setup-zed` — install Zed via upstream installer
+16. `75-setup-browser` — Helium, 1Password, Widevine
+17. `80-setup-desktop-entries` — desktop files and icon cache
 18. `85-optimize-system` — enable fstrim/paccache timers
-19. `99-post-install` — font/icon cache refresh, DMS restart, reboot reminders
+19. `90-post-install` — font/icon cache refresh, DMS restart, reboot reminders
 
 Notes:
 
@@ -121,7 +130,7 @@ Update behavior:
 - Requires a clean git worktree (fails if local changes exist).
 - Runs `git pull --ff-only`.
 - Runs full package upgrade via `niriland-pkg upgrade` (`paru -Syu --noconfirm`).
-- Runs step subsets in order: `15-*`, `17-*`, `20-*`, `35-*`, `70-*`, `99-*`.
+- Runs step subsets in order: `10-*`, `15-*`, `20-*`, `50-*`, `80-*`, `90-*`.
 - Forces `NIRILAND_CONFIG_DEPLOY_MODE=preserve` for `20-*` so existing `~/.config/*` files are not overwritten.
 - Runs `cargo install-update --all` at the end to update Rust tools.
 
@@ -165,7 +174,7 @@ niri validate -c ~/.local/share/niriland/configs/modules/.config/niri/config.kdl
 
 `nirius` is used for "focus-or-spawn" behavior, so common apps are focused if already open instead of launching duplicates.
 
-It is installed in `45-setup-dev` and linked into `~/.local/bin` so Niri session keybind spawns can resolve it reliably.
+It is installed in `60-setup-dev` and linked into `~/.local/bin` so Niri session keybind spawns can resolve it reliably.
 
 Concrete example:
 
@@ -175,7 +184,7 @@ nirius focus-or-spawn --app-id "obsidian" -- obsidian
 
 ## Helper Tools
 
-After `35-setup-tools`, scripts are copied to `~/.local/bin/niriland` and PATH is added in `~/.zprofile` and `~/.profile`.
+After `50-setup-tools`, scripts are copied to `~/.local/bin/niriland` and PATH is added in `~/.zprofile` and `~/.profile`.
 
 These tools do different jobs:
 
@@ -278,13 +287,13 @@ Re-run the full installer from the repo root when needed:
 Or run a single step directly from the repo root:
 
 ```bash
-bash scripts/install/steps/50-setup-browser
+bash scripts/install/steps/75-setup-browser
 ```
 
 If you run steps manually and they use `run_sudo`, you may need to initialize credentials first:
 
 ```bash
-bash -c 'source ./scripts/install/lib/common && read_system_pass && bash ./scripts/install/steps/50-setup-browser && clean_system_pass'
+bash -c 'source ./scripts/install/lib/common && read_system_pass && bash ./scripts/install/steps/75-setup-browser && clean_system_pass'
 ```
 
 Notes:
@@ -298,7 +307,7 @@ Notes:
 If commands are missing, verify foundational steps completed:
 
 - `00-setup-pacman` for repo/bootstrap package manager setup (`paru`, live pacman.conf patching, Chaotic AUR, timers)
-- `15-install-packages` for package manifests
+- `10-install-packages` for package manifests
 
 For AI issues:
 

@@ -37,7 +37,7 @@ read_system_pass
 log "Upgrading packages (niriland-pkg upgrade)..."
 bash "$REPO_ROOT/scripts/tools/niriland-pkg" upgrade
 
-for pattern in 15-* 17-* 20-* 35-* 70-* 99-*; do
+for pattern in 10-* 15-* 20-* 50-* 80-* 90-*; do
   found=false
 
   for step in "$REPO_ROOT/scripts/install/steps"/$pattern; do

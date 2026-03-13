@@ -90,8 +90,11 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
   - [ ] Add a TUI installer flow with Gum so the bootstrap is more guided without trying to support every Linux setup.
   - [ ] Rethink installer prompt flow so it works with less attention and fewer unnecessary prompts, instead of just moving every prompt later.
   - [ ] Rework sudo-session handling in both the installer and updater so cached sudo credentials are reused cleanly and optional or skipped functionality does not trigger avoidable prompts.
-  - [ ] Audit helper tools and remove, merge, or rewrite the ones that are untested, unused, or no longer justified in the current platform scope, especially the VM-related scripts.
+  - [ ] Remove the current VM helper/tooling path and rebuild virtualization support from scratch around a smaller, explicitly supported stack.
+    - [ ] Rebuild the libvirt path around `qemu-full`, `virt-manager`, `swtpm`, `libvirtd`, libvirt group membership, default-network autostart, the required `network.conf` firewall backend, and the needed UFW route allowance for `192.168.122.0/24`, using the CachyOS reference at <https://wiki.cachyos.org/virtualization/qemu_and_vmm_setup/>.
+    - [ ] Re-add lightweight VM workflows around `quickemu-git` and `quickgui` after the base virtualization path is clean again.
   - [ ] Rework `niriland-pkg` to be faster, more robust, and less dependent on the current AUR list workaround that still exists because the piped package list has shown bogus entries and broken names in `fzf`.
+  - [ ] Fix the mise setup so Python is not set globally, because that leaks into system-tool expectations and breaks things like `virt-manager`.
   - [ ] Keep reviewing hidden assumptions in installer steps and helper scripts, then either remove them or document them explicitly.
   - [ ] Keep polishing the current CachyOS-first setup without turning it into a universal installer.
 

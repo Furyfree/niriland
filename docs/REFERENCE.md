@@ -16,6 +16,83 @@ Niriland is my personal CachyOS-first desktop setup and bootstrap repo for:
 
 It is public so other people can inspect it, learn from it, or try it on a fresh install target. It expects a CachyOS base install to already be in place, and it is not meant to be an installer that works across different Linux distributions or a general-purpose Linux installer.
 
+## System Profile
+
+This is the practical "what you get" view of a default Niriland install.
+
+### Core Desktop Standard
+
+- Compositor and session shell: Niri + DankMaterialShell (DMS)
+- Shell: `zsh`
+- Terminal: Ghostty
+- GUI file manager: Nautilus
+- Terminal file manager: Yazi
+- Default CLI editor: Neovim (`EDITOR=nvim`)
+
+### Default Apps For Opening Things
+
+These defaults come from [`configs/base/.config/mimeapps.list`](../configs/base/.config/mimeapps.list) and the deployed session environment:
+
+- Web links and HTML: Helium
+- PDF, XPS, DjVu, and comic-book archive formats: Evince
+- Images: Loupe
+- Video files: Showtime
+- Audio files: `mpv`
+- Plain text files: GNOME Text Editor
+- Code, markup, config, patch, log, and similar developer-facing text files: VSCodium Wayland
+- Directories: Nautilus
+
+### Standard Tools And Their Roles
+
+- Helium is the default browser for normal browsing and link handling.
+- Zen is installed as an alternate browser and is also trusted by the bundled 1Password browser integration.
+- Ghostty is the standard terminal, while `xdg-terminal-exec` is installed for launcher-friendly terminal spawning.
+- Neovim is the standard terminal editor and is what `$EDITOR` points to.
+- VSCodium is the standard GUI code editor and is also the default opener for many source/config file types.
+- Zed is installed as a secondary GUI editor, not the main default.
+- Nautilus is the standard GUI file browser; Yazi is the standard terminal file browser.
+- Evince is the standard document/PDF viewer.
+- Loupe is the standard image viewer.
+- Showtime is the standard simple video opener.
+- `mpv` is installed for media playback and is the default opener for common audio formats.
+- 1Password and `1password-cli` are the standard password-management tools.
+- JetBrains Toolbox is installed for JetBrains IDE management rather than pinning a single JetBrains IDE into the default install.
+- Obsidian is the standard notes app in the curated package set.
+- Typst in VSCodium is a good alternative writing workflow to Obsidian if you want fast live PDF preview while editing; the default VSCodium extension set includes Tinymist for that setup.
+- The intended virtualization split is: libvirt as the long-term, consistent VM path; `quickemu-git`/Quickgui as the faster path for trying other systems or testing installs.
+
+### Common Installed Apps
+
+- Communication and web: Signal, Vesktop, Teams for Linux, Zoom, Helium, Zen
+- Media and creative: Spotify, OBS Studio, Kdenlive, GIMP, Pinta, Draw.io Desktop
+- Notes and knowledge work: Obsidian, Typst-in-VSCodium workflow
+- Passwords and secrets: 1Password, `1password-cli`, Seahorse
+- IDE/editor path: Neovim, VSCodium, Zed, JetBrains Toolbox
+
+### Development And CLI Tooling
+
+- Core environment/toolchain: `git`, `mise`, Docker, Docker Compose, PlatformIO, `gcc`, `clang`, `base-devel`
+- Terminal workflow: `zsh`, Starship, Zoxide, `fzf`, `eza`, `bat`, `ripgrep`, `fd`, `jq`, `tldr`
+- Monitoring and inspection: `btop`, Fastfetch, `bandwhich`, `duf`, `dust`, `tokei`
+- Git and repo helpers: GitHub CLI, LazyGit, LazyDocker
+- Archive and file utilities: `zip`, `unzip`, `7zip`, `unrar`
+
+### System Services And Machine Defaults
+
+- Storage and mounts: `udiskie`, `gvfs`, GNOME Disk Utility
+- File previews/thumbnails: Sushi, Tumbler, `ffmpegthumbnailer`, Nautilus image converter
+- Security/session integration: Polkit GNOME, GNOME keyring integration, Seahorse
+- Firmware/boot support: `fwupd`, `efibootmgr`, Limine, CachyOS Limine hooks
+- Printing convenience: Epson ESC/P-R drivers are included in the package set
+- Browser DRM support: `chromium-widevine` is included for the Helium setup
+- Theming and fonts: Adwaita/GTK theme assets, Papirus icons, Bibata cursor theme, JetBrains Mono Nerd Font, Inter, Noto Emoji
+
+### Behavior Notes
+
+- Browser helper scripts follow the current XDG default browser, so if you change that later, `niriland-launch-browser` and `niriland-launch-webapp` follow the new default instead of hardcoding Helium.
+- The fixed repo path is part of the system model: tracked shared config lives in the repo, while machine-local edits belong in home-directory override files.
+- Not every low-level package is spelled out here, but this section now covers the main user-facing and system-defining parts of the current package manifests.
+
 ## Scope
 
 ### Core Architecture

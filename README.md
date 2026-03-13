@@ -1,14 +1,14 @@
 # Niriland
 
-Niriland is my personal CachyOS-first desktop platform and bootstrap repo for Niri + DankMaterialShell, with curated packages, configs, and helper tooling. It is public for transparency and experimentation, not as a general-purpose installer.
+Niriland is my personal CachyOS-first desktop setup and bootstrap repo for Niri + DankMaterialShell. It includes package lists, configs, and helper scripts. The repo is public so other people can inspect it and try it, but it is not meant to be a general Linux installer.
 
 > **Warning**
 >
 > - This is a **fresh-install tool**. It overwrites system and user configs. Do not run on an existing customized system without understanding what each step does.
-> - Step `05-setup-fde` augments an existing CachyOS LUKS setup with TPM2 auto-unlock and a recovery key. Read the step before running if you use full-disk encryption.
-> - The repo **must** live at `~/.local/share/niriland`. The installed Niri config includes repo-hosted modular fragments from this canonical location directly.
+> - Step `05-setup-fde` adds TPM2 auto-unlock and a recovery key to an existing CachyOS LUKS setup. Read the step before running if you use full-disk encryption.
+> - The repo **must** live at `~/.local/share/niriland`. The installed Niri config reads shared fragments directly from that path.
 >
-> The fixed repo path is intentional: tracked shared config lives in the repo, local machine-specific overrides stay outside the tracked tree, and the layered config model depends on that path coupling.
+> The fixed repo path is intentional: shared tracked config stays in the repo, machine-specific overrides stay outside it, and the config layout depends on that exact path.
 
 ## Quick Start
 
@@ -34,7 +34,7 @@ Post-install note: after your first successful login into Niri, reboot one more 
 
 ## What It Does
 
-Installs curated base, CachyOS, Chaotic, and AUR packages; deploys Niri/DMS/Ghostty/Zsh configs; sets up theming (GTK, cursors, fonts, Matugen color generation); configures dev tools (Docker, mise, Neovim/LazyVim, VSCodium, Zed); and installs optional helper scripts for AI, gaming, VMs, fingerprint auth, and more.
+It installs the base, CachyOS, Chaotic, and AUR packages used by this setup. It also deploys Niri, DMS, Ghostty, and Zsh configs; sets up theming; configures dev tools like Docker, mise, Neovim/LazyVim, VSCodium, and Zed; and installs optional helper scripts for AI, gaming, VMs, fingerprint auth, and more.
 
 See [docs/REFERENCE.md](docs/REFERENCE.md) for the full reference.
 For the expected fresh-install baseline for the default Niriland flow, see [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md).
@@ -46,14 +46,14 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
 
 ## Who It Is Not For
 
-- Not for generic Linux users expecting a distro-agnostic installer
+- Not for people looking for an installer that works across many Linux distributions
 - Not for existing heavily customized systems
 
 ## Why It Is Structured This Way
 
-- Niriland keeps installer steps, package manifests, tracked config, and helper tools in one repo so the full platform stays inspectable and repeatable.
+- Niriland keeps installer steps, package lists, tracked config, and helper tools in one repo so the full setup is easy to inspect and repeat.
 - The repo path is fixed because the installed Niri config includes repo-hosted modular fragments directly from `~/.local/share/niriland`.
-- Tracked shared config lives in the repo, while machine-local overrides live under `$HOME` outside the tracked tree so updates and local customization stay separated.
+- Shared tracked config lives in the repo, while machine-local overrides live under `$HOME` outside the tracked tree so updates and local customization stay separate.
 - The project prefers a fresh-install target because the default flow deploys its own packages and config layers instead of trying to preserve an already customized system.
 
 ## Roadmap
@@ -87,13 +87,13 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
   - [x] Clean up the public documentation surface by clarifying project scope, reorganizing docs out of the root, renaming the CachyOS install doc, and rechecking the keybinding reference against the current config.
 
 - [ ] Next work
-  - [ ] Add a TUI installer flow with Gum so the bootstrap experience is more guided without turning the project into a universal installer.
-  - [ ] Rethink installer prompt flow so it balances low-attention installation with fewer unnecessary prompts, instead of just moving every prompt later.
+  - [ ] Add a TUI installer flow with Gum so the bootstrap is more guided without trying to support every Linux setup.
+  - [ ] Rethink installer prompt flow so it works with less attention and fewer unnecessary prompts, instead of just moving every prompt later.
   - [ ] Rework sudo-session handling in both the installer and updater so cached sudo credentials are reused cleanly and optional or skipped functionality does not trigger avoidable prompts.
   - [ ] Audit helper tools and remove, merge, or rewrite the ones that are untested, unused, or no longer justified in the current platform scope, especially the VM-related scripts.
   - [ ] Rework `niriland-pkg` to be faster, more robust, and less dependent on the current AUR list workaround that still exists because the piped package list has shown bogus entries and broken names in `fzf`.
   - [ ] Keep reviewing hidden assumptions in installer steps and helper scripts, then either remove them or document them explicitly.
-  - [ ] Keep polishing the current CachyOS-first platform without broadening it into a universal installer.
+  - [ ] Keep polishing the current CachyOS-first setup without turning it into a universal installer.
 
 ## Repository Layout
 

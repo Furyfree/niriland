@@ -93,7 +93,7 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
   - [x] Remove the current VM helper/tooling path and rebuild virtualization support from scratch around a smaller, explicitly supported stack.
     - [x] Rebuild the libvirt path around `qemu-full`, `virt-manager`, `swtpm`, `libvirtd`, libvirt group membership, default-network autostart, the required `network.conf` firewall backend, and the needed UFW route allowance for `192.168.122.0/24`, using the CachyOS reference at <https://wiki.cachyos.org/virtualization/qemu_and_vmm_setup/>.
     - [x] Re-add lightweight VM workflows around `quickemu-git` and `quickgui` after the base virtualization path is clean again.
-  - [ ] Rework `niriland-pkg` to be faster, more robust, and less dependent on the current AUR list workaround that still exists because the piped package list has shown bogus entries and broken names in `fzf`.
+  - [x] Rework `niriland-pkg` around a coherent `yay`-based flow with a combined repo + AUR picker instead of the old broken AUR-list workaround path.
   - [x] Stop setting Python globally through `mise`, because that leaks into system-tool expectations and breaks things like `virt-manager`.
   - [ ] Keep reviewing hidden assumptions in installer steps and helper scripts, then either remove them or document them explicitly.
   - [ ] Keep polishing the current CachyOS-first setup without turning it into a universal installer.

@@ -49,17 +49,15 @@ require_cmd() {
 
 _niriland_preview_sync() {
   local pkg="${1:-}"
-  [[ -n "$pkg" ]] || return 0
+  local repo="${2:-}"
+  [[ -n "$repo" && -n "$pkg" ]] || return 0
 
-  if pacman -Si -- "$pkg" 2>/dev/null; then
+  if [[ "$repo" == "aur" ]]; then
+    yay -Siia -- "$pkg" 2>/dev/null || printf 'No package info found for: %s\n' "$pkg"
     return 0
   fi
 
-  if paru -Si -- "$pkg" 2>/dev/null; then
-    return 0
-  fi
-
-  printf 'No package info found for: %s\n' "$pkg"
+  pacman -Si -- "${repo}/${pkg}" 2>/dev/null || pacman -Si -- "$pkg" 2>/dev/null || printf 'No package info found for: %s/%s\n' "$repo" "$pkg"
 }
 
 _niriland_preview_installed() {
@@ -70,9 +68,10 @@ _niriland_preview_installed() {
 
 _niriland_preview_pkgbuild() {
   local pkg="${1:-}"
-  [[ -n "$pkg" ]] || return 0
+  local repo="${2:-}"
+  [[ -n "$repo" && -n "$pkg" ]] || return 0
 
-  if paru -Gp --print --aur -- "$pkg" 2>/dev/null; then
+  if [[ "$repo" == "aur" ]] && yay -Gpa -- "$pkg" 2>/dev/null | tail -n +5; then
     return 0
   fi
 
@@ -117,43 +116,11 @@ pick_packages() {
   SHELL="$(command -v bash)" fzf "${fzf_args[@]}" || true
 }
 
-fetch_aur_list() {
-  local aur_list
-  aur_list="$(paru -Slqa 2>/dev/null)" || return 1
-
-  # paru v2.1.0 bug: -Slqa can dump the compressed AUR cache as raw binary.
-  # Detect this by checking if the first line looks like a package name.
-  local first_line
-  first_line="$(head -1 <<<"$aur_list")"
-  if [[ "$first_line" =~ ^[a-z0-9] ]]; then
-    printf '%s\n' "$aur_list"
-    return 0
-  fi
-
-  # Fallback: download directly from AUR
-  if command -v curl >/dev/null 2>&1; then
-    curl -sfL 'https://aur.archlinux.org/packages.gz' | gunzip 2>/dev/null
-    return "${PIPESTATUS[0]}"
-  fi
-
-  return 1
-}
-
 build_install_candidates() {
-  local aur_list
-  aur_list="$(mktemp)"
-  # shellcheck disable=SC2064
-  trap "rm -f '$aur_list'" RETURN
-
-  if fetch_aur_list >"$aur_list" 2>/dev/null && [[ -s "$aur_list" ]]; then
-    {
-      pacman -Slq
-      cat "$aur_list"
-    } | sort -u
-  else
-    warn "AUR list unavailable; showing repo packages only."
-    pacman -Slq | sort -u
-  fi
+  {
+    pacman -Sl | awk '{print $2 "\t" $1}'
+    yay -Slqa | awk '{print $1 "\t" "aur"}'
+  } | sort -u
 }
 
 # --- Commands ---
@@ -162,8 +129,8 @@ install_packages() {
   local query="${*:-}"
   local -a selected=()
 
-  local preview_info_cmd='_niriland_preview_sync {1}'
-  local preview_pkgbuild_cmd='_niriland_preview_pkgbuild {1}'
+  local preview_info_cmd='_niriland_preview_sync {1} {2}'
+  local preview_pkgbuild_cmd='_niriland_preview_pkgbuild {1} {2}'
 
   mapfile -t selected < <(
     build_install_candidates | pick_packages \
@@ -172,6 +139,9 @@ install_packages() {
       'install> ' \
       'alt-p: toggle description, alt-b/B: toggle PKGBUILD, alt-j/k: scroll, tab: multi-select' \
       "$query" \
+      --delimiter $'\t' \
+      --nth 1 \
+      --with-nth 1 \
       --bind "alt-b:change-preview:${preview_pkgbuild_cmd}" \
       --bind "alt-B:change-preview:${preview_info_cmd}"
   )
@@ -181,8 +151,16 @@ install_packages() {
     return 0
   fi
 
-  log "Installing ${#selected[@]} package(s): ${selected[*]}"
-  paru -S --needed --noconfirm -- "${selected[@]}"
+  local -a install_refs=()
+  local entry repo pkg
+  for entry in "${selected[@]}"; do
+    pkg="${entry%%$'\t'*}"
+    repo="${entry#*$'\t'}"
+    install_refs+=("${repo}/${pkg}")
+  done
+
+  log "Installing ${#install_refs[@]} package(s): ${install_refs[*]}"
+  yay -S --needed --noconfirm -- "${install_refs[@]}"
 }
 
 remove_packages() {
@@ -191,7 +169,7 @@ remove_packages() {
   local preview_installed_cmd='_niriland_preview_installed {1}'
 
   mapfile -t selected < <(
-    paru -Qqe | sort -u | pick_packages \
+    yay -Qqe | sort -u | pick_packages \
       red \
       "$preview_installed_cmd" \
       'remove> ' \
@@ -205,11 +183,11 @@ remove_packages() {
   fi
 
   log "Removing ${#selected[@]} package(s): ${selected[*]}"
-  paru -Rns --noconfirm -- "${selected[@]}"
+  yay -Rns --noconfirm -- "${selected[@]}"
 }
 
 upgrade_packages() {
-  paru -Syu --noconfirm
+  yay -Syu --noconfirm
 }
 
 browse_installed_packages() {
@@ -256,8 +234,8 @@ clean_packages() {
   sudo -v >/dev/null
 
   if [[ "$deep_cache" == "true" ]]; then
-    log "Deep-cleaning package cache (paru -Scc)"
-    paru -Scc --noconfirm
+    log "Deep-cleaning package cache (yay -Scc)"
+    yay -Scc --noconfirm
   else
     if command -v paccache >/dev/null 2>&1; then
       log "Pruning package cache with paccache (keep latest 3 installed versions)"
@@ -266,19 +244,19 @@ clean_packages() {
       sudo paccache -ruk0
     else
       warn "paccache not found (install pacman-contrib for smarter cache pruning)"
-      log "Falling back to paru -Sc"
-      paru -Sc --noconfirm
+      log "Falling back to yay -Sc"
+      yay -Sc --noconfirm
     fi
   fi
 
   if [[ "$clean_orphans" == "true" ]]; then
-    log "Removing unneeded dependencies (paru -c)"
-    paru -c --noconfirm || true
+    log "Removing unneeded dependencies (yay -Yc)"
+    yay -Yc --noconfirm || true
   fi
 
   if [[ "$clean_builds" == "true" ]]; then
     log "Removing AUR build/cache directories"
-    rm -rf -- "$HOME/.cache/paru/build" "$HOME/.cache/paru/clone" "$HOME/.cache/yay"
+    rm -rf -- "$HOME/.cache/yay"
   fi
 
   log "Cleanup complete."
@@ -295,19 +273,19 @@ main() {
 
   case "$cmd" in
     install|i)
-      require_cmd paru
+      require_cmd yay
       require_cmd pacman
       require_cmd fzf
       install_packages "$@"
       ;;
     remove|r|uninstall)
-      require_cmd paru
+      require_cmd yay
       require_cmd pacman
       require_cmd fzf
       remove_packages
       ;;
     upgrade|u|update)
-      require_cmd paru
+      require_cmd yay
       upgrade_packages
       ;;
     installed|list|l)
@@ -316,7 +294,7 @@ main() {
       browse_installed_packages
       ;;
     clean|c)
-      require_cmd paru
+      require_cmd yay
       clean_packages "$@"
       ;;
     *)

@@ -34,8 +34,7 @@ alias fman='compgen -c | fzf | xargs man'
 alias fzf-find='fd --type f | fzf'
 alias find='fd'
 
-# AUR Helpers
-alias yay='paru'
+# Package Helpers
 alias npi='niriland-pkg install'
 alias npr='niriland-pkg remove'
 alias npu='niriland-pkg upgrade'

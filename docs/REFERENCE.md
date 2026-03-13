@@ -72,6 +72,7 @@ These defaults come from [`configs/base/.config/mimeapps.list`](../configs/base/
 ### Development And CLI Tooling
 
 - Core environment/toolchain: `git`, `mise`, Docker, Docker Compose, PlatformIO, `gcc`, `clang`, `base-devel`
+- Package helpers: `yay`, `paru`
 - Terminal workflow: `zsh`, Starship, Zoxide, `fzf`, `eza`, `bat`, `ripgrep`, `fd`, `jq`, `tldr`
 - Monitoring and inspection: `btop`, Fastfetch, `bandwhich`, `duf`, `dust`, `tokei`
 - Git and repo helpers: GitHub CLI, LazyGit, LazyDocker
@@ -206,7 +207,7 @@ Update behavior:
 - Resolves repo from current script location, current directory, or `NIRILAND_DIR`.
 - Requires a clean git worktree (fails if local changes exist).
 - Runs `git pull --ff-only`.
-- Runs full package upgrade via `niriland-pkg upgrade` (`paru -Syu --noconfirm`).
+- Runs full package upgrade via `niriland-pkg upgrade` (`yay -Syu --noconfirm`).
 - Runs step subsets in order: `10-*`, `15-*`, `20-*`, `50-*`, `80-*`, `90-*`.
 - Forces `NIRILAND_CONFIG_DEPLOY_MODE=preserve` for `20-*` so existing `~/.config/*` files are not overwritten.
 - Runs `cargo install-update --all` at the end to update Rust tools.
@@ -272,12 +273,14 @@ These tools do different jobs:
 ### Package Management
 
 ```bash
-niriland-pkg install       # fuzzy search and install packages
+niriland-pkg install       # yay-backed combined repo + AUR picker
 niriland-pkg remove        # fuzzy search and remove packages
-niriland-pkg upgrade       # system upgrade via paru
+niriland-pkg upgrade       # system upgrade via yay
 niriland-pkg installed     # browse installed packages
 niriland-pkg clean         # clean package cache
 ```
+
+`niriland-pkg` now uses `yay` consistently for install, remove, upgrade, and cleanup flows. `install` builds one picker from pacman repo entries plus the AUR list from `yay`, so repo and AUR packages can be selected in the same TUI.
 
 Shell aliases (from `.zshrc`):
 

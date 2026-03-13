@@ -9,6 +9,31 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 2026-03 Refresh Wallpaper Filenames
+
+Who:
+Existing installs that already synced the old wallpaper filenames into `~/Pictures/Wallpapers`.
+
+Run:
+
+```bash
+rm -f \
+  ~/Pictures/Wallpapers/daniil-silantev-VqAd3Lr3Pfc-unsplash.jpg \
+  ~/Pictures/Wallpapers/nihilist-penguin-3840x2160-25229.jpg \
+  ~/Pictures/Wallpapers/vadim-sherbakov-NQSWvyVRIJk-unsplash.jpg \
+  ~/Pictures/Wallpapers/wallhaven-1p62vg.png
+
+bash ~/.local/share/niriland/scripts/install/steps/30-setup-backgrounds
+```
+
+What it changes:
+
+- Removes the old wallpaper filenames from the synced wallpapers directory
+- Copies the same wallpaper assets back in under the current content-based filenames
+
+Fresh installs:
+Not needed manually. Fresh installs only see the renamed wallpaper files.
+
 ## 2026-03 Refresh Zed Keymap
 
 Who:

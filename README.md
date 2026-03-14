@@ -92,6 +92,16 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
     - [ ] `niriland-launch-tui` should just launch the requested TUI normally.
     - [ ] `niriland-launch-tui-presentation` should handle the centered floating presentation layer and call `niriland-launch-tui`.
   - [ ] Add a TUI installer flow with Gum so the bootstrap is more guided without trying to support every Linux setup.
+  - [ ] Make suspend-then-hibernate work properly on the current machine instead of staying in plain suspend overnight.
+    - [ ] This needs system-level changes, not just DMS. The current setup is Limine + encrypted Btrfs root + mkinitcpio with systemd hooks, and right now it only has zram swap.
+    - [ ] Create a real disk-backed swapfile for hibernation. RAM is 62 GiB, so target a `70G` swapfile and keep zram enabled alongside it.
+    - [ ] Get the swapfile resume offset with `btrfs inspect-internal map-swapfile -r /swap/swapfile`.
+    - [ ] Add `resume=` and `resume_offset=` to the Limine kernel command line in `/etc/default/limine`.
+    - [ ] Add `/etc/systemd/sleep.conf.d/10-suspend-then-hibernate.conf` with `AllowSuspendThenHibernate=yes`, `HibernateDelaySec=2h`, and `HibernateOnACPower=yes`.
+    - [ ] Add `/etc/systemd/logind.conf.d/10-lid-suspend-then-hibernate.conf` so lid close uses `suspend-then-hibernate` on battery and AC.
+    - [ ] Rebuild boot artifacts with `mkinitcpio -P` and `limine-update`, then reboot.
+    - [ ] Optionally set `customPowerActionSuspend` in `~/.config/DankMaterialShell/settings.json` to `systemctl suspend-then-hibernate` if the DMS suspend button should use the same action.
+    - [ ] Verify with `cat /proc/cmdline`, `swapon --show`, `systemctl suspend-then-hibernate`, and `journalctl -b | rg -i 'suspend|hibernate|resume|sleep'`.
   - [ ] Rethink installer prompt flow so it works with less attention and fewer unnecessary prompts, instead of just moving every prompt later.
   - [ ] Rework sudo-session handling in both the installer and updater so cached sudo credentials are reused cleanly and optional or skipped functionality does not trigger avoidable prompts.
     - [x] Until sudo handling is redesigned properly, keep one-off install and migration scripts on the shared sudo-session path instead of duplicating password-prompt logic.

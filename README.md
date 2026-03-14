@@ -108,6 +108,11 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
     - [ ] Keep `20-deploy-configs` focused on general home config and DMS-related config instead of also touching tracked `.local/share` assets.
     - [ ] Do not solve this by adding path-skip exceptions for desktop entries inside `20-deploy-configs`; fix the ownership boundary instead.
     - [ ] Once step ownership is clean, make DMS restart or refresh conditional on actual DMS-relevant changes instead of unconditional or duplicated restart logic.
+  - [ ] Debloat `niriland-update` output and make the update path more efficient.
+    - [ ] Remove duplicated updater output like the current self-handoff and repeated repo status messages.
+    - [ ] Stop replaying install-step work that is unnecessary on a normal update run.
+    - [ ] Rework step/update logging so no-change runs stay short and high-signal instead of printing huge walls of `already installed` and `unchanged` lines.
+    - [ ] Keep the important package-manager and maintenance output, but trim installer noise that does not help with normal update visibility.
   - [ ] Rethink installer prompt flow so it works with less attention and fewer unnecessary prompts, instead of just moving every prompt later.
   - [ ] Rework sudo-session handling in both the installer and updater so cached sudo credentials are reused cleanly and optional or skipped functionality does not trigger avoidable prompts.
     - [x] Until sudo handling is redesigned properly, keep one-off install and migration scripts on the shared sudo-session path instead of duplicating password-prompt logic.

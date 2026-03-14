@@ -62,6 +62,17 @@
   {
     "context": "Workspace",
     "bindings": {
+      "alt-open": null,
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-alt-o": null,
+    },
+  },
+  {
+    "bindings": {
       "ctrl-shift-o": [
         "projects::OpenRecent",
         {

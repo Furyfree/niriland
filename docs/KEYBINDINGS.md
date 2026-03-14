@@ -283,7 +283,13 @@ Configuration file: [../configs/base/.config/zed/keymap.json](../configs/base/.c
 | `Ctrl+Shift+X` | `zed::Extensions` | Open extensions |
 | `Ctrl+Shift+B` | `workspace::ToggleRightDock` | Toggle right dock |
 | `Ctrl+Alt+B` | `outline_panel::ToggleFocus` | Toggle or focus outline panel |
-| `Ctrl+Shift+O` | `projects::OpenRecent` | Open recent projects in a new window |
+| `Ctrl+Shift+O` | `projects::OpenRecent` | Open recent projects in a new window from any focus context |
+
+Supporting overrides in the tracked Zed keymap:
+
+- `Alt+Open` is unbound
+- `Ctrl+Alt+O` is unbound
+- This keeps `Ctrl+Shift+O` working consistently for recent projects instead of falling back to symbol search or layout-specific defaults
 
 ### AI & Agent
 

@@ -190,7 +190,7 @@ Steps run in order:
 17. `75-setup-browser` — Helium, 1Password, Widevine
 18. `80-setup-desktop-entries` — desktop files and icon cache
 19. `85-optimize-system` — enable fstrim/paccache timers
-20. `90-post-install` — font/icon cache refresh, DMS restart, reboot reminders
+20. `90-post-install` — font/icon cache refresh, limine-snapper sync, reboot reminders
 
 Notes:
 

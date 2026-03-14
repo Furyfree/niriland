@@ -23,14 +23,6 @@ if [[ -f "$HOME/.local/share/icons/hicolor/index.theme" ]]; then
   gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor"
 fi
 
-require_cmd dms
-log "Restarting DMS user service"
-if dms restart >/dev/null 2>&1; then
-  log "DMS restarted."
-else
-  warn "Failed to restart dms user service (no active user session?)."
-fi
-
 require_cmd limine-snapper-sync
 log "Syncing limine-snapper"
 run_sudo limine-snapper-sync

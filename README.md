@@ -102,6 +102,12 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
     - [ ] Rebuild boot artifacts with `mkinitcpio -P` and `limine-update`, then reboot.
     - [ ] Optionally set `customPowerActionSuspend` in `~/.config/DankMaterialShell/settings.json` to `systemctl suspend-then-hibernate` if the DMS suspend button should use the same action.
     - [ ] Verify with `cat /proc/cmdline`, `swapon --show`, `systemctl suspend-then-hibernate`, and `journalctl -b | rg -i 'suspend|hibernate|resume|sleep'`.
+  - [ ] Split config ownership more cleanly so installer steps stop overlapping on the same files.
+    - [ ] Stop making `20-deploy-configs` own all of `configs/base`.
+    - [ ] Move desktop-entry and icon sources into a step-owned location so `80-setup-desktop-entries` becomes the single owner of launcher assets.
+    - [ ] Keep `20-deploy-configs` focused on general home config and DMS-related config instead of also touching tracked `.local/share` assets.
+    - [ ] Do not solve this by adding path-skip exceptions for desktop entries inside `20-deploy-configs`; fix the ownership boundary instead.
+    - [ ] Once step ownership is clean, make DMS restart or refresh conditional on actual DMS-relevant changes instead of unconditional or duplicated restart logic.
   - [ ] Rethink installer prompt flow so it works with less attention and fewer unnecessary prompts, instead of just moving every prompt later.
   - [ ] Rework sudo-session handling in both the installer and updater so cached sudo credentials are reused cleanly and optional or skipped functionality does not trigger avoidable prompts.
     - [x] Until sudo handling is redesigned properly, keep one-off install and migration scripts on the shared sudo-session path instead of duplicating password-prompt logic.

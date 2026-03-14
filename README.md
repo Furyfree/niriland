@@ -115,10 +115,17 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
     - [ ] Keep the important package-manager and maintenance output, but trim installer noise that does not help with normal update visibility.
   - [ ] Rethink installer prompt flow so it works with less attention and fewer unnecessary prompts, instead of just moving every prompt later.
   - [ ] Rework sudo-session handling in both the installer and updater so cached sudo credentials are reused cleanly and optional or skipped functionality does not trigger avoidable prompts.
+    - [ ] Consider moving the FDE auto-unlock step (`05-setup-fde`) out of the default install path and into a standalone tool script, since it is machine-specific and does not need to run on every install.
     - [x] Until sudo handling is redesigned properly, keep one-off install and migration scripts on the shared sudo-session path instead of duplicating password-prompt logic.
   - [x] Remove the current VM helper/tooling path and rebuild virtualization support from scratch around a smaller, explicitly supported stack.
     - [x] Rebuild the libvirt path around `qemu-full`, `virt-manager`, `swtpm`, `libvirtd`, libvirt group membership, default-network autostart, the required `network.conf` firewall backend, and the needed UFW route allowance for `192.168.122.0/24`, using the CachyOS reference at <https://wiki.cachyos.org/virtualization/qemu_and_vmm_setup/>.
     - [x] Re-add lightweight VM workflows around `quickemu-git` and `quickgui` after the base virtualization path is clean again.
+  - [ ] Add installer resumability so a failed or interrupted run can continue from where it left off instead of replaying all steps from the beginning.
+    - [ ] Support a `--from-step` flag or equivalent so the installer can skip already-completed steps.
+    - [ ] Consider using marker files or exit-code tracking so the installer knows which steps finished successfully.
+  - [ ] Standardize tool scripts around a shared helper library instead of each tool reinventing its own logging, color, and error-handling functions.
+    - [ ] Extract a lightweight common helper for tools (separate from the full installer lib) that covers logging, color output, `die`, and `require_cmd`.
+    - [ ] Migrate existing tool scripts to source the shared helper instead of inlining their own variants.
   - [x] Rework `niriland-pkg` around a coherent `yay`-based flow with a combined repo + AUR picker instead of the old broken AUR-list workaround path.
   - [x] Stop setting Python globally through `mise`, because that leaks into system-tool expectations and breaks things like `virt-manager`.
   - [x] Fix the snapper + limine-snapper-sync defaults so snapshot retention matches the intended setup.

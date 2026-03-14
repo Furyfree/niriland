@@ -327,7 +327,7 @@ niriland-setup-wow setup
 niriland-setup-wow status --wow-dir "/path/to/World of Warcraft/_retail_"
 ```
 
-Clones or updates the personal `wow-ui` repo over SSH from `git@github.com:Furyfree/wow-ui.git`, then runs that repo's `bootstrap` script to link `WTF` into the selected WoW client. The default WoW path is `~/Games/battlenet/drive_c/Program Files (x86)/World of Warcraft/_retail_`, but `--wow-dir` or `WOW_DIR` can override it. The helper prompts first to confirm that GitHub SSH keys have already been set up; answering `n` aborts instead of falling back to HTTPS.
+Clones or updates the personal `wow-ui` repo over SSH from `git@github.com:Furyfree/wow-ui.git`, then runs that repo's `setup` script to link `WTF` into the selected WoW client. The default WoW path is `~/Games/battlenet/drive_c/Program Files (x86)/World of Warcraft/_retail_`, but `--wow-dir` or `WOW_DIR` can override it. The helper prompts first to confirm that GitHub SSH keys have already been set up; answering `n` aborts instead of falling back to HTTPS.
 
 ### Helix Setup
 

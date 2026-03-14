@@ -28,12 +28,12 @@ Usage:
   niriland-setup-wow help
 
 Commands:
-  setup   Clone or update the wow-ui repo over SSH, then run its bootstrap
+  setup   Clone or update the wow-ui repo over SSH, then run its setup script
   status  Show wow-ui repo status and optional WoW client link status
   help    Show this help
 
 Options:
-  --wow-dir PATH   WoW client directory passed through to wow-ui/bootstrap
+  --wow-dir PATH   WoW client directory passed through to wow-ui/setup
                    Default: ~/Games/battlenet/drive_c/Program Files (x86)/World of Warcraft/_retail_
 
 Environment:
@@ -101,12 +101,12 @@ ensure_wow_repo() {
   git clone "$WOW_UI_REPO_SSH" "$WOW_UI_DIR"
 }
 
-run_bootstrap() {
+run_setup() {
   [[ -d "$WOW_DIR" ]] || die "WoW client directory does not exist: $WOW_DIR"
-  [[ -x "${WOW_UI_DIR}/bootstrap" ]] || die "wow-ui bootstrap not found or not executable: ${WOW_UI_DIR}/bootstrap"
+  [[ -x "${WOW_UI_DIR}/setup" ]] || die "wow-ui setup not found or not executable: ${WOW_UI_DIR}/setup"
 
-  log "Running wow-ui bootstrap for ${WOW_DIR}"
-  "${WOW_UI_DIR}/bootstrap" "$WOW_DIR"
+  log "Running wow-ui setup for ${WOW_DIR}"
+  "${WOW_UI_DIR}/setup" "$WOW_DIR"
 }
 
 show_status() {
@@ -138,7 +138,7 @@ setup_wow() {
   require_cmd readlink
   confirm_ssh_ready
   ensure_wow_repo
-  run_bootstrap
+  run_setup
 }
 
 main() {

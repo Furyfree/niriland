@@ -77,4 +77,9 @@ if command -v cargo-install-update >/dev/null 2>&1; then
   cargo install-update --all || warn "Cargo install-update failed."
 fi
 
+if command -v dms >/dev/null 2>&1; then
+  log "Refreshing DMS system updater widget..."
+  dms ipc call systemupdater updatestatus >/dev/null 2>&1 || warn "Failed to refresh DMS system updater widget."
+fi
+
 log_success "Update complete."

@@ -188,6 +188,11 @@ remove_packages() {
 
 upgrade_packages() {
   yay -Syu --noconfirm
+
+  if command -v dms >/dev/null 2>&1; then
+    log "Refreshing DMS system updater widget..."
+    dms ipc call systemupdater updatestatus >/dev/null 2>&1 || warn "Failed to refresh DMS system updater widget."
+  fi
 }
 
 browse_installed_packages() {

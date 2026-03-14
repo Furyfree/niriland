@@ -9,6 +9,27 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 2026-03 Remove `faugus-launcher`
+
+Who:
+Existing installs that ran the older Niriland gaming setup and still have `faugus-launcher` installed.
+
+Run:
+
+```bash
+if pacman -Qq faugus-launcher >/dev/null 2>&1; then
+  sudo pacman -Rns faugus-launcher
+fi
+```
+
+What it changes:
+
+- Removes `faugus-launcher` from older systems that were set up before the gaming recommendation changed
+- Aligns the installed launchers with the current Niriland guidance: `Lutris` for `Steam` and `Battle.net`, `Heroic` for `Epic Games`
+
+Fresh installs:
+Not needed manually. Fresh installs no longer include `faugus-launcher` in `niriland-setup-gaming`.
+
 ## 2026-03 Refresh Wallpaper Filenames
 
 Who:

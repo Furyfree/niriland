@@ -40,6 +40,8 @@ See [docs/REFERENCE.md](docs/REFERENCE.md) for the full reference.
 For one-time migration steps on older setups, see [docs/MIGRATIONS.md](docs/MIGRATIONS.md).
 For the expected fresh-install baseline for the default Niriland flow, see [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md).
 
+Current gaming recommendation in this setup: use `Lutris` as the unified launcher for `Steam` and `Battle.net`, and use `Heroic` for `Epic Games`.
+
 ## Who It Is For
 
 - For me and my own systems
@@ -91,6 +93,9 @@ For the expected fresh-install baseline for the default Niriland flow, see [CACH
   - [ ] Add modular `niriland-launch-tui` and `niriland-launch-tui-presentation` helper scripts.
     - [ ] `niriland-launch-tui` should just launch the requested TUI normally.
     - [ ] `niriland-launch-tui-presentation` should handle the centered floating presentation layer and call `niriland-launch-tui`.
+  - [ ] Explore a custom DMS launcher plugin for personal script entries in spotlight instead of relying only on desktop entries.
+    - [ ] Verify whether the right shape is a small local `launcher` plugin under `~/.config/DankMaterialShell/plugins/`.
+    - [ ] Check whether script metadata and matching can be kept simple enough to feel closer to a Walker command provider.
   - [ ] Add a TUI installer flow with Gum so the bootstrap is more guided without trying to support every Linux setup.
   - [ ] Make suspend-then-hibernate work properly on the current machine instead of staying in plain suspend overnight.
     - [ ] This needs system-level changes, not just DMS. The current setup is Limine + encrypted Btrfs root + mkinitcpio with systemd hooks, and right now it only has zram swap.

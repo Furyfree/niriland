@@ -270,7 +270,7 @@ After `50-setup-tools`, scripts are copied to `~/.local/bin/niriland` and PATH i
 These tools do different jobs:
 
 - `niriland-pkg` and `niriland-update` are core maintenance tools for the platform itself.
-- AI, gaming, Helix, fingerprint, certificates, and VM helpers are optional follow-up workflows.
+- AI, gaming, WoW, Helix, fingerprint, certificates, and VM helpers are optional follow-up workflows.
 - Some optional helpers are only useful on certain machines or in certain environments.
 
 ### Package Management
@@ -311,7 +311,23 @@ niriland-setup-gaming setup
 niriland-setup-gaming status
 ```
 
-Installs CachyOS gaming packages plus Niriland gaming extras. This is optional and matches the package choices in this repo. If available, use `game-performance %command%` in Steam launch options.
+Installs CachyOS gaming packages plus Niriland gaming extras. This is optional and matches the package choices in this repo.
+
+Launcher recommendation for this setup:
+
+- Use `Lutris` as the unified launcher for `Steam` and `Battle.net`.
+- Use `Heroic` for `Epic Games`.
+
+If available, use `game-performance %command%` in Steam launch options.
+
+### WoW UI
+
+```bash
+niriland-setup-wow setup
+niriland-setup-wow status --wow-dir "/path/to/World of Warcraft/_retail_"
+```
+
+Clones or updates the personal `wow-ui` repo over SSH from `git@github.com:Furyfree/wow-ui.git`, then runs that repo's `bootstrap` script to link `WTF` into the selected WoW client. The default WoW path is `~/Games/battlenet/drive_c/Program Files (x86)/World of Warcraft/_retail_`, but `--wow-dir` or `WOW_DIR` can override it. The helper prompts first to confirm that GitHub SSH keys have already been set up; answering `n` aborts instead of falling back to HTTPS.
 
 ### Helix Setup
 

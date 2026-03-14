@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+WOW_UI_REPO_SSH="${WOW_UI_REPO_SSH:-git@github.com:Furyfree/wow-ui.git}"
+WOW_UI_DIR="${WOW_UI_DIR:-$HOME/git/wow-ui}"
+DEFAULT_WOW_DIR="$HOME/Games/battlenet/drive_c/Program Files (x86)/World of Warcraft/_retail_"
+WOW_DIR="${WOW_DIR:-$DEFAULT_WOW_DIR}"
+
+log() {
+  printf '==> %s\n' "$*"
+}
+
+warn() {
+  printf 'WARN: %s\n' "$*" >&2
+}
+
+die() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  niriland-setup-wow setup [--wow-dir /path/to/World\ of\ Warcraft/_retail_]
+  niriland-setup-wow status [--wow-dir /path/to/World\ of\ Warcraft/_retail_]
+  niriland-setup-wow help
+
+Commands:
+  setup   Clone or update the wow-ui repo over SSH, then run its bootstrap
+  status  Show wow-ui repo status and optional WoW client link status
+  help    Show this help
+
+Options:
+  --wow-dir PATH   WoW client directory passed through to wow-ui/bootstrap
+                   Default: ~/Games/battlenet/drive_c/Program Files (x86)/World of Warcraft/_retail_
+
+Environment:
+  WOW_UI_REPO_SSH  Override the wow-ui SSH remote
+  WOW_UI_DIR       Override the local clone path (default ~/git/wow-ui)
+  WOW_DIR          Alternative way to pass the WoW client directory
+EOF
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+parse_common_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --wow-dir)
+        [[ $# -ge 2 ]] || die "--wow-dir requires a path"
+        WOW_DIR="$2"
+        shift 2
+        ;;
+      -h|--help|help)
+        usage
+        exit 0
+        ;;
+      *)
+        die "Unexpected argument: $1"
+        ;;
+    esac
+  done
+}
+
+confirm_ssh_ready() {
+  local reply
+
+  printf 'Have you already set up your GitHub SSH key for cloning wow-ui? [Y/n] '
+  read -r reply
+
+  case "${reply:-Y}" in
+    Y|y|yes|YES|Yes)
+      return 0
+      ;;
+    N|n|no|NO|No)
+      die "Aborting. Set up your GitHub SSH key first, then rerun niriland-setup-wow."
+      ;;
+    *)
+      die "Invalid response: ${reply}"
+      ;;
+  esac
+}
+
+ensure_wow_repo() {
+  if [[ -d "${WOW_UI_DIR}/.git" ]]; then
+    log "Updating wow-ui in ${WOW_UI_DIR}"
+    git -C "$WOW_UI_DIR" pull --ff-only
+    return 0
+  fi
+
+  if [[ -e "$WOW_UI_DIR" ]]; then
+    die "Path exists but is not a git repository: $WOW_UI_DIR"
+  fi
+
+  mkdir -p "$(dirname "$WOW_UI_DIR")"
+  log "Cloning wow-ui to ${WOW_UI_DIR}"
+  git clone "$WOW_UI_REPO_SSH" "$WOW_UI_DIR"
+}
+
+run_bootstrap() {
+  [[ -d "$WOW_DIR" ]] || die "WoW client directory does not exist: $WOW_DIR"
+  [[ -x "${WOW_UI_DIR}/bootstrap" ]] || die "wow-ui bootstrap not found or not executable: ${WOW_UI_DIR}/bootstrap"
+
+  log "Running wow-ui bootstrap for ${WOW_DIR}"
+  "${WOW_UI_DIR}/bootstrap" "$WOW_DIR"
+}
+
+show_status() {
+  local remote_url=""
+
+  if [[ -d "${WOW_UI_DIR}/.git" ]]; then
+    log "wow-ui repo present: ${WOW_UI_DIR}"
+    remote_url="$(git -C "$WOW_UI_DIR" remote get-url origin 2>/dev/null || true)"
+    if [[ -n "$remote_url" ]]; then
+      log "wow-ui remote: ${remote_url}"
+    fi
+  else
+    warn "wow-ui repo not found at ${WOW_UI_DIR}"
+  fi
+
+  if [[ -n "$WOW_DIR" ]]; then
+    if [[ -L "${WOW_DIR}/WTF" ]]; then
+      log "WTF symlink: ${WOW_DIR}/WTF -> $(readlink "${WOW_DIR}/WTF")"
+    elif [[ -e "${WOW_DIR}/WTF" ]]; then
+      warn "WTF exists but is not a symlink: ${WOW_DIR}/WTF"
+    else
+      warn "WTF not found in ${WOW_DIR}"
+    fi
+  fi
+}
+
+setup_wow() {
+  require_cmd git
+  require_cmd readlink
+  confirm_ssh_ready
+  ensure_wow_repo
+  run_bootstrap
+}
+
+main() {
+  local command="${1:-setup}"
+
+  case "$command" in
+    setup)
+      shift || true
+      parse_common_args "$@"
+      setup_wow
+      ;;
+    status)
+      shift || true
+      parse_common_args "$@"
+      show_status
+      ;;
+    help|-h|--help)
+      usage
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

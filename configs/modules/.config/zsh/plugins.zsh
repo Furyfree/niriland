@@ -1,22 +1,16 @@
 #######################################
-# ZINIT (PLUGIN MANAGER)
+# SHELDON (PLUGIN MANAGER)
 #######################################
-if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
-  echo "Installing Zinit..."
-  mkdir -p "$HOME/.local/share/zinit" && chmod g-rwX "$HOME/.local/share/zinit"
-  git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git" \
-    && echo "Zinit installed." || echo "Failed to install Zinit."
+export ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
+mkdir -p "$ZSH_CACHE_DIR/completions"
+
+eval "$(sheldon source)"
+
+#######################################
+# 1PASSWORD CLI INTEGRATION
+#######################################
+if [[ -f "$HOME/.op/plugins.sh" ]]; then
+  source "$HOME/.op/plugins.sh"
+elif [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/op/plugins.sh" ]]; then
+  source "${XDG_CONFIG_HOME:-$HOME/.config}/op/plugins.sh"
 fi
-
-source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
-autoload -Uz _zinit
-(( ${+_comps} )) && _comps[zinit]=_zinit
-
-# Plugins
-zinit light zsh-users/zsh-autosuggestions
-zinit light zsh-users/zsh-syntax-highlighting
-zinit light zsh-users/zsh-completions
-zinit light zsh-users/zsh-history-substring-search
-zinit snippet OMZL::git.zsh
-zinit snippet OMZP::git
-zinit light Aloxaf/fzf-tab

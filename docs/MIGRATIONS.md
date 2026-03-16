@@ -9,6 +9,38 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 2026-03 Migrate Zsh Plugins from Zinit to Sheldon
+
+Who:
+Existing installs that already use the old Zinit-based Niriland shell config.
+
+Run:
+
+```bash
+sudo pacman -S --needed sheldon
+
+mkdir -p ~/.config/sheldon
+cp ~/.local/share/niriland/configs/base/.config/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
+cp ~/.local/share/niriland/configs/base/.zshrc ~/.zshrc
+
+if pacman -Qq zinit >/dev/null 2>&1; then
+  paru -Rns --noconfirm zinit
+fi
+
+rm -rf ~/.local/share/zinit
+```
+
+What it changes:
+
+- Installs `sheldon`
+- Copies the tracked Sheldon config to `~/.config/sheldon/plugins.toml`
+- Refreshes `~/.zshrc` to the current tracked startup order
+- Removes the `zinit` package if present
+- Removes the old `~/.local/share/zinit` checkout/bootstrap directory
+
+Fresh installs:
+Not needed manually. Fresh installs get `sheldon` from `packages/cachyos.packages` and the tracked TOML through normal config deployment.
+
 ## 2026-03 Remove `faugus-launcher`
 
 Who:

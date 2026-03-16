@@ -61,8 +61,13 @@ checklist.
 - [ ] Move tracked user config ownership to `dotfiles`.
   - [ ] Keep the detailed redesign, theming, and migration plan in `dotfiles/docs/redesign-plan.md`.
   - [ ] Keep tracked user theming and browser config ownership in `dotfiles`.
-  - [ ] Clone or update `dotfiles` during Niriland install/update.
+  - [ ] Keep tracked config migration ownership in `dotfiles`, including a future migration doc/flow for config changes that does not exist there yet.
+  - [ ] Whenever Niriland adds or changes a package that comes with tracked user config, also check whether the related migration needs to be added or updated in `dotfiles`.
+  - [ ] Clone `dotfiles` if missing, or pull updates into the existing checkout when it is in a clean state.
   - [ ] Call `scripts/deploy-linux --profile niriland --distro arch --mode <symlink|copy>` from Niriland, defaulting to `symlink` but allowing `copy` as an explicit override when needed.
+  - [ ] In `niriland-update`, pull `dotfiles` first, then continue with the normal Niriland update flow without running the deploy step by default.
+  - [ ] Only run the `dotfiles` deploy step during `niriland-update` for explicit overwrite cases, since pulling `dotfiles` should already refresh non-stub tracked config.
+  - [ ] Fail clearly, or warn and skip the deploy step, if the existing `dotfiles` checkout is dirty, cannot be updated, or is otherwise in an incompatible state.
   - [ ] Document the default `symlink` mode and the explicit `copy` override clearly in the Niriland README.
   - [ ] Audit other user-facing deploy flags and document them clearly in the Niriland README as well.
   - [ ] Remove tracked user-config deployment from `20-deploy-configs`.

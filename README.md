@@ -90,6 +90,12 @@ Current gaming recommendation in this setup: use `Lutris` as the unified launche
   - [x] Clean up the public documentation surface by clarifying project scope, reorganizing docs out of the root, renaming the CachyOS install doc, and rechecking the keybinding reference against the current config.
 
 - [ ] Next work
+  - [ ] Fix Vesktop screensharing on Wayland/Niri.
+    - [ ] Stop forcing `xdg-desktop-portal` to `default=gtk` in `~/.config/xdg-desktop-portal/portals.conf`, because the GTK portal does not provide the `ScreenCast` interface.
+    - [ ] Restore Niri's intended portal preference order so screencast requests go to a backend that supports `ScreenCast` and `RemoteDesktop`, matching `/usr/share/xdg-desktop-portal/niri-portals.conf`.
+    - [ ] Restart the user portal services and Vesktop after the portal routing change so the new backend selection is actually picked up.
+    - [ ] Re-test Vesktop screensharing after the portal fix before changing any app flags.
+    - [ ] If screensharing still fails after the portal fix, add a `~/.config/vesktop-flags.conf` fallback with the needed Wayland/PipeWire Electron flags and test again.
   - [ ] Add modular `niriland-launch-tui` and `niriland-launch-tui-presentation` helper scripts.
     - [ ] `niriland-launch-tui` should just launch the requested TUI normally.
     - [ ] `niriland-launch-tui-presentation` should handle the centered floating presentation layer and call `niriland-launch-tui`.

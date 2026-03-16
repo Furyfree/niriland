@@ -62,7 +62,9 @@ checklist.
   - [ ] Keep the detailed redesign, theming, and migration plan in `dotfiles/docs/redesign-plan.md`.
   - [ ] Keep tracked user theming and browser config ownership in `dotfiles`.
   - [ ] Clone or update `dotfiles` during Niriland install/update.
-  - [ ] Call `scripts/deploy-linux --profile niriland --distro arch --mode symlink` from Niriland.
+  - [ ] Call `scripts/deploy-linux --profile niriland --distro arch --mode <symlink|copy>` from Niriland, defaulting to `symlink` but allowing `copy` as an explicit override when needed.
+  - [ ] Document the default `symlink` mode and the explicit `copy` override clearly in the Niriland README.
+  - [ ] Audit other user-facing deploy flags and document them clearly in the Niriland README as well.
   - [ ] Remove tracked user-config deployment from `20-deploy-configs`.
   - [ ] Keep `80-setup-desktop-entries` as the sole owner of launcher assets.
   - [ ] Update Niriland docs and runtime references once `dotfiles` becomes the source of truth.

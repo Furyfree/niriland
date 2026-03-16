@@ -54,6 +54,8 @@ These bindings are active when the Alt+Tab switcher overlay is open.
 |------------|---------|-------------|
 | `Mod+Alt+B` | `spawn "sh" "-lc" "nirius focus-or-spawn --app-id \"$(niriland-get-default-browser)\" -- niriland-launch-browser"` | Focus default browser or launch if not running |
 | `Mod+Shift+B` | `spawn "niriland-launch-browser"` | Launch new browser window |
+| `Mod+Alt+X` | `spawn "zen-browser"` | Launch new Zen Browser window |
+| `Mod+Shift+X` | `spawn "nirius" "focus-or-spawn" "--app-id" "zen" "--" "zen-browser"` | Focus Zen Browser or launch if not running |
 | `Mod+Shift+C` | `spawn "nirius" "focus-or-spawn" "--title" "Claude" "--" "niriland-launch-webapp" "https://claude.ai/new"` | Focus or launch Claude AI |
 | `Mod+Alt+C` | `spawn "niriland-launch-webapp" "https://claude.ai/new"` | Launch new Claude AI window |
 | `Mod+Shift+A` | `spawn "nirius" "focus-or-spawn" "--title" "ChatGPT" "--" "niriland-launch-webapp" "https://chatgpt.com/"` | Focus or launch ChatGPT |

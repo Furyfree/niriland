@@ -65,6 +65,12 @@ binds {
     Mod+Shift+B hotkey-overlay-title="Browser (New)" {
         spawn "niriland-launch-browser";
     }
+    Mod+Alt+X hotkey-overlay-title="Zen (New)" {
+        spawn "zen-browser";
+    }
+    Mod+Shift+X hotkey-overlay-title="Zen (Focus)" {
+        spawn "nirius" "focus-or-spawn" "--app-id" "zen" "--" "zen-browser";
+    }
     Mod+Shift+C hotkey-overlay-title=null {
         spawn "nirius" "focus-or-spawn" "--title" "Claude" "--" "niriland-launch-webapp" "https://claude.ai/new";
     }

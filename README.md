@@ -107,12 +107,23 @@ Current gaming recommendation in this setup: use `Lutris` as the unified launche
     - [ ] Rebuild boot artifacts with `mkinitcpio -P` and `limine-update`, then reboot.
     - [ ] Optionally set `customPowerActionSuspend` in `~/.config/DankMaterialShell/settings.json` to `systemctl suspend-then-hibernate` if the DMS suspend button should use the same action.
     - [ ] Verify with `cat /proc/cmdline`, `swapon --show`, `systemctl suspend-then-hibernate`, and `journalctl -b | rg -i 'suspend|hibernate|resume|sleep'`.
-  - [ ] Split config ownership more cleanly so installer steps stop overlapping on the same files.
-    - [ ] Stop making `20-deploy-configs` own all of `configs/base`.
-    - [ ] Move desktop-entry and icon sources into a step-owned location so `80-setup-desktop-entries` becomes the single owner of launcher assets.
-    - [ ] Keep `20-deploy-configs` focused on general home config and DMS-related config instead of also touching tracked `.local/share` assets.
-    - [ ] Do not solve this by adding path-skip exceptions for desktop entries inside `20-deploy-configs`; fix the ownership boundary instead.
-    - [ ] Once step ownership is clean, make DMS restart or refresh conditional on actual DMS-relevant changes instead of unconditional or duplicated restart logic.
+  - [ ] Split tracked user config out into a separate `dotfiles` repo and make `niriland` call it instead of owning user config deployment.
+    - [ ] Move only `configs/base` and `configs/modules` into `dotfiles`; keep system assets and installer-owned files in `niriland`.
+    - [ ] Make `dotfiles` the single owner of tracked user config and the only place with a deploy script.
+    - [ ] Keep DMS/Niriland desktop entries and icons in `niriland` instead of moving them into `dotfiles`.
+    - [ ] Use a single deploy interface in `dotfiles` with `--profile`, `--distro`, and `--mode` flags.
+    - [ ] Support `--profile niriland|work`, `--distro arch|ubuntu`, and `--mode symlink|copy`.
+    - [ ] Use `symlink` on personal machines to avoid drift, and `copy` on the work machine.
+    - [ ] Refactor Zsh into `core`, `distro`, and `profiles`.
+    - [ ] Put Pacman/Arch-specific shell config in `arch`, apt/Ubuntu-specific shell config in `ubuntu`, and DMS/Niriland-specific shell config in `niriland`.
+    - [ ] Add unmanaged `~/.config/zsh/local.zsh` and always source it last on every machine.
+    - [ ] Audit all tracked user config and classify each path as `symlink`, `copy`, or `unmanaged`.
+    - [ ] Split ownership cleanly between `20-deploy-configs` and `80-setup-desktop-entries` as part of the migration so launcher assets have a single owner before `20-deploy-configs` is removed.
+    - [ ] Move desktop-entry and icon sources into a step-owned location so `80-setup-desktop-entries` is the only owner of launcher assets.
+    - [ ] Do not solve the ownership overlap by adding path-skip exceptions inside `20-deploy-configs`; fix the boundary directly.
+    - [ ] Make runtime config point at a fixed `dotfiles` repo path instead of `~/.local/share/niriland/configs/modules`.
+    - [ ] Add a `niriland` install/update step that clones or updates the public `dotfiles` repo and calls its deploy script with the selected flags.
+    - [ ] Remove user-config deployment from `niriland` once the `dotfiles` flow is the source of truth.
   - [ ] Debloat `niriland-update` output and make the update path more efficient.
     - [ ] Remove duplicated updater output like the current self-handoff and repeated repo status messages.
     - [ ] Stop replaying install-step work that is unnecessary on a normal update run.

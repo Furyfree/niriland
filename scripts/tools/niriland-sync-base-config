@@ -20,7 +20,6 @@ source "$REPO_ROOT/scripts/install/lib/common"
 BASE_CONFIG_DIR="$REPO_ROOT/configs/base"
 export BASE_CONFIG_DIR
 
-declare -A PRESET_TO_PATH=()
 declare -A TRACKED_PATH_SET=()
 declare -a ALL_TRACKED_PATHS=()
 
@@ -30,33 +29,20 @@ Usage:
   niriland-sync-base-config
   niriland-sync-base-config --pick [query]
   niriland-sync-base-config --list
-  niriland-sync-base-config [--all] [--path REL_PATH] [preset...]
+  niriland-sync-base-config [--all] [--path REL_PATH] [REL_PATH...]
 
 Examples:
   niriland-sync-base-config
   niriland-sync-base-config --pick codex
-  niriland-sync-base-config dankmaterialshell-settings
-  niriland-sync-base-config zed-keymap dankmaterialshell-settings
-  niriland-sync-base-config ghostty-config
+  niriland-sync-base-config .config/DankMaterialShell/settings.json
+  niriland-sync-base-config .config/zed/keymap.json .config/ghostty/config
   niriland-sync-base-config --path .config/ghostty/config
   niriland-sync-base-config --all
 
 Notes:
-  - Every tracked file under configs/base has an explicit preset alias.
   - Running without arguments opens an fzf picker.
-  - Use --list to inspect the current preset table.
+  - Use --list to inspect tracked relative paths.
 EOF
-}
-
-register_preset() {
-  local preset="$1"
-  local rel_path="$2"
-
-  if [[ -n "${PRESET_TO_PATH[$preset]:-}" ]] && [[ "${PRESET_TO_PATH[$preset]}" != "$rel_path" ]]; then
-    die "Preset collision: $preset maps to both ${PRESET_TO_PATH[$preset]} and $rel_path"
-  fi
-
-  PRESET_TO_PATH["$preset"]="$rel_path"
 }
 
 load_tracked_paths() {
@@ -72,140 +58,12 @@ load_tracked_paths() {
     TRACKED_PATH_SET["$rel_path"]=1
   done < <(find "$BASE_CONFIG_DIR" \( -type f -o -type l \) | sort)
 }
-
-register_known_presets() {
-  register_preset "dankmaterialshell-settings" ".config/DankMaterialShell/settings.json"
-  register_preset "dms-settings" ".config/DankMaterialShell/settings.json"
-  register_preset "vscodium-state" ".config/VSCodium/User/globalStorage/state.vscdb"
-  register_preset "vscodium-keybindings" ".config/VSCodium/User/keybindings.json"
-  register_preset "vscodium-settings" ".config/VSCodium/User/settings.json"
-  register_preset "dms-environment" ".config/environment.d/90-dms.conf"
-  register_preset "fastfetch-arch-art" ".config/fastfetch/arch.txt"
-  register_preset "fastfetch-config" ".config/fastfetch/config.jsonc"
-  register_preset "ghostty-config" ".config/ghostty/config"
-  register_preset "gtk3-css" ".config/gtk-3.0/gtk.css"
-  register_preset "gtk3-settings" ".config/gtk-3.0/settings.ini"
-  register_preset "gtk4-css" ".config/gtk-4.0/gtk.css"
-  register_preset "gtk4-settings" ".config/gtk-4.0/settings.ini"
-  register_preset "helix-config" ".config/helix/config.toml"
-  register_preset "helix-theme-myterm" ".config/helix/themes/myterm.toml"
-  register_preset "mimeapps" ".config/mimeapps.list"
-  register_preset "mise-config" ".config/mise/config.toml"
-  register_preset "niri-config" ".config/niri/config.kdl"
-  register_preset "niri-dms-alttab" ".config/niri/dms/alttab.kdl"
-  register_preset "niri-dms-binds" ".config/niri/dms/binds.kdl"
-  register_preset "niri-dms-colors" ".config/niri/dms/colors.kdl"
-  register_preset "niri-dms-cursor" ".config/niri/dms/cursor.kdl"
-  register_preset "niri-dms-layout" ".config/niri/dms/layout.kdl"
-  register_preset "niri-dms-windowrules" ".config/niri/dms/windowrules.kdl"
-  register_preset "niri-dms-wpblur" ".config/niri/dms/wpblur.kdl"
-  register_preset "niri-autostart" ".config/niri/override.d/autostart.kdl"
-  register_preset "niri-binds" ".config/niri/override.d/binds.kdl"
-  register_preset "niri-env" ".config/niri/override.d/env.kdl"
-  register_preset "sheldon-plugins" ".config/sheldon/plugins.toml"
-  register_preset "starship-config" ".config/starship/starship.toml"
-  register_preset "udiskie-config" ".config/udiskie/config.yml"
-  register_preset "xdg-portals" ".config/xdg-desktop-portal/portals.conf"
-  register_preset "yazi-config" ".config/yazi/yazi.toml"
-  register_preset "zed-keymap" ".config/zed/keymap.json"
-  register_preset "zed-settings" ".config/zed/settings.json"
-  register_preset "gitignore" ".gitignore"
-  register_preset "gtk2-settings" ".gtkrc-2.0"
-  register_preset "app-chatgpt" ".local/share/applications/ChatGPT.desktop"
-  register_preset "app-claude" ".local/share/applications/Claude.desktop"
-  register_preset "app-codex" ".local/share/applications/Codex.desktop"
-  register_preset "app-fastmail" ".local/share/applications/Fastmail.desktop"
-  register_preset "app-github" ".local/share/applications/GitHub.desktop"
-  register_preset "app-google-maps" ".local/share/applications/GoogleMaps.desktop"
-  register_preset "app-grok" ".local/share/applications/Grok.desktop"
-  register_preset "app-notebooklm" ".local/share/applications/NotebookLM.desktop"
-  register_preset "app-open-webui" ".local/share/applications/OpenWebUI.desktop"
-  register_preset "app-overleaf" ".local/share/applications/Overleaf.desktop"
-  register_preset "app-todoist" ".local/share/applications/Todoist.desktop"
-  register_preset "app-typst" ".local/share/applications/Typst.desktop"
-  register_preset "app-btop" ".local/share/applications/btop.desktop"
-  register_preset "app-cups" ".local/share/applications/cups.desktop"
-  register_preset "hidden-app-assistant" ".local/share/applications/hidden/assistant.desktop"
-  register_preset "hidden-app-avahi-discover" ".local/share/applications/hidden/avahi-discover.desktop"
-  register_preset "hidden-app-bssh" ".local/share/applications/hidden/bssh.desktop"
-  register_preset "hidden-app-bvnc" ".local/share/applications/hidden/bvnc.desktop"
-  register_preset "hidden-app-cmake-gui" ".local/share/applications/hidden/cmake-gui.desktop"
-  register_preset "hidden-app-designer" ".local/share/applications/hidden/designer.desktop"
-  register_preset "hidden-app-dosbox" ".local/share/applications/hidden/dosbox.desktop"
-  register_preset "hidden-app-java-openjdk" ".local/share/applications/hidden/java-java-openjdk.desktop"
-  register_preset "hidden-app-jconsole-openjdk" ".local/share/applications/hidden/jconsole-java-openjdk.desktop"
-  register_preset "hidden-app-jshell-openjdk" ".local/share/applications/hidden/jshell-java-openjdk.desktop"
-  register_preset "hidden-app-limine-snapper-restore" ".local/share/applications/hidden/limine-snapper-restore.desktop"
-  register_preset "hidden-app-linguist" ".local/share/applications/hidden/linguist.desktop"
-  register_preset "hidden-app-scummvm" ".local/share/applications/hidden/org.scummvm.scummvm.desktop"
-  register_preset "hidden-app-qdbusviewer" ".local/share/applications/hidden/qdbusviewer.desktop"
-  register_preset "hidden-app-qt6ct" ".local/share/applications/hidden/qt6ct.desktop"
-  register_preset "hidden-app-qv4l2" ".local/share/applications/hidden/qv4l2.desktop"
-  register_preset "hidden-app-qvidcap" ".local/share/applications/hidden/qvidcap.desktop"
-  register_preset "hidden-app-uuctl" ".local/share/applications/hidden/uuctl.desktop"
-  register_preset "hidden-app-vscodium" ".local/share/applications/hidden/vscodium.desktop"
-  register_preset "hidden-app-yad-icon-browser" ".local/share/applications/hidden/yad-icon-browser.desktop"
-  register_preset "hidden-app-yad-settings" ".local/share/applications/hidden/yad-settings.desktop"
-  register_preset "app-mpv" ".local/share/applications/mpv.desktop"
-  register_preset "app-nm-connection-editor" ".local/share/applications/nm-connection-editor.desktop"
-  register_preset "app-spotify-launcher" ".local/share/applications/spotify-launcher.desktop"
-  register_preset "app-vscodium-wayland" ".local/share/applications/vscodium-wayland.desktop"
-  register_preset "icon-chatgpt" ".local/share/icons/ChatGPT.png"
-  register_preset "icon-claude" ".local/share/icons/Claude.png"
-  register_preset "icon-codex" ".local/share/icons/Codex.png"
-  register_preset "icon-fastmail" ".local/share/icons/Fastmail.png"
-  register_preset "icon-github" ".local/share/icons/GitHub.png"
-  register_preset "icon-google-maps" ".local/share/icons/GoogleMaps.png"
-  register_preset "icon-grok" ".local/share/icons/Grok.png"
-  register_preset "icon-notebooklm" ".local/share/icons/NotebookLM.png"
-  register_preset "icon-open-webui" ".local/share/icons/OpenWebUI.png"
-  register_preset "icon-overleaf" ".local/share/icons/Overleaf.png"
-  register_preset "icon-todoist" ".local/share/icons/Todoist.png"
-  register_preset "icon-typst" ".local/share/icons/Typst.png"
-  register_preset "minecraft-main-pack" ".local/share/minecraft/Main.mrpack"
-  register_preset "profile" ".profile"
-  register_preset "zshrc" ".zshrc"
+emit_paths() {
+  printf '%s\n' "${ALL_TRACKED_PATHS[@]}"
 }
 
-validate_preset_coverage() {
-  local preset
-  local rel_path
-  declare -A covered_paths=()
-
-  for preset in "${!PRESET_TO_PATH[@]}"; do
-    rel_path="${PRESET_TO_PATH[$preset]}"
-    [[ -n "${TRACKED_PATH_SET[$rel_path]:-}" ]] || die "Preset points to untracked base config: $preset -> $rel_path"
-    covered_paths["$rel_path"]=1
-  done
-
-  for rel_path in "${ALL_TRACKED_PATHS[@]}"; do
-    [[ -n "${covered_paths[$rel_path]:-}" ]] || die "Missing preset for tracked base config: $rel_path"
-  done
-}
-
-emit_presets() {
-  local preset
-
-  for preset in "${!PRESET_TO_PATH[@]}"; do
-    printf '%s\t%s\n' "$preset" "${PRESET_TO_PATH[$preset]}"
-  done | sort
-}
-
-list_presets() {
-  emit_presets | awk -F '\t' '
-    {
-      rows[NR] = $0
-      if (length($1) > max) {
-        max = length($1)
-      }
-    }
-    END {
-      for (i = 1; i <= NR; i++) {
-        split(rows[i], parts, "\t")
-        printf "%-*s  %s\n", max, parts[1], parts[2]
-      }
-    }
-  '
+list_paths() {
+  emit_paths
 }
 
 _niriland_preview_base_config() {
@@ -248,13 +106,11 @@ _niriland_preview_base_config() {
 
 export -f _niriland_preview_base_config
 
-pick_presets() {
+pick_paths() {
   local query="${1:-}"
-  local preview_cmd='_niriland_preview_base_config {2}'
+  local preview_cmd='_niriland_preview_base_config {}'
   local -a fzf_args=()
   local -a selected=()
-  local entry
-  local preset
   local rel_path
 
   require_cmd fzf
@@ -263,9 +119,6 @@ pick_presets() {
   fzf_args=(
     --multi
     --exact
-    --delimiter $'\t'
-    --with-nth '1,2'
-    --nth '1,2'
     --prompt 'sync-config> '
     --header 'tab: select, enter: apply, alt-p: toggle preview'
     --preview "$preview_cmd"
@@ -282,36 +135,18 @@ pick_presets() {
   fi
 
   mapfile -t selected < <(
-    emit_presets | SHELL="$(command -v bash)" fzf "${fzf_args[@]}" || true
+    emit_paths | SHELL="$(command -v bash)" fzf "${fzf_args[@]}" || true
   )
 
   if [[ ${#selected[@]} -eq 0 ]]; then
-    log "No config presets selected."
+    log "No config paths selected."
     return 0
   fi
 
-  for entry in "${selected[@]}"; do
-    preset="${entry%%$'\t'*}"
-    rel_path="${entry#*$'\t'}"
-    [[ -n "$preset" && -n "$rel_path" ]] || continue
+  for rel_path in "${selected[@]}"; do
+    [[ -n "$rel_path" ]] || continue
     append_unique "$rel_path"
   done
-}
-
-resolve_preset() {
-  local preset="$1"
-
-  if [[ -n "${PRESET_TO_PATH[$preset]:-}" ]]; then
-    printf '%s\n' "${PRESET_TO_PATH[$preset]}"
-    return 0
-  fi
-
-  if [[ -n "${TRACKED_PATH_SET[$preset]:-}" ]]; then
-    printf '%s\n' "$preset"
-    return 0
-  fi
-
-  return 1
 }
 
 append_unique() {
@@ -325,7 +160,7 @@ append_unique() {
   TARGETS+=("$candidate")
 }
 
-append_all_presets() {
+append_all_paths() {
   local rel_path
 
   for rel_path in "${ALL_TRACKED_PATHS[@]}"; do
@@ -381,8 +216,6 @@ sync_target() {
 [[ -d "$BASE_CONFIG_DIR" ]] || die "Missing base config directory: $BASE_CONFIG_DIR"
 
 load_tracked_paths
-register_known_presets
-validate_preset_coverage
 
 declare -a TARGETS=()
 pick_mode=false
@@ -410,11 +243,11 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --list)
-      list_presets
+      list_paths
       exit 0
       ;;
     --all)
-      append_all_presets
+      append_all_paths
       shift
       ;;
     --path)
@@ -427,18 +260,16 @@ while [[ $# -gt 0 ]]; do
       die "Unknown option: $1"
       ;;
     *)
-      if ! rel_path="$(resolve_preset "$1")"; then
-        die "Unknown preset: $1 (use --list to inspect available presets)"
-      fi
-
-      append_unique "$rel_path"
+      validate_rel_path "$1"
+      [[ -n "${TRACKED_PATH_SET[$1]:-}" ]] || die "Unknown tracked path: $1 (use --list or the fzf picker)"
+      append_unique "$1"
       shift
       ;;
   esac
 done
 
 if [[ "$pick_mode" == "true" || "$initial_argc" -eq 0 ]]; then
-  pick_presets "$pick_query"
+  pick_paths "$pick_query"
 fi
 
 [[ ${#TARGETS[@]} -gt 0 ]] || die "No config targets selected."

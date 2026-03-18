@@ -33,10 +33,9 @@ What it changes:
 
 - Copies the selected tracked file or files from `~/.local/share/niriland/configs/base` into `$HOME`
 - Backs up any replaced destination first under `~/.config/backups/niriland/base-config-sync/<timestamp>/`
-- Supports one or many readable preset aliases in a single command, with explicit coverage for every tracked file under `configs/base`
-- Can also open an interactive `fzf` picker when run without arguments
-- Covers both `~/.config/*` refreshes such as `dankmaterialshell-settings` and `~/.local/share/*` refreshes such as `app-codex` and `icon-codex`
-- Also supports arbitrary tracked base-config paths through `--path <relative-path>` for future one-off refreshes
+- Opens an interactive `fzf` picker when run without arguments
+- Covers both `~/.config/*` refreshes such as `.config/DankMaterialShell/settings.json` and `~/.local/share/*` refreshes such as `.local/share/applications/Codex.desktop`
+- Also supports explicit tracked base-config paths through positional arguments or `--path <relative-path>` for future one-off refreshes
 
 Fresh installs:
 Not needed manually. Fresh installs already deploy the current tracked base configs.

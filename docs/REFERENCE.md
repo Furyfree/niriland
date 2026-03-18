@@ -302,12 +302,12 @@ Shell aliases (from `.zshrc`):
 niriland-sync-base-config
 niriland-sync-base-config --pick codex
 niriland-sync-base-config --list
-niriland-sync-base-config dankmaterialshell-settings
-niriland-sync-base-config app-codex icon-codex
-niriland-sync-base-config zed-keymap ghostty-config
+niriland-sync-base-config .config/DankMaterialShell/settings.json
+niriland-sync-base-config .local/share/applications/Codex.desktop .local/share/icons/Codex.png
+niriland-sync-base-config .config/zed/keymap.json .config/ghostty/config
 ```
 
-Use this when `niriland-update` preserved a local tracked file and you later decide to replay the current repo version for one or several specific paths. That includes both `~/.config/*` paths like `dankmaterialshell-settings` and `~/.local/share/*` paths like `app-codex` and `icon-codex`. Running it without arguments opens an `fzf` multi-select picker; `--pick <query>` opens the same picker with a prefilled search. The helper copies from `configs/base`, backs up the replaced destination under `~/.config/backups/niriland/base-config-sync/`, and provides readable preset aliases for every tracked file under `configs/base` in addition to supporting arbitrary `--path` values relative to that tree.
+Use this when `niriland-update` preserved a local tracked file and you later decide to replay the current repo version for one or several specific paths. That includes both `~/.config/*` paths like `.config/DankMaterialShell/settings.json` and `~/.local/share/*` paths like `.local/share/applications/Codex.desktop`. Running it without arguments opens an `fzf` multi-select picker; `--pick <query>` opens the same picker with a prefilled search. The helper copies from `configs/base`, backs up the replaced destination under `~/.config/backups/niriland/base-config-sync/`, and also supports explicit tracked relative paths through positional arguments or `--path <relative-path>`.
 
 ### AI Tooling
 

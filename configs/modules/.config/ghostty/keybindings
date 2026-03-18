@@ -1,6 +1,9 @@
 # ────────────────────────────────────────────────────────────────
 # Ctrl + Space Keybinds
 # ────────────────────────────────────────────────────────────────
+keybind = page_up=scroll_page_up
+keybind = page_down=scroll_page_down
+
 keybind = ctrl+space>c=new_tab
 keybind = ctrl+space>n=next_tab
 keybind = ctrl+space>p=previous_tab

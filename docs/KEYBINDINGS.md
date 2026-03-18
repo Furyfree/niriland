@@ -92,6 +92,7 @@ All media and brightness keys work even when the screen is locked (`allow-when-l
 | `XF86AudioLowerVolume` | `spawn "dms" "ipc" "call" "audio" "decrement" "3"` | Decrease volume by 3% |
 | `XF86AudioMute` | `spawn "dms" "ipc" "call" "audio" "mute"` | Toggle audio mute |
 | `XF86AudioMicMute` | `spawn "dms" "ipc" "call" "audio" "micmute"` | Toggle microphone mute |
+| `Mod+½` | `spawn "dms" "ipc" "call" "audio" "micmute"` | Toggle microphone mute |
 | `XF86AudioPause` | `spawn "dms" "ipc" "call" "mpris" "playPause"` | Play/pause media |
 | `XF86AudioPlay` | `spawn "dms" "ipc" "call" "mpris" "playPause"` | Play/pause media |
 | `XF86AudioPrev` | `spawn "dms" "ipc" "call" "mpris" "previous"` | Previous track |

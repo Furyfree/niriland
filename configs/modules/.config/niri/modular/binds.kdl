@@ -138,6 +138,9 @@ binds {
     XF86AudioMicMute allow-when-locked=true {
         spawn "dms" "ipc" "call" "audio" "micmute";
     }
+    Mod+onehalf allow-when-locked=true hotkey-overlay-title="Mic Mute" {
+        spawn "dms" "ipc" "call" "audio" "micmute";
+    }
     XF86AudioPause allow-when-locked=true {
         spawn "dms" "ipc" "call" "mpris" "playPause";
     }

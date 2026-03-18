@@ -270,6 +270,7 @@ After `50-setup-tools`, scripts are copied to `~/.local/bin/niriland` and PATH i
 These tools do different jobs:
 
 - `niriland-pkg` and `niriland-update` are core maintenance tools for the platform itself.
+- `niriland-sync-base-config` replays selected tracked files from `configs/base` into `$HOME` for targeted config refreshes on existing installs.
 - AI, gaming, WoW, Helix, fingerprint, certificates, and VM helpers are optional follow-up workflows.
 - Some optional helpers are only useful on certain machines or in certain environments.
 
@@ -294,6 +295,19 @@ Shell aliases (from `.zshrc`):
 | `npu`   | `niriland-pkg upgrade`   |
 | `npl`   | `niriland-pkg installed` |
 | `clean` | `niriland-pkg clean`     |
+
+### Tracked Config Refresh
+
+```bash
+niriland-sync-base-config
+niriland-sync-base-config --pick codex
+niriland-sync-base-config --list
+niriland-sync-base-config dankmaterialshell-settings
+niriland-sync-base-config app-codex icon-codex
+niriland-sync-base-config zed-keymap ghostty-config
+```
+
+Use this when `niriland-update` preserved a local tracked file and you later decide to replay the current repo version for one or several specific paths. That includes both `~/.config/*` paths like `dankmaterialshell-settings` and `~/.local/share/*` paths like `app-codex` and `icon-codex`. Running it without arguments opens an `fzf` multi-select picker; `--pick <query>` opens the same picker with a prefilled search. The helper copies from `configs/base`, backs up the replaced destination under `~/.config/backups/niriland/base-config-sync/`, and provides readable preset aliases for every tracked file under `configs/base` in addition to supporting arbitrary `--path` values relative to that tree.
 
 ### AI Tooling
 

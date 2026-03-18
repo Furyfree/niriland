@@ -9,6 +9,38 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 2026-03 Refresh Preserved Tracked Base Configs
+
+Who:
+Existing installs whose local configs were preserved during updates and now need selected tracked files from `configs/base` replayed into `$HOME`.
+
+Run:
+
+```bash
+bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config
+
+bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config --list
+
+bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config dankmaterialshell-settings
+
+bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config app-codex icon-codex
+
+# Example on running multiple at once
+bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config zed-keymap ghostty-config
+```
+
+What it changes:
+
+- Copies the selected tracked file or files from `~/.local/share/niriland/configs/base` into `$HOME`
+- Backs up any replaced destination first under `~/.config/backups/niriland/base-config-sync/<timestamp>/`
+- Supports one or many readable preset aliases in a single command, with explicit coverage for every tracked file under `configs/base`
+- Can also open an interactive `fzf` picker when run without arguments
+- Covers both `~/.config/*` refreshes such as `dankmaterialshell-settings` and `~/.local/share/*` refreshes such as `app-codex` and `icon-codex`
+- Also supports arbitrary tracked base-config paths through `--path <relative-path>` for future one-off refreshes
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy the current tracked base configs.
+
 ## 2026-03 Migrate Zsh Plugins from Zinit to Sheldon
 
 Who:
@@ -19,9 +51,7 @@ Run:
 ```bash
 sudo pacman -S --needed sheldon
 
-mkdir -p ~/.config/sheldon
-cp ~/.local/share/niriland/configs/base/.config/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
-cp ~/.local/share/niriland/configs/base/.zshrc ~/.zshrc
+bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config sheldon-plugins zshrc
 
 if pacman -Qq zinit >/dev/null 2>&1; then
   paru -Rns --noconfirm zinit
@@ -95,7 +125,7 @@ Existing installs whose local `~/.config/zed/keymap.json` was preserved and ther
 Run:
 
 ```bash
-cp ~/.local/share/niriland/configs/base/.config/zed/keymap.json ~/.config/zed/keymap.json
+bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config zed-keymap
 ```
 
 What it changes:

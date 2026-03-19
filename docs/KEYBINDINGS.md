@@ -71,6 +71,7 @@ These bindings are active when the Alt+Tab switcher overlay is open.
 
 | Keybinding | Command | Description |
 |------------|---------|-------------|
+| `Mod+Shift+T` | `spawn "t3code"` | Launch t3code |
 | `Mod+Shift+Z` | `spawn "zed" "--new"` | Open new Zed editor window |
 | `Mod+Shift+V` | `spawn "codium" "--enable-features=UseOzonePlatform,WaylandWindowDecorations" "--ozone-platform=wayland"` | Launch VSCodium with Wayland support |
 
@@ -109,7 +110,7 @@ All media and brightness keys work even when the screen is locked (`allow-when-l
 | `Mod+Shift+Return` | `fullscreen-window` | Toggle fullscreen for current window |
 | `Mod+Q` | `toggle-window-floating` | Toggle floating mode for current window |
 | `Mod+Shift+Q` | `switch-focus-between-floating-and-tiling` | Switch focus between floating and tiling windows |
-| `Mod+Shift+T` | `toggle-column-tabbed-display` | Toggle column tabbed display |
+| `Mod+Ctrl+T` | `toggle-column-tabbed-display` | Toggle column tabbed display |
 
 ## Focus Navigation
 
@@ -315,7 +316,8 @@ To add custom keybindings without modifying the main configuration files:
 Example:
 ```kdl
 binds {
-    Mod+Shift+T { toggle-column-tabbed-display; }
+    Mod+Shift+T { spawn "/usr/bin/t3code"; }
+    Mod+Ctrl+T { toggle-column-tabbed-display; }
     Mod+Alt+Return { spawn "kitty"; }
 }
 ```

@@ -103,6 +103,9 @@ binds {
     }
 
     // === Editors & Terminal ===
+    Mod+Shift+T hotkey-overlay-title="t3code" {
+        spawn "t3code";
+    }
     Mod+Shift+Z hotkey-overlay-title=null {
         spawn "zed" "--new";
     }
@@ -176,7 +179,7 @@ binds {
     Mod+Shift+Q {
         switch-focus-between-floating-and-tiling;
     }
-    Mod+Shift+T {
+    Mod+Ctrl+T hotkey-overlay-title="Toggle Column Tabs" {
         toggle-column-tabbed-display;
     }
 

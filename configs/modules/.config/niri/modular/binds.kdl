@@ -92,6 +92,9 @@ binds {
     Mod+Shift+P hotkey-overlay-title=null {
         spawn "nirius" "focus-or-spawn" "--app-id" "1password" "--" "1password";
     }
+    Ctrl+Shift+Space hotkey-overlay-title="1Password Quick Access" {
+        spawn "1password" "--quick-access";
+    }
     Mod+Shift+G hotkey-overlay-title=null {
         spawn "nirius" "focus-or-spawn" "--app-id" "signal" "--" "signal-desktop";
     }

@@ -24,6 +24,15 @@ checklist.
   - [ ] `niriland-launch-tui` should just launch the requested TUI normally.
   - [ ] `niriland-launch-tui-presentation` should handle the centered floating presentation layer and call `niriland-launch-tui`.
 
+#### Desktop Bluetooth
+
+- [ ] Get Bluetooth working reliably on the desktop computer.
+  - [ ] Verify the desktop machine's Bluetooth adapter is detected correctly and identify whether firmware or kernel-module setup is missing.
+  - [ ] Confirm `bluetooth.service` starts cleanly and stays up after boot.
+  - [ ] Check whether any additional desktop-side tooling is needed beyond the current `bluez` and `bluez-utils` packages.
+  - [ ] Test pairing and reconnect behavior with the devices that actually matter on the desktop setup.
+  - [ ] Document any machine-specific fix so it can be reapplied after updates or on rebuilds.
+
 #### DMS launcher plugin exploration
 
 - [ ] Explore a custom DMS launcher plugin for personal script entries in spotlight instead of relying only on desktop entries.

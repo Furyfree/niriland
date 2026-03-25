@@ -41,6 +41,9 @@
     "show_close_button": "hover",
     "show_diagnostics": "off"
   },
+  "git_panel": {
+    "file_icons": true // Show file icons in the git panel.
+  },
   "preview_tabs": {
     "enabled": false // Disable preview tabs so files open as real tabs.
   },

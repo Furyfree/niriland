@@ -9,6 +9,25 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 2026-03 Refresh Zed Settings
+
+Who:
+Existing installs whose local `~/.config/zed/settings.json` was preserved and therefore did not pick up the current tracked Zed settings.
+
+Run:
+
+```bash
+bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config .config/zed/settings.json
+```
+
+What it changes:
+
+- Updates Zed to the current tracked settings from Niriland
+- Enables file icons in the Zed git panel through `"git_panel": { "file_icons": true }`
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy the current tracked Zed settings.
+
 ## 2026-03 Refresh Preserved Tracked Base Configs
 
 Who:

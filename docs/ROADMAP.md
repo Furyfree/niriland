@@ -111,6 +111,16 @@ checklist.
 
 ### Tooling and maintenance
 
+#### Flutter tooling setup
+
+- [ ] Add a clean Flutter setup path for local development instead of treating Dart as a separate standalone install.
+  - [ ] Find the cleanest install method for Flutter on the target setup and add it as an explicit setup step.
+  - [ ] Remove Dart as an independent install target and keep Dart provisioning under the Flutter install path instead.
+  - [ ] Document how to point Flutter's web-device/browser launch path at Helium Browser so Chromium does not need to be installed just for Flutter web workflows.
+  - [ ] Document the Linux permissions, groups, udev rules, and any other host-side access Flutter tooling actually needs for emulator/device workflows.
+  - [ ] Add Android SDK setup to the same Flutter/mobile toolchain path so Android builds do not depend on separate manual setup.
+  - [ ] Research how the Apple/iOS SDK and Flutter's iOS toolchain requirements work, including what must stay on macOS/Xcode versus what can be prepared from Linux.
+
 #### Shared tool helper library
 
 - [ ] Standardize tool scripts around a shared helper library instead of each tool reinventing its own logging, color, and error-handling functions.

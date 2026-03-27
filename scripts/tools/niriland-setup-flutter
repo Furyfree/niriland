@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+command -v pacman >/dev/null 2>&1 || { echo "Missing required command: pacman" >&2; exit 1; }
+command -v sudo >/dev/null 2>&1 || { echo "Missing required command: sudo" >&2; exit 1; }
+command -v curl >/dev/null 2>&1 || { echo "Missing required command: curl" >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { echo "Missing required command: jq" >&2; exit 1; }
+command -v tar >/dev/null 2>&1 || { echo "Missing required command: tar" >&2; exit 1; }
+
+if [[ $# -gt 0 ]]; then
+  echo "Usage: niriland-setup-flutter" >&2
+  exit 1
+fi
+
+sudo -v || { echo "sudo authentication failed" >&2; exit 1; }
+
+echo "Installing Flutter prerequisites..."
+sudo pacman -S --needed --noconfirm curl git unzip xz zip jq glu clang cmake ninja pkgconf gtk3
+
+mkdir -p "$HOME/develop"
+
+if [[ -d "$HOME/develop/flutter/bin" ]]; then
+  echo "Flutter already exists at $HOME/develop/flutter, skipping SDK download."
+else
+  echo "Resolving latest stable Flutter Linux SDK..."
+  flutter_url="$(
+    curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json \
+      | jq -r '. as $root | $root.releases[] | select(.hash == $root.current_release.stable) |
+        "https://storage.googleapis.com/flutter_infra_release/releases/\(.archive)"'
+  )"
+
+  [[ -n "$flutter_url" ]] || { echo "Failed to resolve latest Flutter SDK URL." >&2; exit 1; }
+
+  echo "Downloading Flutter SDK..."
+  curl -L "$flutter_url" -o /tmp/flutter-sdk.tar.xz
+
+  echo "Extracting Flutter SDK to $HOME/develop..."
+  tar -xf /tmp/flutter-sdk.tar.xz -C "$HOME/develop"
+fi
+
+grep -qxF 'export PATH="$HOME/develop/flutter/bin:$PATH"' "$HOME/.zshenv" 2>/dev/null || \
+  echo 'export PATH="$HOME/develop/flutter/bin:$PATH"' >> "$HOME/.zshenv"
+
+grep -qxF 'export CHROME_EXECUTABLE=/usr/bin/helium-browser' "$HOME/.zshenv" 2>/dev/null || \
+  echo 'export CHROME_EXECUTABLE=/usr/bin/helium-browser' >> "$HOME/.zshenv"
+
+export PATH="$HOME/develop/flutter/bin:$PATH"
+export CHROME_EXECUTABLE=/usr/bin/helium-browser
+
+if [[ -d "$HOME/Android/Sdk" ]]; then
+  echo "Configuring Flutter to use Android SDK at $HOME/Android/Sdk..."
+  flutter config --android-sdk "$HOME/Android/Sdk"
+
+  if [[ -x "$HOME/Android/Sdk/cmdline-tools/bin/sdkmanager" && ! -x "$HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager" ]]; then
+    echo "Fixing flat Android cmdline-tools layout..."
+    mkdir -p "$HOME/Android/Sdk/cmdline-tools/latest"
+    mv \
+      "$HOME/Android/Sdk/cmdline-tools/bin" \
+      "$HOME/Android/Sdk/cmdline-tools/lib" \
+      "$HOME/Android/Sdk/cmdline-tools/NOTICE.txt" \
+      "$HOME/Android/Sdk/cmdline-tools/source.properties" \
+      "$HOME/Android/Sdk/cmdline-tools/latest/"
+  fi
+else
+  echo "Android SDK not found at $HOME/Android/Sdk, skipping Android SDK configuration."
+  echo "Install Android Studio separately if Flutter/mobile or native Android development is needed."
+fi
+
+echo "Disabling Flutter analytics..."
+flutter --disable-analytics >/dev/null 2>&1 || true
+
+echo "Running Flutter verification..."
+flutter --version
+flutter doctor -v
+flutter devices
+
+cat <<'EOF'
+
+Next steps:
+- Restart your shell or source ~/.zshenv if this is a new install.
+- If Android is in use, run: flutter doctor --android-licenses
+- If you use a non-Chromium browser in future, the generic fallback is: flutter run -d web-server
+EOF

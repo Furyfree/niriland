@@ -16,10 +16,10 @@ fi
 confirm_android_studio_initialized() {
   local reply
 
-  printf 'Is Android Studio installed, and did you complete its first-launch setup so the Android SDK was installed? [y/N] '
+  printf "Have you installed Android Studio, completed its first-launch setup, and installed 'Android SDK Command-line Tools (latest)' in SDK Tools? [Y/n] "
   read -r reply
 
-  case "${reply:-N}" in
+  case "${reply:-Y}" in
     Y|y|yes|YES|Yes)
       return 0
       ;;
@@ -33,7 +33,29 @@ confirm_android_studio_initialized() {
   esac
 }
 
+android_sdkmanager_path() {
+  local android_sdk_root="$HOME/Android/Sdk"
+
+  if [[ -x "$android_sdk_root/cmdline-tools/latest/bin/sdkmanager" ]]; then
+    printf '%s\n' "$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
+    return 0
+  fi
+
+  if [[ -x "$android_sdk_root/cmdline-tools/bin/sdkmanager" ]]; then
+    printf '%s\n' "$android_sdk_root/cmdline-tools/bin/sdkmanager"
+    return 0
+  fi
+
+  return 1
+}
+
 sudo -v || { echo "sudo authentication failed" >&2; exit 1; }
+
+if ! confirm_android_studio_initialized; then
+  echo "Aborting Flutter setup."
+  echo "Install Android Studio, complete its first-launch setup, and add 'Android SDK Command-line Tools (latest)' in SDK Tools before rerunning niriland-setup-flutter."
+  exit 1
+fi
 
 echo "Installing Flutter prerequisites..."
 sudo pacman -S --needed --noconfirm curl git unzip xz zip jq glu clang cmake ninja pkgconf gtk3
@@ -72,6 +94,8 @@ export PATH="$HOME/develop/flutter/bin:$PATH"
 export CHROME_EXECUTABLE=/usr/bin/helium-browser
 
 if [[ -d "$HOME/Android/Sdk" ]]; then
+  sdkmanager_path=""
+
   echo "Configuring Flutter to use Android SDK at $HOME/Android/Sdk..."
   flutter config --android-sdk "$HOME/Android/Sdk"
 
@@ -85,14 +109,18 @@ if [[ -d "$HOME/Android/Sdk" ]]; then
       "$HOME/Android/Sdk/cmdline-tools/source.properties" \
       "$HOME/Android/Sdk/cmdline-tools/latest/"
   fi
-else
-  if confirm_android_studio_initialized; then
-    echo "Android Studio was confirmed, but Android SDK was not found at $HOME/Android/Sdk."
-    echo "Complete Android Studio's first-launch SDK installation or adjust this script if your SDK is installed elsewhere."
+
+  if sdkmanager_path="$(android_sdkmanager_path)"; then
+    echo "Android cmdline-tools detected at $sdkmanager_path."
   else
-    echo "Skipping Android SDK configuration."
-    echo "Install Android Studio and complete its first-launch SDK setup if Flutter/mobile or native Android development is needed."
+    echo "Android SDK found at $HOME/Android/Sdk, but cmdline-tools are missing." >&2
+    echo "Open Android Studio -> SDK Manager -> SDK Tools, install 'Android SDK Command-line Tools (latest)', then rerun niriland-setup-flutter." >&2
+    exit 1
   fi
+else
+  echo "Android Studio was confirmed, but Android SDK was not found at $HOME/Android/Sdk."
+  echo "Complete Android Studio's first-launch SDK installation or adjust this script if your SDK is installed elsewhere."
+  exit 1
 fi
 
 echo "Disabling Flutter analytics..."

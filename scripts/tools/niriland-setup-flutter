@@ -13,6 +13,26 @@ if [[ $# -gt 0 ]]; then
   exit 1
 fi
 
+confirm_android_studio_initialized() {
+  local reply
+
+  printf 'Is Android Studio installed, and did you complete its first-launch setup so the Android SDK was installed? [y/N] '
+  read -r reply
+
+  case "${reply:-N}" in
+    Y|y|yes|YES|Yes)
+      return 0
+      ;;
+    N|n|no|NO|No)
+      return 1
+      ;;
+    *)
+      echo "Invalid response: ${reply}" >&2
+      exit 1
+      ;;
+  esac
+}
+
 sudo -v || { echo "sudo authentication failed" >&2; exit 1; }
 
 echo "Installing Flutter prerequisites..."
@@ -63,8 +83,13 @@ if [[ -d "$HOME/Android/Sdk" ]]; then
       "$HOME/Android/Sdk/cmdline-tools/latest/"
   fi
 else
-  echo "Android SDK not found at $HOME/Android/Sdk, skipping Android SDK configuration."
-  echo "Install Android Studio separately if Flutter/mobile or native Android development is needed."
+  if confirm_android_studio_initialized; then
+    echo "Android Studio was confirmed, but Android SDK was not found at $HOME/Android/Sdk."
+    echo "Complete Android Studio's first-launch SDK installation or adjust this script if your SDK is installed elsewhere."
+  else
+    echo "Skipping Android SDK configuration."
+    echo "Install Android Studio and complete its first-launch SDK setup if Flutter/mobile or native Android development is needed."
+  fi
 fi
 
 echo "Disabling Flutter analytics..."

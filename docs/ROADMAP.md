@@ -111,15 +111,43 @@ checklist.
 
 ### Tooling and maintenance
 
+#### Optional dev tooling split
+
+- [ ] Move optional development environment setup out of default install steps and into explicit helper tools or flags.
+  - [ ] Reassess the ownership of `60-setup-dev` and split baseline tooling from optional stacks.
+  - [ ] Keep only true baseline development setup in the default installer path.
+  - [ ] Move optional language, mobile, and toolchain setup to standalone tools or explicit opt-in flags.
+
 #### Flutter tooling setup
 
-- [ ] Add a clean Flutter setup path for local development instead of treating Dart as a separate standalone install.
-  - [ ] Find the cleanest install method for Flutter on the target setup and add it as an explicit setup step.
-  - [ ] Remove Dart as an independent install target and keep Dart provisioning under the Flutter install path instead.
-  - [ ] Document how to point Flutter's web-device/browser launch path at Helium Browser so Chromium does not need to be installed just for Flutter web workflows.
-  - [ ] Document the Linux permissions, groups, udev rules, and any other host-side access Flutter tooling actually needs for emulator/device workflows.
+- [ ] Add an explicit opt-in Flutter setup path for local development.
+  - [ ] Use Flutter's official manual install docs as the human-facing setup reference: `https://docs.flutter.dev/install/manual`
+  - [ ] Use Flutter's official platform integration setup docs as follow-on references for target-specific setup:
+    - [ ] Web: `https://docs.flutter.dev/platform-integration/web/setup`
+    - [ ] Android: `https://docs.flutter.dev/platform-integration/android/setup`
+    - [ ] Linux: `https://docs.flutter.dev/platform-integration/linux/setup`
+  - [ ] Resolve the latest stable Linux SDK archive from Flutter's official `releases_linux.json` metadata instead of hardcoding versioned tarball URLs.
+  - [ ] Implement latest stable archive resolution by selecting the release whose `hash` matches `current_release.stable` and expanding its `.archive` path under `https://storage.googleapis.com/flutter_infra_release/releases/`.
+    - [ ] Preserve this exact release-resolution command in the eventual setup docs or helper script:
+      ```bash
+      curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json \
+        | jq -r '. as $root | $root.releases[] | select(.hash == $root.current_release.stable) |
+          "https://storage.googleapis.com/flutter_infra_release/releases/\(.archive)"'
+      ```
+  - [ ] Document the shell PATH setup expected by Flutter's manual install flow, including the zsh-specific `~/.zshenv` example from the upstream docs:
+    ```bash
+    echo 'export PATH="$HOME/develop/flutter/bin:$PATH"' >> ~/.zshenv
+    ```
+  - [ ] Keep Dart provisioning under the Flutter setup path instead of treating Dart as a separate install target for Flutter workflows.
+  - [ ] Decide whether the Flutter path should be a dedicated helper script or an explicit opt-in flag on a dev-setup tool.
+  - [ ] Document how to point Flutter's web-device/browser launch path at Helium Browser instead of Chromium or Chrome, since Helium is Chromium-based and should be sufficient for Flutter web workflows.
+  - [ ] Verify how Flutter discovers browser executables on Linux and document the supported override path so Helium can be used cleanly for local web runs.
+  - [ ] Document Linux host requirements for Android devices and emulators, including groups, udev rules, and SDK/tool ownership.
   - [ ] Add Android SDK setup to the same Flutter/mobile toolchain path so Android builds do not depend on separate manual setup.
-  - [ ] Research how the Apple/iOS SDK and Flutter's iOS toolchain requirements work, including what must stay on macOS/Xcode versus what can be prepared from Linux.
+  - [ ] Capture the Android-side prerequisites currently called out upstream, including Android Studio, Android SDK Build-Tools, Android SDK Command-line Tools, Android Emulator, Android SDK Platform-Tools, CMake, NDK, and `flutter doctor --android-licenses`.
+  - [ ] Decide how Android SDK ownership and install location should work on Niriland so Flutter, emulators, and physical-device workflows do not depend on ad hoc per-machine setup.
+  - [ ] Capture the Linux desktop toolchain prerequisites from the upstream Linux setup guide and translate them into the Arch/CachyOS package equivalents needed for Flutter Linux desktop development.
+  - [ ] Document iOS toolchain boundaries clearly, including what must stay on macOS/Xcode.
 
 #### Shared tool helper library
 

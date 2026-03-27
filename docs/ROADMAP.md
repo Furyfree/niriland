@@ -65,6 +65,14 @@ checklist.
   - [ ] If `zathura` becomes the default document/PDF viewer, replace the current Evince default for that purpose.
   - [ ] Update the shipped XDG MIME defaults so PDF/document associations point at `zathura` instead of the current viewer when that switch happens.
 
+#### Optional Wayland env cleanup
+
+- [ ] Optionally trim `~/.config/environment.d/90-dms.conf` down to settings that still matter.
+  - [ ] Keep the general Wayland-preference variables if they continue to behave well across GTK, Qt, SDL, Mozilla, and Chromium/Electron apps.
+  - [ ] Treat `GTK_IM_MODULE=simple` as the first line to revisit or remove if input-method, compose, dead-key, or non-English keyboard behavior is off.
+  - [ ] Treat `XDG_SESSION_DESKTOP=niri` as likely redundant unless there is a concrete reason to override the session-provided value.
+  - [ ] Do not treat the Wayland-preferring variables in this file as GoLand-specific fixes; JetBrains now autodetects its backend separately.
+
 ### Dotfiles integration
 
 - [ ] Move tracked user config ownership to `dotfiles`.

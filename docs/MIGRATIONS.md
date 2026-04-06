@@ -9,6 +9,29 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 2026-04 Replace `dms-shell-bin` with `dms-shell`
+
+Who:
+Existing installs that still have `dms-shell-bin` installed.
+
+Run:
+
+```bash
+if pacman -Qq dms-shell-bin >/dev/null 2>&1; then
+  sudo pacman -Rns --noconfirm dms-shell-bin
+fi
+
+sudo pacman -S --needed dms-shell
+```
+
+What it changes:
+
+- Removes the old `dms-shell-bin` package
+- Installs `dms-shell` from the current repo package source
+
+Fresh installs:
+Not needed manually. Fresh installs now install `dms-shell` in the normal DMS setup step.
+
 ## 2026-03 Refresh Zed Settings
 
 Who:

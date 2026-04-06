@@ -12,7 +12,8 @@ log "Installing and enabling power-profiles-daemon..."
 install_package power-profiles-daemon
 run_sudo systemctl enable --now power-profiles-daemon
 install_aur_package quickshell-git
-install_aur_package dms-shell-bin greetd-dms-greeter-git
+install_package dms-shell dms-shell-niri
+install_aur_package greetd-dms-greeter-git
 
 TARGET_USER="${SUDO_USER:-${USER:-}}"
 if [[ -z "$TARGET_USER" ]]; then

@@ -21,7 +21,7 @@ if pacman -Qq dms-shell-bin >/dev/null 2>&1; then
   sudo pacman -Rns --noconfirm dms-shell-bin
 fi
 
-sudo pacman -S --needed dms-shell
+sudo pacman -S --needed dms-shell dms-shell-niri
 ```
 
 What it changes:

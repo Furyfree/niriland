@@ -9,6 +9,30 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 2026-04 Prefer `ghostty` for `xdg-terminal-exec` in `niri`
+
+Who:
+Existing installs where terminal launches started resolving to `alacritty` because `xdg-terminal-exec` had no user override configured for `niri`.
+
+Run:
+
+```bash
+mkdir -p ~/.config
+printf '%s\n' \
+  '# Prefer Ghostty as the default terminal in niri sessions.' \
+  'com.mitchellh.ghostty.desktop' \
+  > ~/.config/niri-xdg-terminals.list
+```
+
+What it changes:
+
+- Adds `~/.config/niri-xdg-terminals.list`
+- Makes `xdg-terminal-exec` prefer `com.mitchellh.ghostty.desktop` in `niri` sessions
+- Stops fallback selection from picking `Alacritty.desktop` when no terminal preference file exists
+
+Fresh installs:
+Not needed manually. Fresh installs should deploy the `niri` terminal preference through the tracked config.
+
 ## 2026-04 Replace `dms-shell-bin` with `dms-shell`
 
 Who:

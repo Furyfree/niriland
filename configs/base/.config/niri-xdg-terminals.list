@@ -1,0 +1,2 @@
+# Prefer Ghostty as the default terminal in niri sessions.
+com.mitchellh.ghostty.desktop

@@ -4,6 +4,7 @@ Practical reference for using and maintaining a Niriland setup.
 
 For shortcut details, see [KEYBINDINGS.md](KEYBINDINGS.md).
 For one-time migration steps on older systems, see [MIGRATIONS.md](MIGRATIONS.md).
+For active redesign and rewrite planning, see [ROADMAP.md](ROADMAP.md) and [RUST_REWRITE.md](RUST_REWRITE.md).
 
 ## What Niriland Is
 

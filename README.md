@@ -38,6 +38,7 @@ After you install CachyOS by following [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md),
 
 See [docs/REFERENCE.md](docs/REFERENCE.md) for the full reference.
 For one-time migration steps on older setups, see [docs/MIGRATIONS.md](docs/MIGRATIONS.md).
+For active redesign and rewrite planning, see [docs/ROADMAP.md](docs/ROADMAP.md) and [docs/RUST_REWRITE.md](docs/RUST_REWRITE.md).
 For the expected fresh-install baseline for the default Niriland flow, see [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md).
 
 Current gaming recommendation in this setup: use `Lutris` as the unified launcher for `Steam` and `Battle.net`, and use `Heroic` for `Epic Games`.

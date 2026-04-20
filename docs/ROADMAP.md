@@ -41,7 +41,10 @@ checklist.
 
 #### TUI installer flow
 
-- [ ] Add a TUI installer flow with Gum so the bootstrap is more guided without trying to support every Linux setup.
+- [ ] Add a guided installer/update TUI later through the Rust rewrite, using `ratatui` over the shared core engine instead of a Gum wrapper over Bash.
+  - [ ] Keep the non-TUI CLI as the primary and first-complete interface.
+  - [ ] Keep business logic in the Rust core, not in the TUI layer.
+  - [ ] Do not start TUI work until the Rust CLI and plan/apply flow are stable.
 
 #### Suspend-then-hibernate
 
@@ -90,6 +93,17 @@ checklist.
   - [ ] Remove tracked user-config deployment from `20-deploy-configs`.
   - [ ] Keep `80-setup-desktop-entries` as the sole owner of launcher assets.
   - [ ] Update Niriland docs and runtime references once `dotfiles` becomes the source of truth.
+
+### Rust rewrite
+
+- [ ] Rewrite Niriland around a Rust-first core while keeping Bash for `bootstrap` and thin shell-native leaf actions.
+  - [ ] Follow the staged plan in [RUST_REWRITE.md](RUST_REWRITE.md).
+  - [ ] Treat the `dotfiles` ownership split as a scope-cutting prerequisite, not as unrelated work.
+  - [ ] Build a non-TUI Rust CLI first for install, update, planning, migration, and doctor flows.
+  - [ ] Start by having Rust orchestrate the existing shell steps before porting leaf actions.
+  - [ ] Add resumability/checkpointing in the Rust control plane before chasing broader shell rewrites.
+  - [ ] Only add concurrency for read-only discovery and validation work where the safety case is clear.
+  - [ ] Add a `ratatui` frontend only after the CLI/core engine is stable enough to support it cleanly.
 
 ### Installer and update path
 

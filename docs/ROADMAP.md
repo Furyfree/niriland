@@ -1,181 +1,46 @@
 # Roadmap
 
-This file tracks active work and completed milestones. Major areas use headers,
-while actionable items stay as checkboxes so larger efforts can later link out
-to deeper planning documents without turning the main roadmap into one long
-checklist.
+This file tracks repo-local unfinished work and completed milestones.
+Cross-repo design and ownership planning belongs outside this repo.
+Keep entries short: problem, target state, and any important constraint.
 
 ## Active work
 
 ### Desktop and session
 
-#### Vesktop screensharing
+- [ ] Fix Vesktop screensharing on Wayland/Niri by correcting portal routing first and only adding app-specific flags if the portal-side fix is not enough.
 
-- [ ] Fix Vesktop screensharing on Wayland/Niri.
-  - [ ] Stop forcing `xdg-desktop-portal` to `default=gtk` in `~/.config/xdg-desktop-portal/portals.conf`, because the GTK portal does not provide the `ScreenCast` interface.
-  - [ ] Restore Niri's intended portal preference order so screencast requests go to a backend that supports `ScreenCast` and `RemoteDesktop`, matching `/usr/share/xdg-desktop-portal/niri-portals.conf`.
-  - [ ] Restart the user portal services and Vesktop after the portal routing change so the new backend selection is actually picked up.
-  - [ ] Re-test Vesktop screensharing after the portal fix before changing any app flags.
-  - [ ] If screensharing still fails after the portal fix, add a `~/.config/vesktop-flags.conf` fallback with the needed Wayland/PipeWire Electron flags and test again.
+- [ ] Add `niriland-launch-tui` and `niriland-launch-tui-presentation` as small helper scripts for normal and presentation-style TUI launches.
 
-#### TUI launcher helpers
+- [ ] Make Bluetooth reliable on the desktop machine and document any machine-specific fix that must survive updates or rebuilds.
 
-- [ ] Add modular `niriland-launch-tui` and `niriland-launch-tui-presentation` helper scripts.
-  - [ ] `niriland-launch-tui` should just launch the requested TUI normally.
-  - [ ] `niriland-launch-tui-presentation` should handle the centered floating presentation layer and call `niriland-launch-tui`.
+- [ ] Decide whether a custom DMS launcher plugin is worth keeping for personal script entries, or whether desktop entries are sufficient.
 
-#### Desktop Bluetooth
+- [ ] Make suspend-then-hibernate work on the current machine, including proper disk-backed swap, resume configuration, and optional DMS integration.
 
-- [ ] Get Bluetooth working reliably on the desktop computer.
-  - [ ] Verify the desktop machine's Bluetooth adapter is detected correctly and identify whether firmware or kernel-module setup is missing.
-  - [ ] Confirm `bluetooth.service` starts cleanly and stays up after boot.
-  - [ ] Check whether any additional desktop-side tooling is needed beyond the current `bluez` and `bluez-utils` packages.
-  - [ ] Test pairing and reconnect behavior with the devices that actually matter on the desktop setup.
-  - [ ] Document any machine-specific fix so it can be reapplied after updates or on rebuilds.
+- [ ] Re-evaluate the default package set for terminal multiplexing and document viewing, especially `tmux` or `zellij` and a possible move from `Evince` to `zathura`.
 
-#### DMS launcher plugin exploration
-
-- [ ] Explore a custom DMS launcher plugin for personal script entries in spotlight instead of relying only on desktop entries.
-  - [ ] Verify whether the right shape is a small local `launcher` plugin under `~/.config/DankMaterialShell/plugins/`.
-  - [ ] Check whether script metadata and matching can be kept simple enough to feel closer to a Walker command provider.
-
-#### TUI installer flow
-
-- [ ] Add a guided installer/update TUI later through the Rust rewrite, using `ratatui` over the shared core engine instead of a Gum wrapper over Bash.
-  - [ ] Keep the non-TUI CLI as the primary and first-complete interface.
-  - [ ] Keep business logic in the Rust core, not in the TUI layer.
-  - [ ] Do not start TUI work until the Rust CLI and plan/apply flow are stable.
-
-#### Suspend-then-hibernate
-
-- [ ] Make suspend-then-hibernate work properly on the current machine instead of staying in plain suspend overnight.
-  - [ ] This needs system-level changes, not just DMS. The current setup is Limine + encrypted Btrfs root + mkinitcpio with systemd hooks, and right now it only has zram swap.
-  - [ ] Create a real disk-backed swapfile for hibernation. RAM is 62 GiB, so target a `70G` swapfile and keep zram enabled alongside it.
-  - [ ] Get the swapfile resume offset with `btrfs inspect-internal map-swapfile -r /swap/swapfile`.
-  - [ ] Add `resume=` and `resume_offset=` to the Limine kernel command line in `/etc/default/limine`.
-  - [ ] Add `/etc/systemd/sleep.conf.d/10-suspend-then-hibernate.conf` with `AllowSuspendThenHibernate=yes`, `HibernateDelaySec=2h`, and `HibernateOnACPower=yes`.
-  - [ ] Add `/etc/systemd/logind.conf.d/10-lid-suspend-then-hibernate.conf` so lid close uses `suspend-then-hibernate` on battery and AC.
-  - [ ] Rebuild boot artifacts with `mkinitcpio -P` and `limine-update`, then reboot.
-  - [ ] Optionally set `customPowerActionSuspend` in `~/.config/DankMaterialShell/settings.json` to `systemctl suspend-then-hibernate` if the DMS suspend button should use the same action.
-  - [ ] Verify with `cat /proc/cmdline`, `swapon --show`, `systemctl suspend-then-hibernate`, and `journalctl -b | rg -i 'suspend|hibernate|resume|sleep'`.
-
-#### Package and default-app adjustments
-
-- [ ] Re-evaluate the default package set for terminal multiplexing and document viewing.
-  - [ ] Consider adding a terminal multiplexer to the default package set, likely `tmux` or possibly `zellij`.
-  - [ ] If the choice is `tmux`, keep in mind that it is common on servers, is often already preinstalled, and supports Matugen theming.
-  - [ ] Consider adding `zathura` to the default package set.
-  - [ ] If `zathura` becomes the default document/PDF viewer, replace the current Evince default for that purpose.
-  - [ ] Update the shipped XDG MIME defaults so PDF/document associations point at `zathura` instead of the current viewer when that switch happens.
-
-#### Optional Wayland env cleanup
-
-- [ ] Optionally trim `~/.config/environment.d/90-dms.conf` down to settings that still matter.
-  - [ ] Keep the general Wayland-preference variables if they continue to behave well across GTK, Qt, SDL, Mozilla, and Chromium/Electron apps.
-  - [ ] Treat `GTK_IM_MODULE=simple` as the first line to revisit or remove if input-method, compose, dead-key, or non-English keyboard behavior is off.
-  - [ ] Treat `XDG_SESSION_DESKTOP=niri` as likely redundant unless there is a concrete reason to override the session-provided value.
-  - [ ] Do not treat the Wayland-preferring variables in this file as GoLand-specific fixes; JetBrains now autodetects its backend separately.
-
-### Dotfiles integration
-
-- [ ] Move tracked user config ownership to `dotfiles`.
-  - [ ] Keep the detailed redesign, theming, and migration plan in `dotfiles/docs/redesign-plan.md`.
-  - [ ] Keep tracked user theming and browser config ownership in `dotfiles`.
-  - [ ] Keep tracked config migration ownership in `dotfiles`, including a future migration doc/flow for config changes that does not exist there yet.
-  - [ ] Whenever Niriland adds or changes a package that comes with tracked user config, also check whether the related migration needs to be added or updated in `dotfiles`.
-  - [ ] Clone `dotfiles` if missing, or pull updates into the existing checkout when it is in a clean state.
-  - [ ] Call `scripts/deploy-linux --profile niriland --distro arch --mode <symlink|copy>` from Niriland, defaulting to `symlink` but allowing `copy` as an explicit override when needed.
-  - [ ] In `niriland-update`, pull `dotfiles` first, then continue with the normal Niriland update flow without running the deploy step by default.
-  - [ ] Only run the `dotfiles` deploy step during `niriland-update` for explicit overwrite cases, since pulling `dotfiles` should already refresh non-stub tracked config.
-  - [ ] Fail clearly, or warn and skip the deploy step, if the existing `dotfiles` checkout is dirty, cannot be updated, or is otherwise in an incompatible state.
-  - [ ] Document the default `symlink` mode and the explicit `copy` override clearly in the Niriland README.
-  - [ ] Audit other user-facing deploy flags and document them clearly in the Niriland README as well.
-  - [ ] Remove tracked user-config deployment from `20-deploy-configs`.
-  - [ ] Keep `80-setup-desktop-entries` as the sole owner of launcher assets.
-  - [ ] Update Niriland docs and runtime references once `dotfiles` becomes the source of truth.
-
-### Rust rewrite
-
-- [ ] Rewrite Niriland around a Rust-first core while keeping Bash for `bootstrap` and thin shell-native leaf actions.
-  - [ ] Follow the staged plan in [RUST_REWRITE.md](RUST_REWRITE.md).
-  - [ ] Treat the `dotfiles` ownership split as a scope-cutting prerequisite, not as unrelated work.
-  - [ ] Build a non-TUI Rust CLI first for install, update, planning, migration, and doctor flows.
-  - [ ] Start by having Rust orchestrate the existing shell steps before porting leaf actions.
-  - [ ] Add resumability/checkpointing in the Rust control plane before chasing broader shell rewrites.
-  - [ ] Only add concurrency for read-only discovery and validation work where the safety case is clear.
-  - [ ] Add a `ratatui` frontend only after the CLI/core engine is stable enough to support it cleanly.
+- [ ] Trim `~/.config/environment.d/90-dms.conf` down to variables that still matter and remove overrides that are now redundant or misleading.
 
 ### Installer and update path
 
-#### Update output and efficiency
+- [ ] Reduce `niriland-update` noise and stop replaying install-step work that is unnecessary on a normal update run.
 
-- [ ] Debloat `niriland-update` output and make the update path more efficient.
-  - [ ] Remove duplicated updater output like the current self-handoff and repeated repo status messages.
-  - [ ] Stop replaying install-step work that is unnecessary on a normal update run.
-  - [ ] Rework step/update logging so no-change runs stay short and high-signal instead of printing huge walls of `already installed` and `unchanged` lines.
-  - [ ] Keep the important package-manager and maintenance output, but trim installer noise that does not help with normal update visibility.
+- [ ] Simplify installer prompt flow so a normal install needs less attention and fewer unnecessary confirmations.
 
-#### Installer prompt flow
+- [ ] Rework sudo-session handling so cached sudo credentials are reused cleanly and optional actions do not trigger avoidable prompts.
 
-- [ ] Rethink installer prompt flow so it works with less attention and fewer unnecessary prompts, instead of just moving every prompt later.
+- [ ] Move the FDE auto-unlock work in `05-setup-fde` out of the default install path if it continues to behave like machine-specific follow-up instead of baseline setup.
 
-#### Sudo-session handling
-
-- [ ] Rework sudo-session handling in both the installer and updater so cached sudo credentials are reused cleanly and optional or skipped functionality does not trigger avoidable prompts.
-  - [ ] Consider moving the FDE auto-unlock step (`05-setup-fde`) out of the default install path and into a standalone tool script, since it is machine-specific and does not need to run on every install.
-  - [x] Until sudo handling is redesigned properly, keep one-off install and migration scripts on the shared sudo-session path instead of duplicating password-prompt logic.
-
-#### Installer resumability
-
-- [ ] Add installer resumability so a failed or interrupted run can continue from where it left off instead of replaying all steps from the beginning.
-  - [ ] Support a `--from-step` flag or equivalent so the installer can skip already-completed steps.
-  - [ ] Consider using marker files or exit-code tracking so the installer knows which steps finished successfully.
+- [ ] Add installer resumability so failed or interrupted runs can continue from a known point instead of replaying everything.
 
 ### Tooling and maintenance
 
-#### Optional dev tooling split
+- [ ] Split optional development tooling out of the default install path and keep only true baseline developer setup in the main flow.
 
-- [ ] Move optional development environment setup out of default install steps and into explicit helper tools or flags.
-  - [ ] Reassess the ownership of `60-setup-dev` and split baseline tooling from optional stacks.
-  - [ ] Keep only true baseline development setup in the default installer path.
-  - [ ] Move optional language, mobile, and toolchain setup to standalone tools or explicit opt-in flags.
+- [ ] Add an explicit opt-in Flutter setup path with sane release resolution, browser configuration, Android prerequisites, and clear Linux versus macOS boundaries.
 
-#### Flutter tooling setup
-
-- [ ] Add an explicit opt-in Flutter setup path for local development.
-  - [ ] Use Flutter's official manual install docs as the human-facing setup reference: `https://docs.flutter.dev/install/manual`
-  - [ ] Use Flutter's official platform integration setup docs as follow-on references for target-specific setup:
-    - [ ] Web: `https://docs.flutter.dev/platform-integration/web/setup`
-    - [ ] Android: `https://docs.flutter.dev/platform-integration/android/setup`
-    - [ ] Linux: `https://docs.flutter.dev/platform-integration/linux/setup`
-  - [ ] Resolve the latest stable Linux SDK archive from Flutter's official `releases_linux.json` metadata instead of hardcoding versioned tarball URLs.
-  - [ ] Implement latest stable archive resolution by selecting the release whose `hash` matches `current_release.stable` and expanding its `.archive` path under `https://storage.googleapis.com/flutter_infra_release/releases/`.
-    - [ ] Preserve this exact release-resolution command in the eventual setup docs or helper script:
-      ```bash
-      curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json \
-        | jq -r '. as $root | $root.releases[] | select(.hash == $root.current_release.stable) |
-          "https://storage.googleapis.com/flutter_infra_release/releases/\(.archive)"'
-      ```
-  - [ ] Document the shell PATH setup expected by Flutter's manual install flow, including the zsh-specific `~/.zshenv` example from the upstream docs:
-    ```bash
-    echo 'export PATH="$HOME/develop/flutter/bin:$PATH"' >> ~/.zshenv
-    ```
-  - [ ] Keep Dart provisioning under the Flutter setup path instead of treating Dart as a separate install target for Flutter workflows.
-  - [ ] Decide whether the Flutter path should be a dedicated helper script or an explicit opt-in flag on a dev-setup tool.
-  - [ ] Document how to point Flutter's web-device/browser launch path at Helium Browser instead of Chromium or Chrome, since Helium is Chromium-based and should be sufficient for Flutter web workflows.
-  - [ ] Verify how Flutter discovers browser executables on Linux and document the supported override path so Helium can be used cleanly for local web runs.
-  - [ ] Document Linux host requirements for Android devices and emulators, including groups, udev rules, and SDK/tool ownership.
-  - [ ] Add Android SDK setup to the same Flutter/mobile toolchain path so Android builds do not depend on separate manual setup.
-  - [ ] Capture the Android-side prerequisites currently called out upstream, including Android Studio, Android SDK Build-Tools, Android SDK Command-line Tools, Android Emulator, Android SDK Platform-Tools, CMake, NDK, and `flutter doctor --android-licenses`.
-  - [ ] Decide how Android SDK ownership and install location should work on Niriland so Flutter, emulators, and physical-device workflows do not depend on ad hoc per-machine setup.
-  - [ ] Capture the Linux desktop toolchain prerequisites from the upstream Linux setup guide and translate them into the Arch/CachyOS package equivalents needed for Flutter Linux desktop development.
-  - [ ] Document iOS toolchain boundaries clearly, including what must stay on macOS/Xcode.
-
-#### Shared tool helper library
-
-- [ ] Standardize tool scripts around a shared helper library instead of each tool reinventing its own logging, color, and error-handling functions.
-  - [ ] Extract a lightweight common helper for tools (separate from the full installer lib) that covers logging, color output, `die`, and `require_cmd`.
-  - [ ] Migrate existing tool scripts to source the shared helper instead of inlining their own variants.
+- [ ] Standardize tool scripts around a small shared helper library instead of duplicating logging, color, and command-check boilerplate.
 
 ## Recently completed work
 

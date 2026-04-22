@@ -1,9 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Name=Codex
-Comment=Codex
-Exec=niriland-launch-webapp https://chatgpt.com/codex/
-Terminal=false
-Type=Application
-Icon=Codex
-StartupNotify=true

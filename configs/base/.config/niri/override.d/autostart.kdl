@@ -1,5 +1,0 @@
-// Optional startup apps (user-editable).
-// Comment this line out to disable 1Password autostart.
-spawn-at-startup "niriusd"
-spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-spawn-at-startup "sh" "-lc" "sleep 5; /usr/bin/1password --silent"

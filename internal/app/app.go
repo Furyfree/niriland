@@ -1,5 +1,9 @@
 package app
 
+import "github.com/Furyfree/niriland/internal/logging"
+
+var logger = logging.New()
+
 // Public function, so uppercase
 func RunApp() {
 	plan()
@@ -7,5 +11,5 @@ func RunApp() {
 
 // Private function, so lowercase
 func plan() {
-	panic("plan function not implemented")
+	logger.Info("plan stub reached")
 }

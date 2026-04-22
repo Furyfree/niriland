@@ -1,6 +1,11 @@
 package app
-import "fmt"
 
+// Public function, so uppercase
 func RunApp() {
-	fmt.Println("Welcome to Niriland!")
+	plan()
+}
+
+// Private function, so lowercase
+func plan() {
+	panic("plan function not implemented")
 }

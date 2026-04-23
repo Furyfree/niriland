@@ -191,3 +191,6 @@ These do different jobs:
 - Add `cobra` when the CLI grows beyond simple `flag`
 - Use `go.yaml.in/yaml/v3` for structured manifests
 - Add Bubble Tea + Bubbles + Lip Gloss when the TUI work starts
+
+Updating the Go version for a project is done by `go get`, which updates the `go.mod` file. Should always chose the minor version, not patch, and of course major version if there is something newer than 1:
+`<MAJOR>.<MINOR>.<PATCH>` -> `1.26.0` is a good project version, not `1.26.2`.

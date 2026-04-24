@@ -34,8 +34,8 @@
   {
     "context": "Workspace",
     "bindings": {
-      // Danish keyboard friendly bottom dock shortcut.
-      "ctrl-j": "workspace::ToggleBottomDock",
+      // Danish keyboard friendly terminal shortcut.
+      "ctrl-shift-t": "terminal_panel::Toggle",
 
       // Swap the default outline/right-dock shortcuts.
       "ctrl-shift-b": "workspace::ToggleRightDock",

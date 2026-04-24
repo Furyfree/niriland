@@ -1,11 +1,7 @@
 package main
 
-import (
-	"github.com/Furyfree/niriland/internal/app"
-	"fmt"
-)
+import "fmt"
 
 func main() {
 	fmt.Println("Testing Go for Niriland")
-	app.RunApp()
 }

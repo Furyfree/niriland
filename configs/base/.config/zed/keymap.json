@@ -1,90 +1,59 @@
 // Zed keymap
 //
-// For information on binding keys, see the Zed
-// documentation: https://zed.dev/docs/key-bindings
-//
-// To see the default key bindings run `zed: open default keymap`
-// from the command palette.
+// Keep this file small and focused on shortcuts that differ from Zed's
+// VS Code-style defaults. Default keymap reference:
+// zed: open default keymap
 [
+  // --- Agent ---
   {
     "context": "Workspace",
     "bindings": {
-      // "shift shift": "file_finder::Toggle"
-    },
+      "ctrl-shift-a": "agent::ToggleFocus"
+    }
   },
   {
-    "context": "Editor && vim_mode == insert",
+    "context": "Editor && mode == full",
     "bindings": {
-      // "j k": "vim::NormalBefore"
-    },
+      "ctrl-shift-a": "agent::ToggleFocus"
+    }
   },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-k ctrl-k": "zed::OpenKeymap",
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-shift-t": "terminal_panel::Toggle",
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-k ctrl-x": "zed::Extensions",
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-shift+x": "zed::Extensions",
-    },
-  },
-  {
-    "bindings": {
-      "ctrl-shift-j": "agent::ToggleFocus",
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-shift-b": "workspace::ToggleRightDock",
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-alt-b": "outline_panel::ToggleFocus",
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "alt-open": null,
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-alt-o": null,
-    },
-  },
+
+  // --- Projects ---
   {
     "bindings": {
       "ctrl-shift-o": [
         "projects::OpenRecent",
         {
-          "create_new_window": true,
-        },
-      ],
-    },
+          "create_new_window": true
+        }
+      ]
+    }
+  },
+
+  // --- Docks & Panels ---
+  {
+    "context": "Workspace",
+    "bindings": {
+      // Danish keyboard friendly bottom dock shortcut.
+      "ctrl-j": "workspace::ToggleBottomDock",
+
+      // Swap the default outline/right-dock shortcuts.
+      "ctrl-shift-b": "workspace::ToggleRightDock",
+      "ctrl-alt-b": "outline_panel::ToggleFocus"
+    }
+  },
+
+  // --- Optional Experiments ---
+  {
+    "context": "Workspace",
+    "bindings": {
+      // "shift shift": "file_finder::Toggle"
+    }
   },
   {
-    "context": "Editor",
+    "context": "Editor && vim_mode == insert",
     "bindings": {
-      "ctrl-shift-j": "agent::ToggleFocus",
-    },
-  },
+      // "j k": "vim::NormalBefore"
+    }
+  }
 ]

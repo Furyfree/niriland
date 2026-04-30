@@ -2,7 +2,7 @@
 Version=1.0
 Name=Codex
 Comment=Codex
-Exec=niriland-launch-webapp https://chatgpt.com/codex/
+Exec=niriland-launch-webapp https://chatgpt.com/codex/cloud
 Terminal=false
 Type=Application
 Icon=Codex

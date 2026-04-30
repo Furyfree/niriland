@@ -9,7 +9,82 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
-## 2026-04 Stabilize Topgrade and Helix Updates
+## 30. april 2026 - Remove Local OpenWebUI Docker Instance
+
+Who:
+Existing installs that previously ran `niriland-setup-ai` and now use another UI such as Page Assist locally or OpenWebUI in the homelab.
+
+Run:
+
+```bash
+if systemctl list-unit-files --no-legend openwebui.service | grep -q '^openwebui.service'; then
+  sudo systemctl disable --now openwebui.service
+fi
+
+sudo rm -f /etc/systemd/system/openwebui.service
+sudo systemctl daemon-reload
+sudo systemctl reset-failed openwebui.service 2>/dev/null || true
+
+sudo systemctl start docker.service
+
+if sudo docker ps -a --format '{{.Names}}' | grep -Fxq open-webui; then
+  sudo docker rm -f open-webui
+fi
+
+for image in \
+  ghcr.io/open-webui/open-webui:main \
+  ghcr.io/open-webui/open-webui:cuda
+do
+  if sudo docker image inspect "$image" >/dev/null 2>&1; then
+    sudo docker image rm "$image"
+  fi
+done
+
+if sudo docker volume ls -q | grep -Fxq open-webui; then
+  sudo docker volume rm open-webui
+fi
+
+systemctl is-active ollama
+ollama list
+```
+
+What it changes:
+
+- Stops and disables the local `openwebui.service` systemd unit installed by `niriland-setup-ai`
+- Removes the `open-webui` Docker container if it exists
+- Removes both possible OpenWebUI images used by Niriland, `main` for CPU systems and `cuda` for NVIDIA systems
+- Removes the local OpenWebUI Docker data volume
+- Leaves host Ollama, host Ollama models, Opencode, Codex, Claude Code, Docker, and Docker Compose installed
+
+Notes:
+
+- Do not remove the Docker `ollama` volume here. Older CPU OpenWebUI units mounted it, but it is separate from the host Ollama model store and should be checked manually before deletion.
+- This migration intentionally removes only the local Docker UI layer. Local AI should continue through Ollama plus a non-Docker UI/client.
+
+Fresh installs:
+Not needed unless `niriland-setup-ai` has been run on that machine.
+
+## 30. april 2026 - Refresh Codex Desktop Entry
+
+Who:
+Existing installs whose local `~/.local/share/applications/Codex.desktop` is missing or still points at an older Codex launcher target.
+
+Run:
+
+```bash
+mkdir -p ~/.local/share/applications
+cp -a ~/.local/share/niriland/configs/base/.local/share/applications/Codex.desktop ~/.local/share/applications/Codex.desktop
+```
+
+What it changes:
+
+- Refreshes the local Codex desktop entry from the tracked Niriland config
+- Points the launcher at `https://chatgpt.com/codex/cloud` through `niriland-launch-webapp`
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy the current tracked desktop entry.
+
+## 30. april 2026 - Stabilize Topgrade and Helix Updates
 
 Who:
 Existing installs that already have local Topgrade or Helix configuration and should pick up the safer Topgrade defaults plus the temporary Helix `gotmpl` grammar override.
@@ -32,7 +107,10 @@ topgrade --dry-run --config ~/.config/topgrade.toml --only containers --no-ask-r
 
 What it changes:
 
-- Adds tracked Topgrade config with `pre_sudo = true`, `ask_retry = false`, end notifications only on failure, `paru --nodevel`, Cargo git-package updates disabled, and the large Open WebUI CUDA image ignored by the containers step
+- Adds tracked Topgrade config with `pre_sudo = true`, `ask_retry = false`, end notifications only on failure, `paru --nodevel`, Cargo git-package updates disabled, Bun self-update disabled because Bun is managed by mise, Poetry disabled because it is not part of the baseline toolset, the built-in npm step disabled because it follows the active mise Node, and container image updates disabled because Docker/Podman images are managed separately
+- Adds Snapper snapshots before and after the full Topgrade run
+- Runs `limine-snapper-sync` after the post snapshot when available
+- Adds a custom system npm global update command using `/usr/bin/npm`
 - Keeps normal system, language-tool, editor, and package-manager updates enabled
 - Adds a Helix `gotmpl` grammar override pointing at the available `ngalaiko/tree-sitter-go-template` repository
 - Clears the stale cached `gotmpl` grammar source so Helix refetches from the corrected upstream
@@ -40,7 +118,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs get the tracked Topgrade and Helix config through normal config deployment.
 
-## 2026-04 Refresh Zed Feature Flags
+## 30. april 2026 - Refresh Zed Feature Flags
 
 Who:
 Existing installs whose local `~/.config/zed/settings.json` was preserved and therefore did not pick up the current tracked Zed feature flags.
@@ -61,7 +139,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs already deploy the current tracked Zed settings.
 
-## 2026-04 Replace Evince with Zathura
+## 30. april 2026 - Replace Evince with Zathura
 
 Who:
 Existing installs that still have `evince` installed or whose local `~/.config/mimeapps.list` still points document MIME types at Evince.
@@ -77,7 +155,7 @@ sudo pacman -S --needed \
   tesseract-data-eng
 
 if pacman -Qq evince >/dev/null 2>&1; then
-  sudo pacman -Rns evince
+  sudo pacman -Rns evince sushi
 fi
 
 mkdir -p ~/.config
@@ -108,7 +186,7 @@ Notes:
 Fresh installs:
 Not needed manually. Fresh installs get the Zathura package set from `packages/cachyos.packages` and the tracked MIME defaults through normal config deployment.
 
-## 2026-04 Move Codex CLI from `mise` to system npm for T3 Code
+## 30. april 2026 - Move Codex CLI from `mise` to system npm for T3 Code
 
 Who:
 Existing installs where Codex was installed through `mise` and T3 Code cannot reliably discover or start the Codex provider from the desktop session.
@@ -166,7 +244,7 @@ Notes:
 Fresh installs:
 Not needed manually once Codex is installed through the normal system-visible package path instead of a `mise` global package.
 
-## 2026-04 Prefer `ghostty` for `xdg-terminal-exec` in `niri`
+## 7. april 2026 - Prefer `ghostty` for `xdg-terminal-exec` in `niri`
 
 Who:
 Existing installs where terminal launches started resolving to `alacritty` because `xdg-terminal-exec` had no user override configured for `niri`.
@@ -190,7 +268,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs should deploy the `niri` terminal preference through the tracked config.
 
-## 2026-04 Replace `dms-shell-bin` with `dms-shell`
+## 6. april 2026 - Replace `dms-shell-bin` with `dms-shell`
 
 Who:
 Existing installs that still have `dms-shell-bin` installed.
@@ -213,7 +291,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs now install `dms-shell` in the normal DMS setup step.
 
-## 2026-03 Refresh Zed Settings
+## 25. marts 2026 - Refresh Zed Settings
 
 Who:
 Existing installs whose local `~/.config/zed/settings.json` was preserved and therefore did not pick up the current tracked Zed settings.
@@ -233,7 +311,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs already deploy the current tracked Zed settings.
 
-## 2026-03 Refresh Preserved Tracked Base Configs
+## 18. marts 2026 - Refresh Preserved Tracked Base Configs
 
 Who:
 Existing installs whose local configs were preserved during updates and now need selected tracked files from `configs/base` replayed into `$HOME`.
@@ -268,7 +346,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs already deploy the current tracked base configs.
 
-## 2026-03 Migrate Zsh Plugins from Zinit to Sheldon
+## 16. marts 2026 - Migrate Zsh Plugins from Zinit to Sheldon
 
 Who:
 Existing installs that already use the old Zinit-based Niriland shell config.
@@ -300,7 +378,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs get `sheldon` from `packages/cachyos.packages` and the tracked TOML through normal config deployment.
 
-## 2026-03 Remove `faugus-launcher`
+## 14. marts 2026 - Remove `faugus-launcher`
 
 Who:
 Existing installs that ran the older Niriland gaming setup and still have `faugus-launcher` installed.
@@ -321,7 +399,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs no longer include `faugus-launcher` in `niriland-setup-gaming`.
 
-## 2026-03 Refresh Wallpaper Filenames
+## 13. marts 2026 - Refresh Wallpaper Filenames
 
 Who:
 Existing installs that already synced the old wallpaper filenames into `~/Pictures/Wallpapers`.
@@ -346,7 +424,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs only see the renamed wallpaper files.
 
-## 2026-03 Refresh Zed Keymap
+## 13. marts 2026 - Refresh Zed Keymap
 
 Who:
 Existing installs whose local `~/.config/zed/keymap.json` was preserved and therefore did not pick up the current tracked Zed shortcuts.
@@ -368,7 +446,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs already deploy the current tracked Zed keymap.
 
-## 2026-03 Update DankMaterialShell Suspend Settings
+## 13. marts 2026 - Update DankMaterialShell Suspend Settings
 
 Who:
 Existing installs whose local `~/.config/DankMaterialShell/settings.json` was preserved and therefore did not pick up the new suspend defaults.
@@ -393,7 +471,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs already get these values from the tracked DMS settings.
 
-## 2026-03 Refresh Deployed `niriland-update`
+## 13. marts 2026 - Refresh Deployed `niriland-update`
 
 Who:
 Existing installs whose deployed `~/.local/bin/niriland/niriland-update` still uses old step patterns and therefore does not refresh the tools directory correctly.
@@ -413,7 +491,7 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs already deploy the current tool directory.
 
-## 2026-03 Snapper Retention
+## 13. marts 2026 - Snapper Retention
 
 Who:
 Existing installs from before `07-setup-snapper` was added.
@@ -439,7 +517,7 @@ What it changes:
 Fresh installs:
 Not needed manually. New installs already run `07-setup-snapper`.
 
-## 2026-03 Remove Global Mise Python
+## 13. marts 2026 - Remove Global Mise Python
 
 Who:
 Existing installs from before the shared `mise` config stopped setting Python globally.

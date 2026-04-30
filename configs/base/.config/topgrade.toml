@@ -28,7 +28,11 @@ pre_sudo = true
 # sudo_command = "sudo"
 
 # Disable specific steps - same options as the command line flag
-# disable = ["system", "emacs"]
+# Bun itself is managed by mise; keep bun_packages enabled for global packages.
+# Poetry is not part of the baseline mise toolset; a stale mise shim makes Topgrade probe it noisily.
+# The built-in node/npm step follows the active mise Node; system npm globals are updated explicitly below.
+# Docker/Podman images are managed manually or outside this workstation.
+disable = ["bun", "poetry", "node", "containers"]
 
 # Run these steps before all others
 # first = ["chezmoi"]
@@ -128,17 +132,20 @@ notify_end = "on_failure"
 # Commands to run before anything
 [pre_commands]
 # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
+"Snapper Pre Snapshot" = 'pre_number_file="${XDG_RUNTIME_DIR:-/tmp}/topgrade-snapper-pre-number"; sudo snapper -c root create --print-number --type pre --description topgrade > "$pre_number_file"'
 
 
 # Commands to run after anything
 [post_commands]
 # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
+"Snapper Post Snapshot" = 'pre_number_file="${XDG_RUNTIME_DIR:-/tmp}/topgrade-snapper-pre-number"; if [ -s "$pre_number_file" ]; then sudo snapper -c root create --type post --pre-number "$(cat "$pre_number_file")" --description topgrade; rm -f "$pre_number_file"; else sudo snapper -c root create --description topgrade; fi; if command -v limine-snapper-sync >/dev/null 2>&1; then sudo limine-snapper-sync; fi'
 
 
 # Custom commands
 [commands]
 # "Python Environment" = "~/dev/.env/bin/pip install -i https://pypi.python.org/simple -U --upgrade-strategy eager jupyter"
 # "Custom command using interactive shell (unix)" = "-i vim_upgrade"
+"System npm global packages" = "sudo env PATH=/usr/bin:/bin /usr/bin/npm update --location=global"
 
 
 [python]
@@ -393,7 +400,7 @@ yay_arguments = "--nodevel"
 # containers = ["archlinux-latest"]
 [containers]
 # Specify the containers to ignore while updating (Wildcard supported)
-ignored_containers = ["ghcr.io/open-webui/open-webui:cuda"]
+# ignored_containers = ["ghcr.io/rancher-sandbox/rancher-desktop/rdx-proxy:latest", "docker.io*"]
 # Specify the runtime to use for containers (default: "docker", allowed values: "docker", "podman")
 # runtime = "podman"
 

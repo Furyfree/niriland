@@ -29,6 +29,73 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs should already converge through the normal install path.
 
+## 30. april 2026 - Recover After Overwriting Pacman `.pacnew` Files
+
+Who:
+Existing installs where `.pacnew` files were overwritten too broadly and pacman starts failing with missing repository servers or important Niriland/CachyOS defaults are lost.
+
+Symptoms:
+
+```text
+error: failed to synchronize all databases (no servers configured for repository)
+```
+
+or `pacman-conf --repo core Server` prints no servers.
+
+Run:
+
+```bash
+# Restore DNS if /etc/resolv.conf was overwritten by a static pacnew file.
+sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+getent hosts cachyos.org
+
+# Restore the previous CachyOS/Niriland pacman config if available.
+if [[ -f /etc/pacman.conf.bak ]]; then
+  sudo cp -a /etc/pacman.conf /etc/pacman.conf.after-pacnew-overwrite
+  sudo cp -a /etc/pacman.conf.bak /etc/pacman.conf
+fi
+
+# Reapply Niriland pacman defaults, multilib, Chaotic AUR, paru config, and keyrings.
+~/.local/share/niriland/scripts/install/steps/00-setup-pacman
+
+# Restore Arch mirror servers if /etc/pacman.d/mirrorlist was overwritten without active Server lines.
+if ! pacman-conf --repo core Server >/dev/null 2>&1 || [[ -z "$(pacman-conf --repo core Server)" ]]; then
+  if [[ -f /etc/pacman.d/mirrorlist-backup ]]; then
+    sudo cp -a /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.after-pacnew-overwrite
+    sudo cp -a /etc/pacman.d/mirrorlist-backup /etc/pacman.d/mirrorlist
+  fi
+fi
+
+# Reapply the Limine/Snapper values that were lost if limine-snapper-sync.conf was overwritten.
+~/.local/share/niriland/migrations/2026-04-30.sh
+
+# If CachyOS Hello is available, run "Rank mirrors" afterwards.
+sudo pacman -Sy
+```
+
+Verify:
+
+```bash
+pacman-conf --repo-list
+pacman-conf --repo core Server
+pacman-conf --repo extra Server
+pacman-conf --repo multilib Server
+rg -n 'MAX_SNAPSHOT_ENTRIES|COMMANDS_BEFORE_SAVE|COMMANDS_AFTER_SAVE' /etc/limine-snapper-sync.conf
+pacdiff -o
+```
+
+Expected:
+
+- `sudo pacman -Sy` synchronizes all configured repositories successfully
+- `core`, `extra`, and `multilib` each have at least one server
+- `pacman-conf --repo-list` includes the expected CachyOS repos plus `core`, `extra`, `multilib`, and `chaotic-aur`
+- `/etc/limine-snapper-sync.conf` has `MAX_SNAPSHOT_ENTRIES=15`
+- `COMMANDS_BEFORE_SAVE` and `COMMANDS_AFTER_SAVE` are absent
+- `pacdiff -o` is empty
+
+Fresh installs:
+Not needed manually. This is only a recovery path after an incorrect `.pacnew` overwrite.
+
 ## 30. april 2026 - Remove Local VM Tooling
 
 Who:

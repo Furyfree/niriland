@@ -29,6 +29,77 @@ What it changes:
 Fresh installs:
 Not needed manually. Fresh installs should already converge through the normal install path.
 
+## 30. april 2026 - Remove Local VM Tooling
+
+Who:
+Existing installs that previously ran `niriland-setup-vm` but should no longer keep the local virtualization stack on that machine.
+
+Run:
+
+```bash
+for unit in \
+  libvirtd.service \
+  libvirtd.socket \
+  virtlogd.socket \
+  virtlockd.socket
+do
+  if systemctl list-unit-files --no-legend "$unit" 2>/dev/null | grep -q "^${unit}"; then
+    sudo systemctl disable --now "$unit" || true
+  fi
+  sudo systemctl reset-failed "$unit" 2>/dev/null || true
+done
+
+if command -v virsh >/dev/null 2>&1 && sudo virsh net-info default >/dev/null 2>&1; then
+  if sudo virsh net-list --name | grep -Fxq default; then
+    sudo virsh net-destroy default || true
+  fi
+
+  sudo virsh net-autostart default --disable || true
+fi
+
+if getent group libvirt >/dev/null 2>&1 && id -nG "$USER" | grep -qw libvirt; then
+  sudo gpasswd -d "$USER" libvirt || true
+fi
+
+remove_packages=()
+for package in quickgui quickemu-git virt-manager qemu-full swtpm; do
+  if pacman -Qq "$package" >/dev/null 2>&1; then
+    remove_packages+=("$package")
+  fi
+done
+
+if [[ ${#remove_packages[@]} -gt 0 ]]; then
+  sudo pacman -Rns --noconfirm "${remove_packages[@]}"
+fi
+
+if [[ -f /etc/libvirt/network.conf ]] && grep -Fxq 'firewall_backend = "iptables"' /etc/libvirt/network.conf; then
+  sudo sed -i '/^firewall_backend = "iptables"$/d' /etc/libvirt/network.conf
+fi
+
+for empty_dir in ~/.config/libvirt /var/log/libvirt /etc/libvirt; do
+  if [[ -d "$empty_dir" ]]; then
+    sudo rmdir "$empty_dir" 2>/dev/null || true
+  fi
+done
+```
+
+What it changes:
+
+- Stops and disables libvirt-related services and sockets when present
+- Stops and disables autostart for the libvirt `default` network when present
+- Removes the current user from the `libvirt` group when present
+- Removes the VM packages installed by `niriland-setup-vm`: `quickgui`, `quickemu-git`, `virt-manager`, `qemu-full`, and `swtpm`
+- Removes the Niriland-added `firewall_backend = "iptables"` line from `/etc/libvirt/network.conf`
+- Removes leftover libvirt config/log directories only when they are empty
+
+Notes:
+
+- This does not delete VM disk images or user VM directories such as `/var/lib/libvirt/images` or `~/VMs`.
+- If those exist and should be removed, inspect and delete them manually after confirming they contain no data you need.
+
+Fresh installs:
+Not needed manually. Fresh installs do not run `niriland-setup-vm` unless explicitly requested.
+
 ## 30. april 2026 - Move Limine Save Commands to Boot Hooks
 
 Who:
@@ -45,6 +116,14 @@ Run:
 
 ```bash
 sudo mkdir -p /etc/boot/hooks/pre.d /etc/boot/hooks/post.d
+
+if sudo test -f /etc/limine-snapper-sync.conf; then
+  if sudo grep -q '^MAX_SNAPSHOT_ENTRIES=' /etc/limine-snapper-sync.conf; then
+    sudo sed -i 's|^MAX_SNAPSHOT_ENTRIES=.*$|MAX_SNAPSHOT_ENTRIES=15|' /etc/limine-snapper-sync.conf
+  else
+    printf '%s\n' 'MAX_SNAPSHOT_ENTRIES=15' | sudo tee -a /etc/limine-snapper-sync.conf >/dev/null
+  fi
+fi
 
 if [[ -x /usr/bin/limine-reset-enroll ]]; then
   sudo ln -sfn /usr/bin/limine-reset-enroll /etc/boot/hooks/pre.d/10-limine-reset-enroll
@@ -68,6 +147,7 @@ sudo limine-snapper-sync
 
 What it changes:
 
+- Sets `MAX_SNAPSHOT_ENTRIES=15` in `/etc/limine-snapper-sync.conf`
 - Ensures `limine-reset-enroll` runs from `/etc/boot/hooks/pre.d`
 - Ensures `limine-enroll-config` runs from `/etc/boot/hooks/post.d`
 - Removes deprecated `COMMANDS_BEFORE_SAVE` and `COMMANDS_AFTER_SAVE` settings from Limine config files

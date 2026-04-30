@@ -142,6 +142,76 @@ remove_local_openwebui_docker() {
   fi
 }
 
+remove_local_vm_tooling() {
+  log "Removing local VM tooling if present."
+
+  local unit
+  for unit in \
+    libvirtd.service \
+    libvirtd.socket \
+    virtlogd.socket \
+    virtlockd.socket
+  do
+    if systemctl list-unit-files --no-legend "$unit" 2>/dev/null | grep -q "^${unit}"; then
+      sudo_cmd systemctl disable --now "$unit" || true
+    else
+      log "$unit is not installed, skipping."
+    fi
+    sudo_cmd systemctl reset-failed "$unit" 2>/dev/null || true
+  done
+
+  if command -v virsh >/dev/null 2>&1; then
+    if sudo_cmd virsh net-info default >/dev/null 2>&1; then
+      if sudo_cmd virsh net-list --name | grep -Fxq default; then
+        sudo_cmd virsh net-destroy default || true
+      fi
+
+      sudo_cmd virsh net-autostart default --disable || true
+    fi
+  fi
+
+  local target_user="${SUDO_USER:-${USER:-}}"
+  if [[ -n "$target_user" ]] && getent group libvirt >/dev/null 2>&1 && id -nG "$target_user" | grep -qw libvirt; then
+    sudo_cmd gpasswd -d "$target_user" libvirt || true
+  fi
+
+  local -a vm_packages=(
+    quickgui
+    quickemu-git
+    virt-manager
+    qemu-full
+    swtpm
+  )
+  local -a installed_vm_packages=()
+  local package
+  for package in "${vm_packages[@]}"; do
+    if pacman -Qq "$package" >/dev/null 2>&1; then
+      installed_vm_packages+=("$package")
+    fi
+  done
+
+  if [[ ${#installed_vm_packages[@]} -gt 0 ]]; then
+    sudo_cmd pacman -Rns --noconfirm "${installed_vm_packages[@]}"
+  else
+    log "VM packages are already absent."
+  fi
+
+  if [[ -f /etc/libvirt/network.conf ]] && grep -Fxq 'firewall_backend = "iptables"' /etc/libvirt/network.conf; then
+    sudo_cmd sed -i '/^firewall_backend = "iptables"$/d' /etc/libvirt/network.conf
+  fi
+
+  local empty_dir
+  for empty_dir in \
+    "$HOME/.config/libvirt" \
+    /var/log/libvirt \
+    /etc/libvirt
+  do
+    if [[ -d "$empty_dir" ]]; then
+      sudo_cmd rmdir "$empty_dir" 2>/dev/null || log "$empty_dir is not empty, leaving it in place."
+    fi
+  done
+}
+
 refresh_codex_desktop_entry() {
   copy_if_changed \
     "$BASE/.local/share/applications/Codex.desktop" \
@@ -212,6 +282,14 @@ migrate_limine_save_commands_to_boot_hooks() {
   log "Migrating Limine save commands to boot hooks."
 
   sudo_cmd mkdir -p /etc/boot/hooks/pre.d /etc/boot/hooks/post.d
+
+  if sudo_cmd test -f /etc/limine-snapper-sync.conf; then
+    if sudo_cmd grep -q '^MAX_SNAPSHOT_ENTRIES=' /etc/limine-snapper-sync.conf; then
+      sudo_cmd sed -i 's|^MAX_SNAPSHOT_ENTRIES=.*$|MAX_SNAPSHOT_ENTRIES=15|' /etc/limine-snapper-sync.conf
+    else
+      printf '%s\n' 'MAX_SNAPSHOT_ENTRIES=15' | sudo_cmd tee -a /etc/limine-snapper-sync.conf >/dev/null
+    fi
+  fi
 
   if [[ -x /usr/bin/limine-reset-enroll ]]; then
     if sudo_cmd test -e /etc/boot/hooks/pre.d/10-limine-reset-enroll && ! sudo_cmd test -L /etc/boot/hooks/pre.d/10-limine-reset-enroll; then
@@ -308,6 +386,7 @@ main() {
 
   migrate_claude_code_to_system_npm
   remove_local_openwebui_docker
+  remove_local_vm_tooling
   refresh_codex_desktop_entry
   stabilize_topgrade_and_helix
   refresh_zed_feature_flags

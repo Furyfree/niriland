@@ -1,6 +1,12 @@
 {
   "$schema": "zed://schemas/settings",
 
+  // --- Feature Flags ---
+  "feature_flags": {
+    "tabular-data-preview": "on",
+    "notebooks": "on"
+  },
+
   // --- Startup & Window Lifecycle ---
   "agent_servers": {
     "codex-acp": {

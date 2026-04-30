@@ -1,0 +1,5 @@
+# Override the stale gotmpl grammar source used by the packaged Helix release.
+# The old dannylongeuay/tree-sitter-go-template repository is unavailable.
+[[grammar]]
+name = "gotmpl"
+source = { git = "https://github.com/ngalaiko/tree-sitter-go-template", rev = "ca26229bafcd3f37698a2496c2a5efa2f07e86bc" }

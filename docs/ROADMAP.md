@@ -38,6 +38,8 @@ Keep entries short: problem, target state, and any important constraint.
 
 - [ ] Split optional development tooling out of the default install path and keep only true baseline developer setup in the main flow.
 
+- [ ] Recheck whether the packaged Helix `gotmpl` grammar source has moved off the unavailable `dannylongeuay/tree-sitter-go-template` repository, then remove `configs/base/.config/helix/languages.toml` if the override is no longer needed.
+
 - [ ] Add an explicit opt-in Flutter setup path with sane release resolution, browser configuration, Android prerequisites, and clear Linux versus macOS boundaries.
 
 - [ ] Standardize tool scripts around a small shared helper library instead of duplicating logging, color, and command-check boilerplate.

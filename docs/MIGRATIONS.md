@@ -9,6 +9,163 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 2026-04 Stabilize Topgrade and Helix Updates
+
+Who:
+Existing installs that already have local Topgrade or Helix configuration and should pick up the safer Topgrade defaults plus the temporary Helix `gotmpl` grammar override.
+
+Run:
+
+```bash
+mkdir -p ~/.config/helix
+cp -a ~/.local/share/niriland/configs/base/.config/topgrade.toml ~/.config/topgrade.toml
+cp -a ~/.local/share/niriland/configs/base/.config/helix/languages.toml ~/.config/helix/languages.toml
+
+rm -rf -- ~/.config/helix/runtime/grammars/sources/gotmpl
+
+helix --grammar fetch
+helix --grammar build
+
+topgrade --dry-run --config ~/.config/topgrade.toml --only helix --no-ask-retry
+topgrade --dry-run --config ~/.config/topgrade.toml --only containers --no-ask-retry
+```
+
+What it changes:
+
+- Adds tracked Topgrade config with `pre_sudo = true`, `ask_retry = false`, end notifications only on failure, `paru --nodevel`, Cargo git-package updates disabled, and the large Open WebUI CUDA image ignored by the containers step
+- Keeps normal system, language-tool, editor, and package-manager updates enabled
+- Adds a Helix `gotmpl` grammar override pointing at the available `ngalaiko/tree-sitter-go-template` repository
+- Clears the stale cached `gotmpl` grammar source so Helix refetches from the corrected upstream
+
+Fresh installs:
+Not needed manually. Fresh installs get the tracked Topgrade and Helix config through normal config deployment.
+
+## 2026-04 Refresh Zed Feature Flags
+
+Who:
+Existing installs whose local `~/.config/zed/settings.json` was preserved and therefore did not pick up the current tracked Zed feature flags.
+
+Run:
+
+```bash
+mkdir -p ~/.config/zed
+cp -a ~/.local/share/niriland/configs/base/.config/zed/settings.json ~/.config/zed/settings.json
+```
+
+What it changes:
+
+- Updates Zed to the current tracked settings from Niriland
+- Enables `tabular-data-preview`
+- Enables `notebooks`
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy the current tracked Zed settings.
+
+## 2026-04 Replace Evince with Zathura
+
+Who:
+Existing installs that still have `evince` installed or whose local `~/.config/mimeapps.list` still points document MIME types at Evince.
+
+Run:
+
+```bash
+sudo pacman -S --needed \
+  zathura \
+  zathura-pdf-mupdf \
+  zathura-cb \
+  zathura-djvu \
+  tesseract-data-eng
+
+if pacman -Qq evince >/dev/null 2>&1; then
+  sudo pacman -Rns evince
+fi
+
+mkdir -p ~/.config
+cp -a ~/.local/share/niriland/configs/base/.config/mimeapps.list ~/.config/mimeapps.list
+
+xdg-mime query default application/pdf
+```
+
+Expected:
+
+```text
+org.pwmt.zathura-pdf-mupdf.desktop
+```
+
+What it changes:
+
+- Installs Zathura with MuPDF PDF support, comic archive support, DjVu support, and explicit English OCR data
+- Removes `evince` from existing systems if it is still installed
+- Refreshes `~/.config/mimeapps.list` so PDF/ePub/OXPS documents open with Zathura's MuPDF backend
+- Sets DjVu and comic archive MIME types to the matching Zathura plugins
+
+Notes:
+
+- `zathura-pdf-mupdf` conflicts with `zathura-pdf-poppler`; this setup intentionally uses MuPDF.
+- `tesseract-data-eng` prevents pacman from prompting for an arbitrary `tessdata` provider and avoids selecting `tesseract-data-afr` by default.
+- `zathura-ps` is not installed because Niriland did not previously define a PostScript default association.
+
+Fresh installs:
+Not needed manually. Fresh installs get the Zathura package set from `packages/cachyos.packages` and the tracked MIME defaults through normal config deployment.
+
+## 2026-04 Move Codex CLI from `mise` to system npm for T3 Code
+
+Who:
+Existing installs where Codex was installed through `mise` and T3 Code cannot reliably discover or start the Codex provider from the desktop session.
+
+Symptoms:
+
+```text
+Codex app-server provider probe failed: Invalid initialize payload: Missing key at ['codexHome'].
+```
+
+or `codex` resolving to a `mise` path:
+
+```text
+/home/pby/.local/share/mise/installs/node/24.15.0/bin/codex
+```
+
+Run:
+
+```bash
+# Remove Codex from the mise-managed Node install.
+npm uninstall -g @openai/codex
+
+# Install Codex with system Node/npm. The clean PATH prevents /usr/bin/npm
+# from resolving node through mise and writing back into the mise prefix.
+sudo env PATH=/usr/bin:/bin /usr/bin/npm install -g @openai/codex
+
+# Refresh zsh command lookup and verify the system binary is used.
+rehash
+type -a codex
+which codex
+codex --version
+```
+
+Expected:
+
+```text
+codex is /usr/bin/codex
+/usr/bin/codex
+codex-cli 0.125.0
+```
+
+What it changes:
+
+- Removes the old `mise` global `@openai/codex` package
+- Installs `@openai/codex` into the system npm prefix
+- Makes GUI-launched tools such as T3 Code resolve `codex` from `/usr/bin/codex`
+
+Notes:
+
+- Keep `/home/pby/.codex`; it is Codex state and configuration, not the executable.
+- Use `/home/pby/.codex` as the T3 Code `CODEX_HOME path`.
+- In T3 Code, use `codex` as the Codex binary path and fully restart the app after this migration.
+- If `/usr/bin/npm config get prefix` still reports a `mise` path, verify with `env PATH=/usr/bin:/bin /usr/bin/npm config get prefix`; it should report `/usr`.
+
+Fresh installs:
+Not needed manually once Codex is installed through the normal system-visible package path instead of a `mise` global package.
+
 ## 2026-04 Prefer `ghostty` for `xdg-terminal-exec` in `niri`
 
 Who:
@@ -64,7 +221,8 @@ Existing installs whose local `~/.config/zed/settings.json` was preserved and th
 Run:
 
 ```bash
-bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config .config/zed/settings.json
+mkdir -p ~/.config/zed
+cp -a ~/.local/share/niriland/configs/base/.config/zed/settings.json ~/.config/zed/settings.json
 ```
 
 What it changes:
@@ -83,25 +241,29 @@ Existing installs whose local configs were preserved during updates and now need
 Run:
 
 ```bash
-bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config
+BASE=~/.local/share/niriland/configs/base
 
-bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config --list
+# List tracked base config files if needed.
+find "$BASE" \( -type f -o -type l \) | sed "s#^$BASE/##" | sort
 
-bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config dankmaterialshell-settings
+# Copy selected files directly to their matching home paths.
+mkdir -p ~/.config/DankMaterialShell
+cp -a "$BASE/.config/DankMaterialShell/settings.json" ~/.config/DankMaterialShell/settings.json
 
-bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config app-codex icon-codex
+mkdir -p ~/.local/share/applications ~/.local/share/icons
+cp -a "$BASE/.local/share/applications/Codex.desktop" ~/.local/share/applications/Codex.desktop
+cp -a "$BASE/.local/share/icons/Codex.png" ~/.local/share/icons/Codex.png
 
 # Example on running multiple at once
-bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config zed-keymap ghostty-config
+mkdir -p ~/.config/zed ~/.config/ghostty
+cp -a "$BASE/.config/zed/keymap.json" ~/.config/zed/keymap.json
+cp -a "$BASE/.config/ghostty/config" ~/.config/ghostty/config
 ```
 
 What it changes:
 
-- Copies the selected tracked file or files from `~/.local/share/niriland/configs/base` into `$HOME`
-- Backs up any replaced destination first under `~/.config/backups/niriland/base-config-sync/<timestamp>/`
-- Opens an interactive `fzf` picker when run without arguments
+- Copies selected tracked files from `~/.local/share/niriland/configs/base` into the matching path under `$HOME`
 - Covers both `~/.config/*` refreshes such as `.config/DankMaterialShell/settings.json` and `~/.local/share/*` refreshes such as `.local/share/applications/Codex.desktop`
-- Also supports explicit tracked base-config paths through positional arguments or `--path <relative-path>` for future one-off refreshes
 
 Fresh installs:
 Not needed manually. Fresh installs already deploy the current tracked base configs.
@@ -116,7 +278,9 @@ Run:
 ```bash
 sudo pacman -S --needed sheldon
 
-bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config sheldon-plugins zshrc
+mkdir -p ~/.config/sheldon
+cp -a ~/.local/share/niriland/configs/base/.config/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
+cp -a ~/.local/share/niriland/configs/base/.zshrc ~/.zshrc
 
 if pacman -Qq zinit >/dev/null 2>&1; then
   paru -Rns --noconfirm zinit
@@ -190,7 +354,8 @@ Existing installs whose local `~/.config/zed/keymap.json` was preserved and ther
 Run:
 
 ```bash
-bash ~/.local/share/niriland/scripts/tools/niriland-sync-base-config zed-keymap
+mkdir -p ~/.config/zed
+cp -a ~/.local/share/niriland/configs/base/.config/zed/keymap.json ~/.config/zed/keymap.json
 ```
 
 What it changes:

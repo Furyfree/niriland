@@ -238,7 +238,7 @@ topgrade --dry-run --config ~/.config/topgrade.toml --only containers --no-ask-r
 
 What it changes:
 
-- Adds tracked Topgrade config with `pre_sudo = true`, `ask_retry = false`, end notifications only on failure, `paru --nodevel`, Cargo git-package updates disabled, Bun self-update disabled because Bun is managed by mise, Poetry disabled because it is not part of the baseline toolset, the built-in npm step disabled because it follows the active mise Node, and container image updates disabled because Docker/Podman images are managed separately
+- Adds tracked Topgrade config with `pre_sudo = true`, `ask_retry = false`, end notifications only on failure, `paru --nodevel`, Cargo git-package updates disabled, Bun self-update disabled because Bun is managed by mise, Poetry disabled because it is not part of the baseline toolset, the built-in npm step disabled because it follows the active mise Node, container image updates disabled because Docker/Podman images are managed separately, and JetBrains IDE/plugin updates disabled because JetBrains Toolbox manages those itself
 - Adds Snapper snapshots before and after the full Topgrade run
 - Runs `limine-snapper-sync` after the post snapshot when available
 - Refreshes the DMS system updater widget as the final Topgrade post command when `dms` is available

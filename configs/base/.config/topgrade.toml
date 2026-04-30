@@ -32,7 +32,8 @@ pre_sudo = true
 # Poetry is not part of the baseline mise toolset; a stale mise shim makes Topgrade probe it noisily.
 # The built-in node/npm step follows the active mise Node; system npm globals are updated explicitly below.
 # Docker/Podman images are managed manually or outside this workstation.
-disable = ["bun", "poetry", "node", "containers"]
+# JetBrains Toolbox manages IDE and plugin updates itself; Topgrade's JetBrains steps are noisy and restart Toolbox.
+disable = ["bun", "poetry", "node", "containers", "android_studio", "jetbrains_aqua", "jetbrains_clion", "jetbrains_datagrip", "jetbrains_dataspell", "jetbrains_gateway", "jetbrains_goland", "jetbrains_idea", "jetbrains_mps", "jetbrains_phpstorm", "jetbrains_pycharm", "jetbrains_rider", "jetbrains_rubymine", "jetbrains_rustrover", "jetbrains_toolbox", "jetbrains_webstorm"]
 
 # Run these steps before all others
 # first = ["chezmoi"]

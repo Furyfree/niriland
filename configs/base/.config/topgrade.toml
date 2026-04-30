@@ -139,13 +139,14 @@ notify_end = "on_failure"
 [post_commands]
 # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
 "Snapper Post Snapshot" = 'pre_number_file="${XDG_RUNTIME_DIR:-/tmp}/topgrade-snapper-pre-number"; if [ -s "$pre_number_file" ]; then sudo snapper -c root create --type post --pre-number "$(cat "$pre_number_file")" --description topgrade; rm -f "$pre_number_file"; else sudo snapper -c root create --description topgrade; fi; if command -v limine-snapper-sync >/dev/null 2>&1; then sudo limine-snapper-sync; fi'
+"DMS System Updater Widget" = 'if command -v dms >/dev/null 2>&1; then dms ipc call systemupdater updatestatus >/dev/null 2>&1; fi'
 
 
 # Custom commands
 [commands]
 # "Python Environment" = "~/dev/.env/bin/pip install -i https://pypi.python.org/simple -U --upgrade-strategy eager jupyter"
 # "Custom command using interactive shell (unix)" = "-i vim_upgrade"
-"System npm global packages" = "sudo env PATH=/usr/bin:/bin /usr/bin/npm update --location=global"
+"Codex CLI via system npm" = "sudo env PATH=/usr/bin:/bin /usr/bin/npm install --global @openai/codex@latest"
 
 
 [python]

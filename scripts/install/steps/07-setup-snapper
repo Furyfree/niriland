@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/../lib/common"
 
 SNAPPER_CONFIG="/etc/snapper/configs/root"
 LIMINE_SNAPPER_SYNC_CONFIG="/etc/limine-snapper-sync.conf"
+LIMINE_DEFAULT_CONFIG="/etc/default/limine"
 
 set_or_append_line() {
   local file="$1"
@@ -20,6 +21,46 @@ set_or_append_line() {
   fi
 }
 
+remove_key_if_present() {
+  local file="$1"
+  local key="$2"
+
+  if run_sudo test -f "$file" && run_sudo grep -q "^${key}=" "$file"; then
+    run_sudo sed -i "/^${key}=.*$/d" "$file"
+  fi
+}
+
+ensure_boot_hook() {
+  local hook_path="$1"
+  local target="$2"
+  local current_target
+
+  if [[ ! -x "$target" ]]; then
+    warn "$target is not executable, skipping $hook_path."
+    return 0
+  fi
+
+  run_sudo mkdir -p "$(dirname "$hook_path")"
+
+  if run_sudo test -L "$hook_path"; then
+    current_target="$(run_sudo readlink "$hook_path")"
+    if [[ "$current_target" == "$target" ]]; then
+      log "$hook_path already points to $target."
+      return 0
+    fi
+
+    run_sudo ln -sfn "$target" "$hook_path"
+    return 0
+  fi
+
+  if run_sudo test -e "$hook_path"; then
+    warn "$hook_path exists and is not a symlink, leaving it unchanged."
+    return 0
+  fi
+
+  run_sudo ln -s "$target" "$hook_path"
+}
+
 [[ -f "$SNAPPER_CONFIG" ]] || die "Missing snapper config: $SNAPPER_CONFIG"
 [[ -f "$LIMINE_SNAPPER_SYNC_CONFIG" ]] || die "Missing limine-snapper-sync config: $LIMINE_SNAPPER_SYNC_CONFIG"
 
@@ -30,5 +71,15 @@ set_or_append_line "$SNAPPER_CONFIG" "NUMBER_LIMIT_IMPORTANT" '"15"'
 
 log "Configuring limine-snapper-sync retention..."
 set_or_append_line "$LIMINE_SNAPPER_SYNC_CONFIG" "MAX_SNAPSHOT_ENTRIES" '15'
+
+log "Configuring Limine save hooks..."
+ensure_boot_hook "/etc/boot/hooks/pre.d/10-limine-reset-enroll" "/usr/bin/limine-reset-enroll"
+ensure_boot_hook "/etc/boot/hooks/post.d/90-limine-enroll-config" "/usr/bin/limine-enroll-config"
+
+log "Removing deprecated Limine save command settings..."
+for file in "$LIMINE_DEFAULT_CONFIG" "$LIMINE_SNAPPER_SYNC_CONFIG"; do
+  remove_key_if_present "$file" "COMMANDS_BEFORE_SAVE"
+  remove_key_if_present "$file" "COMMANDS_AFTER_SAVE"
+done
 
 log_success "Snapper retention configured."

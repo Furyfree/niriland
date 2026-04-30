@@ -9,6 +9,137 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 30. april 2026 - Run All Migrations for This Date
+
+Who:
+Existing installs that need every migration from `30. april 2026` applied in one pass.
+
+Run:
+
+```bash
+~/.local/share/niriland/migrations/2026-04-30.sh
+```
+
+What it changes:
+
+- Runs every migration listed for `30. april 2026`
+- Applies each step idempotently so the script can be rerun on the same machine
+- Verifies the important end state after the migrations complete
+
+Fresh installs:
+Not needed manually. Fresh installs should already converge through the normal install path.
+
+## 30. april 2026 - Move Limine Save Commands to Boot Hooks
+
+Who:
+Existing installs where `limine-snapper-sync` warns that `COMMANDS_BEFORE_SAVE` and `COMMANDS_AFTER_SAVE` are deprecated.
+
+Symptoms:
+
+```text
+DEPRECATED: COMMANDS_BEFORE_SAVE and COMMANDS_AFTER_SAVE are deprecated. Use pre/post hook scripts in /etc/boot/hooks/{pre.d,post.d}/ instead.
+Remove COMMANDS_BEFORE_SAVE and COMMANDS_AFTER_SAVE from /etc/default/limine and /etc/limine-snapper-sync.conf to silence this warning.
+```
+
+Run:
+
+```bash
+sudo mkdir -p /etc/boot/hooks/pre.d /etc/boot/hooks/post.d
+
+if [[ -x /usr/bin/limine-reset-enroll ]]; then
+  sudo ln -sfn /usr/bin/limine-reset-enroll /etc/boot/hooks/pre.d/10-limine-reset-enroll
+fi
+
+if [[ -x /usr/bin/limine-enroll-config ]]; then
+  sudo ln -sfn /usr/bin/limine-enroll-config /etc/boot/hooks/post.d/90-limine-enroll-config
+fi
+
+for file in /etc/default/limine /etc/limine-snapper-sync.conf; do
+  if sudo test -f "$file"; then
+    sudo sed -i \
+      -e '/^COMMANDS_BEFORE_SAVE=.*$/d' \
+      -e '/^COMMANDS_AFTER_SAVE=.*$/d' \
+      "$file"
+  fi
+done
+
+sudo limine-snapper-sync
+```
+
+What it changes:
+
+- Ensures `limine-reset-enroll` runs from `/etc/boot/hooks/pre.d`
+- Ensures `limine-enroll-config` runs from `/etc/boot/hooks/post.d`
+- Removes deprecated `COMMANDS_BEFORE_SAVE` and `COMMANDS_AFTER_SAVE` settings from Limine config files
+- Refreshes `/boot/limine.conf` without the deprecated-command warning
+
+Fresh installs:
+Not needed manually. Fresh installs now configure these hooks through `07-setup-snapper`.
+
+## 30. april 2026 - Move Claude Code from `mise` and local npm to system npm for T3 Code
+
+Who:
+Existing installs where Claude Code is installed through `mise` or the old `~/.local` npm prefix, causing desktop-launched tools to resolve a different Claude binary than the interactive shell.
+
+Symptoms:
+
+```text
+Warning: Multiple installations found
+- npm-global at /home/pby/.local/share/mise/installs/node/24.15.0/bin/claude (currently running)
+- native at /home/pby/.local/bin/claude
+```
+
+or `claude` resolving to a `mise` path:
+
+```text
+/home/pby/.local/share/mise/installs/node/24.15.0/bin/claude
+```
+
+Run:
+
+```bash
+# Remove Claude Code from the active Node install, which is usually mise here.
+npm uninstall -g @anthropic-ai/claude-code
+
+# Remove the older ~/.local npm-prefix install used by niriland-setup-ai.
+npm uninstall -g --prefix "$HOME/.local" @anthropic-ai/claude-code
+
+# Install Claude Code with system Node/npm. The clean PATH prevents /usr/bin/npm
+# from resolving node through mise and writing back into the mise prefix.
+sudo env PATH=/usr/bin:/bin /usr/bin/npm install -g @anthropic-ai/claude-code
+
+# Refresh zsh command lookup and verify the system binary is used.
+rehash
+type -a claude
+which claude
+claude --version
+```
+
+Expected:
+
+```text
+claude is /usr/bin/claude
+/usr/bin/claude
+2.1.123 (Claude Code)
+```
+
+What it changes:
+
+- Removes the old `mise` global `@anthropic-ai/claude-code` package
+- Removes the older `~/.local` npm-prefix Claude Code install
+- Installs `@anthropic-ai/claude-code` into the system npm prefix
+- Makes GUI-launched tools such as T3 Code resolve `claude` from `/usr/bin/claude`
+- Avoids Topgrade's Claude Code updater warning about multiple installations
+
+Notes:
+
+- Keep `/home/pby/.claude`; it is Claude Code state and configuration, not the executable.
+- In T3 Code, use `claude` as the Claude binary path and fully restart the app after this migration.
+- If `/usr/bin/npm config get prefix` still reports a `mise` path, verify with `env PATH=/usr/bin:/bin /usr/bin/npm config get prefix`; it should report `/usr`.
+
+Fresh installs:
+Not needed manually once Claude Code is installed through the normal system-visible package path instead of a `mise` or `~/.local` global package.
+
 ## 30. april 2026 - Remove Local OpenWebUI Docker Instance
 
 Who:
@@ -110,7 +241,8 @@ What it changes:
 - Adds tracked Topgrade config with `pre_sudo = true`, `ask_retry = false`, end notifications only on failure, `paru --nodevel`, Cargo git-package updates disabled, Bun self-update disabled because Bun is managed by mise, Poetry disabled because it is not part of the baseline toolset, the built-in npm step disabled because it follows the active mise Node, and container image updates disabled because Docker/Podman images are managed separately
 - Adds Snapper snapshots before and after the full Topgrade run
 - Runs `limine-snapper-sync` after the post snapshot when available
-- Adds a custom system npm global update command using `/usr/bin/npm`
+- Refreshes the DMS system updater widget as the final Topgrade post command when `dms` is available
+- Adds a custom Codex CLI update command using `/usr/bin/npm`
 - Keeps normal system, language-tool, editor, and package-manager updates enabled
 - Adds a Helix `gotmpl` grammar override pointing at the available `ngalaiko/tree-sitter-go-template` repository
 - Clears the stale cached `gotmpl` grammar source so Helix refetches from the corrected upstream
@@ -508,6 +640,7 @@ sudo snapper list | tail -n +3 | wc -l
 What it changes:
 
 - Sets `MAX_SNAPSHOT_ENTRIES=15` in `/etc/limine-snapper-sync.conf`
+- Ensures Limine save commands run through `/etc/boot/hooks/{pre.d,post.d}` instead of deprecated config keys
 - Sets `NUMBER_MIN_AGE="86400"` in `/etc/snapper/configs/root`
 - Sets `NUMBER_LIMIT="15"` in `/etc/snapper/configs/root`
 - Sets `NUMBER_LIMIT_IMPORTANT="15"` in `/etc/snapper/configs/root`

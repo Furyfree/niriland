@@ -34,6 +34,8 @@ Keep entries short: problem, target state, and any important constraint.
 
 - [ ] Add installer resumability so failed or interrupted runs can continue from a known point instead of replaying everything.
 
+- [ ] Re-evaluate Chaotic-AUR usage after the 2026-05-02 mirror TLS outage; prefer official CachyOS/Arch packages and keep AUR/Chaotic packages only where there is no good repo alternative.
+
 ### Tooling and maintenance
 
 - [ ] Split optional development tooling out of the default install path and keep only true baseline developer setup in the main flow.

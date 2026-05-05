@@ -9,6 +9,42 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 5. maj 2026 - Pin `uv` in mise Until Latest Installs Cleanly
+
+Who:
+Existing installs whose local mise config still requests `uv = "latest"` and fails during Topgrade because `uv@0.11.9` cannot verify GitHub artifact attestations through the aqua backend.
+
+Symptoms:
+
+```text
+mise ERROR Failed to install aqua:astral-sh/uv@latest: No GitHub artifact attestations found for aqua:astral-sh/uv@0.11.9, but they are expected per aqua registry configuration
+```
+
+Run:
+
+```bash
+mkdir -p ~/.config/mise
+cp -a ~/.local/share/niriland/configs/base/.config/mise/config.toml ~/.config/mise/config.toml
+
+mise ls uv
+topgrade --only mise
+```
+
+Expected:
+
+```text
+uv    0.11.8   ~/.config/mise/config.toml  0.11.8
+```
+
+What it changes:
+
+- Refreshes the local mise config from the latest tracked Niriland copy in `~/.local/share/niriland`
+- Pins `uv` to `0.11.8` instead of tracking `latest`
+- Keeps Topgrade's mise step from failing on the current `uv@0.11.9` attestation mismatch
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy the current tracked mise config.
+
 ## 30. april 2026 - Run All Migrations for This Date
 
 Who:

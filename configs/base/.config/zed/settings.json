@@ -290,6 +290,9 @@
   "buffer_font_family": "JetBrainsMono Nerd Font",
   "buffer_font_weight": 400.0,
   "buffer_font_size": 15.0,
+  "buffer_font_features": {
+    "calt": false
+  },
   "buffer_line_height": "comfortable",
   "icon_theme": "Material Icon Theme",
   "theme": {
@@ -330,6 +333,9 @@
     "font_family": "JetBrainsMono Nerd Font",
     "font_size": 15.0,
     "font_weight": 400.0,
+    "font_features": {
+      "calt": false
+    },
     "working_directory": "current_project_directory",
     "shell": "system",
     "button": true,

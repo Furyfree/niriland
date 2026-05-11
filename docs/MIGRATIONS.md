@@ -9,6 +9,29 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 11. maj 2026 - Refresh VSCodium Zed-Style Layout Settings
+
+Who:
+Existing installs whose local VSCodium settings predate the Zed-style layout baseline.
+
+Run:
+
+```bash
+~/.local/share/niriland/migrations/2026-05-11-vscodium-zed-layout.sh
+```
+
+What it changes:
+
+- Copies `~/.local/share/niriland/configs/base/.config/VSCodium/User/settings.json` to `~/.config/VSCodium/User/settings.json`
+- Copies `~/.local/share/niriland/configs/base/.config/VSCodium/User/keybindings.json` to `~/.config/VSCodium/User/keybindings.json`
+- Backs up the existing local VSCodium user files under `~/.config/backups/niriland/migrations/`
+- Moves the primary VSCodium sidebar to the right for explorer/source control
+- Keeps the panel on the bottom for the terminal and keeps the secondary side bar available for AI views
+- Maps `ctrl+shift+b` to the right dock and `ctrl+shift+a` to the AI/auxiliary side
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy the current tracked VSCodium settings and keybindings.
+
 ## 5. maj 2026 - Pin `uv` in mise Until Latest Installs Cleanly
 
 Who:

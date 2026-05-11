@@ -18,10 +18,16 @@
 
     // --- Workbench Layout ---
     "workbench.activityBar.location": "top",
+    "workbench.sideBar.location": "right",
+    "workbench.secondarySideBar.defaultVisibility": "visibleInWorkspace",
+    "workbench.panel.defaultLocation": "bottom",
+    "workbench.panel.opensMaximized": "never",
     "workbench.layoutControl.enabled": true,
     "workbench.statusBar.visible": true,
     "workbench.tips.enabled": false,
     "workbench.iconTheme": "material-icon-theme",
+    "workbench.editor.showIcons": false,
+    "workbench.editor.tabCloseButton": "right",
 
     // --- Theme ---
     "workbench.colorTheme": "Dynamic Base16 DankShell",
@@ -50,6 +56,7 @@
 
     // --- Files & Explorer ---
     "files.autoSave": "afterDelay",
+    "explorer.openEditors.visible": 0,
     "explorer.confirmDelete": false,
 
     // --- Git ---

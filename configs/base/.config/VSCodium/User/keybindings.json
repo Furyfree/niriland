@@ -12,8 +12,12 @@
 
     // --- Workbench Views & Panels ---
     {
-        "key": "ctrl+shift+b",
+        "key": "ctrl+shift+a",
         "command": "workbench.action.toggleAuxiliaryBar"
+    },
+    {
+        "key": "ctrl+shift+b",
+        "command": "workbench.action.toggleSidebarVisibility"
     },
     {
         "key": "ctrl+shift+t",

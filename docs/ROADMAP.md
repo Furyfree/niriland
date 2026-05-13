@@ -18,7 +18,7 @@ Keep entries short: problem, target state, and any important constraint.
 
 - [ ] Make suspend-then-hibernate work on the current machine, including proper disk-backed swap, resume configuration, and optional DMS integration.
 
-- [ ] Re-evaluate the default package set for terminal multiplexing and document viewing, especially `tmux` or `zellij` and a possible move from `Evince` to `zathura`.
+- [ ] Re-evaluate the default package set for terminal multiplexing and document viewing, especially `tmux` or `zellij`, and configure Zathura as a polished default PDF viewer.
 
 - [ ] Trim `~/.config/environment.d/90-dms.conf` down to variables that still matter and remove overrides that are now redundant or misleading.
 
@@ -41,6 +41,8 @@ Keep entries short: problem, target state, and any important constraint.
 - [ ] Split optional development tooling out of the default install path and keep only true baseline developer setup in the main flow.
 
 - [ ] Recheck whether the packaged Helix `gotmpl` grammar source has moved off the unavailable `dannylongeuay/tree-sitter-go-template` repository, then remove `configs/base/.config/helix/languages.toml` if the override is no longer needed.
+
+- [ ] Make Zed smarter for Typst work, especially opening generated PDFs in the default viewer without first landing on Zed's binary-file error tab.
 
 - [ ] Add an explicit opt-in Flutter setup path with sane release resolution, browser configuration, Android prerequisites, and clear Linux versus macOS boundaries.
 

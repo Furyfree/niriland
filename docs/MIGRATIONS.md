@@ -9,6 +9,28 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 13. maj 2026 - Enable Tinymist PDF Export in Zed
+
+Who:
+Existing installs whose local Zed settings predate the Tinymist PDF export baseline.
+
+Run:
+
+```bash
+mkdir -p ~/.config/zed ~/.config/backups/niriland/migrations
+cp -a ~/.config/zed/settings.json ~/.config/backups/niriland/migrations/zed-settings-before-tinymist-pdf-export.json
+cp -a ~/.local/share/niriland/configs/base/.config/zed/settings.json ~/.config/zed/settings.json
+```
+
+What it changes:
+
+- Refreshes the local Zed settings from the latest tracked Niriland copy in `~/.local/share/niriland`
+- Configures Tinymist to export PDFs on save
+- Writes Tinymist PDF output beside the source using `$dir/$name`
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy the current tracked Zed settings.
+
 ## 11. maj 2026 - Refresh VSCodium Zed-Style Layout Settings
 
 Who:

@@ -198,6 +198,14 @@
   "go_to_definition_fallback": "find_all_references",
   "lsp_document_colors": "inlay",
   "lsp_highlight_debounce": 100,
+  "lsp": {
+    "tinymist": {
+      "settings": {
+        "exportPdf": "onSave",
+        "outputPath": "$dir/$name"
+      }
+    }
+  },
   "inlay_hints": {
     "enabled": false,
     "show_background": false,

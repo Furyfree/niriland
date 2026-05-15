@@ -46,6 +46,8 @@ Keep entries short: problem, target state, and any important constraint.
 
 - [ ] Add an explicit opt-in Flutter setup path with sane release resolution, browser configuration, Android prerequisites, and clear Linux versus macOS boundaries.
 
+- [ ] Add `rustup target add i686-unknown-linux-gnu` to the relevant setup path so lib32 AUR builds that need Rust can complete.
+
 - [ ] Standardize tool scripts around a small shared helper library instead of duplicating logging, color, and command-check boilerplate.
 
 ## Recently completed work

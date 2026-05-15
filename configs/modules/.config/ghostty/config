@@ -32,6 +32,7 @@ keybind = super+control+shift+alt+arrow_right=resize_split:right,100
 
 # Mouse scrolling speed
 mouse-scroll-multiplier = 2.0
+mouse-reporting = false
 
 # Copy selection to PRIMARY only. Middle-click paste uses PRIMARY;
 # Ctrl+Shift+C/V still use the regular clipboard.

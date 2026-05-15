@@ -23,7 +23,7 @@ cursor-style-blink = false
 shell-integration-features = no-cursor,ssh-env
 
 # Keyboard bindings
-keybind = shift+insert=paste_from_clipboard
+keybind = shift+insert=paste_from_selection
 keybind = control+insert=copy_to_clipboard
 keybind = super+control+shift+alt+arrow_down=resize_split:down,100
 keybind = super+control+shift+alt+arrow_up=resize_split:up,100
@@ -32,4 +32,8 @@ keybind = super+control+shift+alt+arrow_right=resize_split:right,100
 
 # Mouse scrolling speed
 mouse-scroll-multiplier = 2.0
+
+# Copy selection to both PRIMARY selection and regular clipboard. Middle-click
+# paste uses PRIMARY; Ctrl+Shift+V uses the regular clipboard.
+copy-on-select = clipboard
 config-file = keybindings

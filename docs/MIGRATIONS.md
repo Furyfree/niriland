@@ -9,6 +9,33 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 15. maj 2026 - Add Default Zathura Config
+
+Who:
+Existing installs that already had Niriland's Zathura packages and MIME defaults, but do not have the tracked default `~/.config/zathura/zathurarc`.
+
+Run:
+
+```bash
+mkdir -p ~/.config/zathura ~/.config/backups/niriland/migrations
+
+if [[ -f ~/.config/zathura/zathurarc ]]; then
+  cp -a ~/.config/zathura/zathurarc ~/.config/backups/niriland/migrations/zathurarc-before-niriland-default
+fi
+
+cp -a ~/.local/share/niriland/configs/base/.config/zathura/zathurarc ~/.config/zathura/zathurarc
+```
+
+What it changes:
+
+- Adds Niriland's tracked default Zathura config
+- Opens documents fitted to window width
+- Copies selected text to the regular clipboard
+- Uses a minimal dark Zathura UI while leaving document rendering unchanged by default
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy the tracked Zathura config.
+
 ## 13. maj 2026 - Enable Tinymist PDF Export in Zed
 
 Who:

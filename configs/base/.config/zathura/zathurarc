@@ -1,0 +1,35 @@
+# Niriland default Zathura config
+
+# Reading defaults
+set adjust-open "width"
+set selection-clipboard "clipboard" # options: "clipboard", "primary", "false"
+set selection-notification false
+set window-title-basename true
+set statusbar-basename true
+set statusbar-home-tilde true
+set font "Inter 10"
+
+# Keep documents unchanged by default, but make toggled recolor comfortable.
+set recolor false
+set recolor-lightcolor "#111318"
+set recolor-darkcolor "#f2f4f8"
+set recolor-keephue true
+
+# Minimal dark UI.
+set default-bg "#111318"
+set default-fg "#e7eaf0"
+set statusbar-bg "#181b21"
+set statusbar-fg "#d8dee9"
+set inputbar-bg "#181b21"
+set inputbar-fg "#e7eaf0"
+set notification-bg "#181b21"
+set notification-fg "#e7eaf0"
+set completion-highlight-bg "#2d5f8b"
+set completion-highlight-fg "#f6f8fb"
+set index-active-bg "#2d5f8b"
+set index-active-fg "#f6f8fb"
+set highlight-color "rgba(143,179,255,0.35)"
+set highlight-active-color "rgba(255,196,87,0.55)"
+
+map <C-r> reload
+map <C-i> recolor

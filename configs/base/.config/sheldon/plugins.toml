@@ -1,29 +1,46 @@
 shell = "zsh"
 
+# Shared: already in Niriland, also used by Radley.
 [plugins.zsh-autosuggestions]
 github = "zsh-users/zsh-autosuggestions"
 
-[plugins.zsh-syntax-highlighting]
-github = "zsh-users/zsh-syntax-highlighting"
-
+# Niriland: completion functions used before compinit.
 [plugins.zsh-completions]
 github = "zsh-users/zsh-completions"
 
+# Niriland: richer completion UI.
 [plugins.fzf-tab]
 github = "Aloxaf/fzf-tab"
 
+# Niriland: warns when aliases exist for commands.
 [plugins.you-should-use]
 github = "MichaelAquilina/zsh-you-should-use"
 
+# Niriland: selected Oh My Zsh git helpers.
 [plugins.ohmyzsh-lib-git]
 github = "ohmyzsh/ohmyzsh"
 dir = "lib"
 use = ["git.zsh"]
 
+# Niriland: Oh My Zsh git aliases/functions.
 [plugins.ohmyzsh-plugin-git]
 github = "ohmyzsh/ohmyzsh"
 dir = "plugins/git"
 
+# Niriland: 1Password shell integration.
 [plugins.ohmyzsh-plugin-1password]
 github = "ohmyzsh/ohmyzsh"
 dir = "plugins/1password"
+
+# Radley: faster syntax highlighting. Replaces zsh-syntax-highlighting.
+[plugins.fast-syntax-highlighting]
+github = "zdharma-continuum/fast-syntax-highlighting"
+
+# Radley: up/down history search by current buffer.
+[plugins.zsh-history-substring-search]
+github = "zsh-users/zsh-history-substring-search"
+
+# Radley: vi mode. Kept disabled for now because Niriland currently uses
+# Bash/Emacs-style keybindings in configs/base/.config/zsh/bindings.zsh.
+# [plugins.zsh-vi-mode]
+# github = "jeffreytse/zsh-vi-mode"

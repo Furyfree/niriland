@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Messenger
+Comment=Messenger Web App
+Exec=niriland-launch-webapp https://www.facebook.com/messages/
+Terminal=false
+Type=Application
+Icon=Messenger
+StartupNotify=true
+Categories=Network;Chat;

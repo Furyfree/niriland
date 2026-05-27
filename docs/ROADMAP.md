@@ -16,6 +16,8 @@ Keep entries short: problem, target state, and any important constraint.
 
 - [ ] Decide whether a custom DMS launcher plugin is worth keeping for personal script entries, or whether desktop entries are sufficient.
 
+- [ ] Replace or crop the Messenger desktop icon so the logo renders larger in launchers.
+
 - [ ] Make suspend-then-hibernate work on the current machine, including proper disk-backed swap, resume configuration, and optional DMS integration.
 
 - [ ] Re-evaluate the default package set for terminal multiplexing and document viewing, especially `tmux` or `zellij`, and configure Zathura as a polished default PDF viewer.

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Outlook
+Comment=Outlook Web App
+Exec=niriland-launch-webapp https://outlook.office.com/mail/
+Terminal=false
+Type=Application
+Icon=Outlook
+StartupNotify=true
+Categories=Network;Email;

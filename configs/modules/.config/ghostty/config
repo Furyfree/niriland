@@ -17,6 +17,7 @@ background-blur = true
 # Cursor styling
 cursor-style = "block"
 cursor-style-blink = false
+cursor-click-to-move = false
 
 # Cursor styling + SSH session terminfo
 # (all shell integration options must be passed together)

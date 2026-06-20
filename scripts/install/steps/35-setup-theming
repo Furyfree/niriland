@@ -30,6 +30,7 @@ set_gsetting() {
 # GTK theme
 set_gsetting org.gnome.desktop.interface gtk-theme "adw-gtk3-dark"
 set_gsetting org.gnome.desktop.interface color-scheme "prefer-dark"
+set_gsetting org.gnome.desktop.interface gtk-enable-primary-paste true
 
 # Icons
 set_gsetting org.gnome.desktop.interface icon-theme "Papirus-Dark"

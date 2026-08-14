@@ -87,11 +87,11 @@ tar -xf /tmp/flutter-sdk.tar.xz -C "$HOME/develop"
 grep -qxF 'export PATH="$HOME/develop/flutter/bin:$PATH"' "$HOME/.zshenv" 2>/dev/null || \
   echo 'export PATH="$HOME/develop/flutter/bin:$PATH"' >> "$HOME/.zshenv"
 
-grep -qxF 'export CHROME_EXECUTABLE=/usr/bin/helium-browser' "$HOME/.zshenv" 2>/dev/null || \
-  echo 'export CHROME_EXECUTABLE=/usr/bin/helium-browser' >> "$HOME/.zshenv"
+grep -qxF 'export CHROME_EXECUTABLE=/usr/bin/brave-origin' "$HOME/.zshenv" 2>/dev/null || \
+  echo 'export CHROME_EXECUTABLE=/usr/bin/brave-origin' >> "$HOME/.zshenv"
 
 export PATH="$HOME/develop/flutter/bin:$PATH"
-export CHROME_EXECUTABLE=/usr/bin/helium-browser
+export CHROME_EXECUTABLE=/usr/bin/brave-origin
 
 if [[ -d "$HOME/Android/Sdk" ]]; then
   sdkmanager_path=""

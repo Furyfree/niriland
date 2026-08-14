@@ -2,6 +2,10 @@
 
 Niriland is my personal CachyOS-first desktop setup and bootstrap repo for Niri + DankMaterialShell. It includes package lists, configs, and helper scripts. The repo is public so other people can inspect it and try it, but it is not meant to be a general Linux installer.
 
+> **Project status:** Niriland is in maintenance mode and is being superseded by
+> Nimbus. Existing setups may still receive small fixes, but new platform work is
+> moving to Nimbus.
+
 > **Warning**
 >
 > - This is a **fresh-install tool**. It overwrites system and user configs. Do not run on an existing customized system without understanding what each step does.
@@ -23,7 +27,7 @@ git clone https://github.com/Furyfree/niriland.git ~/.local/share/niriland
 ~/.local/share/niriland/install
 ```
 
-Post-install note: after your first successful login into Niri, reboot one more time. Some systems do not start all user-session autostarts/services (`niriusd`, `1Password`, `JetBrains Toolbox`) until the second boot.
+Post-install note: after your first successful login into Niri, reboot one more time. Some systems do not start all user-session autostarts/services (`niriusd`, `1Password`) until the second boot. JetBrains Toolbox remains installed but does not start automatically.
 
 ## Requirements
 
@@ -34,7 +38,7 @@ Post-install note: after your first successful login into Niri, reboot one more 
 
 ## What It Does
 
-After you install CachyOS by following [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md), Niriland installs the extra packages, configs, and tools used by this setup. It deploys Niri, DMS, Ghostty, and Zsh configs; sets up theming; configures dev tools like Docker, mise, Neovim/LazyVim, VSCodium, and Zed; and installs optional helper scripts for AI, gaming, VMs, fingerprint auth, and more.
+After you install CachyOS by following [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md), Niriland installs the extra packages, configs, and tools used by this setup. It deploys Niri, DMS, Ghostty, and Zsh configs; sets up theming; installs Brave Origin and Zen Browser; configures dev tools like Docker, mise, Neovim/LazyVim, VSCodium, and Zed; and installs optional helper scripts for AI, gaming, VMs, fingerprint auth, and more.
 
 For known issues and operational fixes, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 For one-time migration steps on older setups, see [docs/MIGRATIONS.md](docs/MIGRATIONS.md).
@@ -146,6 +150,7 @@ Optional follow-up helpers:
 - gaming
 - WoW
 - Helix
+- Helium browser compatibility, including Widevine
 - certificates
 - fingerprint auth
 - virtualization

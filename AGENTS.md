@@ -12,6 +12,13 @@ The repository is expected to live at `~/.local/share/niriland`. Some tracked
 configuration references shared fragments from that exact path, so avoid changing
 path assumptions unless the whole runtime model is being updated.
 
+## Maintenance Status
+
+- Niriland is in maintenance mode and is being superseded by Nimbus.
+- Work directly on `main` unless the user explicitly requests a branch.
+- Keep maintenance changes narrow; do not start new platform work here unless the
+  user explicitly asks for it.
+
 ## Repository Layout
 
 - `bootstrap` clones or updates the repo and starts the installer.

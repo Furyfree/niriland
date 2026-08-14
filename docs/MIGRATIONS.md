@@ -9,6 +9,109 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
+## 14. august 2026 - Disable JetBrains Toolbox Autostart
+
+Who:
+Existing installs where JetBrains Toolbox created
+`~/.config/autostart/jetbrains-toolbox.desktop` and starts automatically with
+the graphical session.
+
+Run:
+
+```bash
+mkdir -p \
+  ~/.config/autostart \
+  ~/.config/backups/niriland/migrations \
+  ~/.local/share/applications
+
+if [[ -f ~/.config/autostart/jetbrains-toolbox.desktop ]]; then
+  cp -a \
+    ~/.config/autostart/jetbrains-toolbox.desktop \
+    ~/.config/backups/niriland/migrations/jetbrains-toolbox-autostart.desktop
+fi
+
+cp -a \
+  ~/.local/share/niriland/configs/base/.config/autostart/jetbrains-toolbox.desktop \
+  ~/.config/autostart/jetbrains-toolbox.desktop
+cp -a \
+  ~/.local/share/niriland/configs/base/.local/share/applications/jetbrains-toolbox.desktop \
+  ~/.local/share/applications/jetbrains-toolbox.desktop
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database ~/.local/share/applications
+fi
+
+systemctl --user daemon-reload
+```
+
+What it changes:
+
+- Backs up an existing Toolbox-created autostart entry
+- Deploys a user application entry that overrides the packaged desktop entry
+- Deploys the matching XDG autostart entry with `Hidden=true` and autostart
+  disabled
+- Prevents Toolbox from starting in future graphical sessions without stopping
+  an instance that is already running
+
+Fresh installs:
+Not needed manually. Fresh installs already deploy both tracked Toolbox desktop
+entries.
+
+## 14. august 2026 - Replace Helium with Brave Origin
+
+Who:
+Existing installs that still use Helium as the default browser.
+
+Run:
+
+```bash
+sudo pacman -S --needed brave-origin-bin
+
+xdg-settings set default-web-browser brave-origin.desktop
+xdg-mime default brave-origin.desktop text/html
+xdg-mime default brave-origin.desktop x-scheme-handler/http
+xdg-mime default brave-origin.desktop x-scheme-handler/https
+
+if [[ -f ~/.zshenv ]]; then
+  sed -i 's|/usr/bin/helium-browser|/usr/bin/brave-origin|g' ~/.zshenv
+fi
+
+sudo mkdir -p /etc/1password
+sudo touch /etc/1password/custom_allowed_browsers
+# Replace the old browser entries without removing unrelated custom browsers.
+sudo sed -i \
+  -e '/^helium$/d' \
+  -e '/^brave-origin$/d' \
+  -e '/^zen-bin$/d' \
+  /etc/1password/custom_allowed_browsers
+printf "brave-origin\nzen-bin\n" | sudo tee -a /etc/1password/custom_allowed_browsers >/dev/null
+
+# Package manifests install additions but do not uninstall packages removed from
+# the manifests, so clean up the old browser packages when they are present.
+old_browser_packages=()
+for package in helium-browser-bin chromium-widevine; do
+  pacman -Qq "$package" >/dev/null 2>&1 && old_browser_packages+=("$package")
+done
+if (( ${#old_browser_packages[@]} > 0 )); then
+  sudo pacman -Rns "${old_browser_packages[@]}"
+fi
+
+bash ~/.local/share/niriland/scripts/install/steps/50-setup-tools
+```
+
+What it changes:
+
+- Installs Brave Origin from the CachyOS repository and removes Helium
+- Removes the Helium-only `chromium-widevine` package and manual DRM setup;
+  Brave manages Widevine through its component updater
+- Makes `brave-origin.desktop` the default handler for web content
+- Updates Flutter and 1Password integration to use the `brave-origin` executable
+- Preserves any unrelated entries in 1Password's custom browser allowlist
+- Refreshes the deployed browser helper scripts
+
+Fresh installs:
+Not needed manually. Fresh installs already use Brave Origin.
+
 ## 15. maj 2026 - Add Default Zathura Config
 
 Who:

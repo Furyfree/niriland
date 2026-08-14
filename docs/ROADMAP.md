@@ -104,7 +104,7 @@ Keep entries short: problem, target state, and any important constraint.
 - [x] Add updater and maintenance flows so package upgrades and selected install-step replays can be run after the initial install.
 - [x] Add `niriland-pkg`, keybinding reference docs, the guide, and the current project framing/documentation pass.
 - [x] Add editor and developer setup for Neovim/LazyVim, VSCodium, Zed, Docker, mise, PlatformIO, cargo tools, and related desktop integration.
-- [x] Add browser and password-manager integration around Helium, Zen, Widevine, and 1Password.
+- [x] Add browser and password-manager integration around Brave Origin, Zen, and 1Password.
 - [x] Move gaming, AI, certificates, fingerprint auth, and virtualization into helper tools instead of forcing them into the default install path.
 
 ### CachyOS-first pivot

@@ -166,7 +166,7 @@ Open question: Flutter-specific values currently in `~/.zshenv` should likely
 move here or to a profile-specific file:
 
 ```zsh
-export CHROME_EXECUTABLE="/usr/bin/helium-browser"
+export CHROME_EXECUTABLE="/usr/bin/brave-origin"
 ```
 
 Flutter PATH may be better in `path.zsh` or `.zprofile`, depending on whether

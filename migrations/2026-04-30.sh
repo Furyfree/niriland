@@ -285,9 +285,9 @@ migrate_limine_save_commands_to_boot_hooks() {
 
   if sudo_cmd test -f /etc/limine-snapper-sync.conf; then
     if sudo_cmd grep -q '^MAX_SNAPSHOT_ENTRIES=' /etc/limine-snapper-sync.conf; then
-      sudo_cmd sed -i 's|^MAX_SNAPSHOT_ENTRIES=.*$|MAX_SNAPSHOT_ENTRIES=15|' /etc/limine-snapper-sync.conf
+      sudo_cmd sed -i 's|^MAX_SNAPSHOT_ENTRIES=.*$|MAX_SNAPSHOT_ENTRIES=auto|' /etc/limine-snapper-sync.conf
     else
-      printf '%s\n' 'MAX_SNAPSHOT_ENTRIES=15' | sudo_cmd tee -a /etc/limine-snapper-sync.conf >/dev/null
+      printf '%s\n' 'MAX_SNAPSHOT_ENTRIES=auto' | sudo_cmd tee -a /etc/limine-snapper-sync.conf >/dev/null
     fi
   fi
 

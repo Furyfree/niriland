@@ -70,7 +70,9 @@ set_or_append_line "$SNAPPER_CONFIG" "NUMBER_LIMIT" '"15"'
 set_or_append_line "$SNAPPER_CONFIG" "NUMBER_LIMIT_IMPORTANT" '"15"'
 
 log "Configuring limine-snapper-sync retention..."
-set_or_append_line "$LIMINE_SNAPPER_SYNC_CONFIG" "MAX_SNAPSHOT_ENTRIES" '15'
+# Snapper can temporarily exceed NUMBER_LIMIT while NUMBER_MIN_AGE protects
+# recent snapshots. Let Limine cap boot entries by ESP usage without warning.
+set_or_append_line "$LIMINE_SNAPPER_SYNC_CONFIG" "MAX_SNAPSHOT_ENTRIES" 'auto'
 
 log "Configuring Limine save hooks..."
 ensure_boot_hook "/etc/boot/hooks/pre.d/10-limine-reset-enroll" "/usr/bin/limine-reset-enroll"

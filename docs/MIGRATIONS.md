@@ -300,7 +300,7 @@ Expected:
 - `sudo pacman -Sy` synchronizes all configured repositories successfully
 - `core`, `extra`, and `multilib` each have at least one server
 - `pacman-conf --repo-list` includes the expected CachyOS repos plus `core`, `extra`, `multilib`, and `chaotic-aur`
-- `/etc/limine-snapper-sync.conf` has `MAX_SNAPSHOT_ENTRIES=15`
+- `/etc/limine-snapper-sync.conf` has `MAX_SNAPSHOT_ENTRIES=auto`
 - `COMMANDS_BEFORE_SAVE` and `COMMANDS_AFTER_SAVE` are absent
 - `pacdiff -o` is empty
 
@@ -397,9 +397,9 @@ sudo mkdir -p /etc/boot/hooks/pre.d /etc/boot/hooks/post.d
 
 if sudo test -f /etc/limine-snapper-sync.conf; then
   if sudo grep -q '^MAX_SNAPSHOT_ENTRIES=' /etc/limine-snapper-sync.conf; then
-    sudo sed -i 's|^MAX_SNAPSHOT_ENTRIES=.*$|MAX_SNAPSHOT_ENTRIES=15|' /etc/limine-snapper-sync.conf
+    sudo sed -i 's|^MAX_SNAPSHOT_ENTRIES=.*$|MAX_SNAPSHOT_ENTRIES=auto|' /etc/limine-snapper-sync.conf
   else
-    printf '%s\n' 'MAX_SNAPSHOT_ENTRIES=15' | sudo tee -a /etc/limine-snapper-sync.conf >/dev/null
+    printf '%s\n' 'MAX_SNAPSHOT_ENTRIES=auto' | sudo tee -a /etc/limine-snapper-sync.conf >/dev/null
   fi
 fi
 
@@ -425,7 +425,7 @@ sudo limine-snapper-sync
 
 What it changes:
 
-- Sets `MAX_SNAPSHOT_ENTRIES=15` in `/etc/limine-snapper-sync.conf`
+- Sets `MAX_SNAPSHOT_ENTRIES=auto` in `/etc/limine-snapper-sync.conf`
 - Ensures `limine-reset-enroll` runs from `/etc/boot/hooks/pre.d`
 - Ensures `limine-enroll-config` runs from `/etc/boot/hooks/post.d`
 - Removes deprecated `COMMANDS_BEFORE_SAVE` and `COMMANDS_AFTER_SAVE` settings from Limine config files
@@ -997,7 +997,7 @@ sudo snapper list | tail -n +3 | wc -l
 
 What it changes:
 
-- Sets `MAX_SNAPSHOT_ENTRIES=15` in `/etc/limine-snapper-sync.conf`
+- Sets `MAX_SNAPSHOT_ENTRIES=auto` in `/etc/limine-snapper-sync.conf`
 - Ensures Limine save commands run through `/etc/boot/hooks/{pre.d,post.d}` instead of deprecated config keys
 - Sets `NUMBER_MIN_AGE="86400"` in `/etc/snapper/configs/root`
 - Sets `NUMBER_LIMIT="15"` in `/etc/snapper/configs/root`

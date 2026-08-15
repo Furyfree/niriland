@@ -73,7 +73,7 @@ Keep entries short: problem, target state, and any important constraint.
 #### Snapper retention defaults
 
 - [x] Fix the snapper + limine-snapper-sync defaults so snapshot retention matches the intended setup.
-  - [x] Set `MAX_SNAPSHOT_ENTRIES=15` in `/etc/limine-snapper-sync.conf`.
+  - [x] Set `MAX_SNAPSHOT_ENTRIES=auto` in `/etc/limine-snapper-sync.conf` so recent Snapper snapshots do not trigger a false limit mismatch.
   - [x] Set `NUMBER_MIN_AGE="86400"`, `NUMBER_LIMIT="15"`, and `NUMBER_LIMIT_IMPORTANT="15"` in `/etc/snapper/configs/root`.
 
 ## Earlier completed milestones

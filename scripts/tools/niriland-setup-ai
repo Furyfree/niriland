@@ -173,7 +173,7 @@ setup_ai() {
   log "Setting up local AI tools"
   install_opencode_if_missing
 
-  for baseline_tool in codex claude; do
+  for baseline_tool in codex claude grok; do
     if ! command -v "$baseline_tool" >/dev/null 2>&1; then
       warn "$baseline_tool is missing; rerun 60-setup-dev to install the shared mise tool baseline."
     fi

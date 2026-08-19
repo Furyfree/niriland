@@ -10,6 +10,10 @@ MODE="plan"
 KEEP_GAMING=false
 GAMING_MANIFEST="$REPO_ROOT/packages/gaming.packages"
 MISE_CONFIG_SOURCE="$REPO_ROOT/configs/base/.config/mise/config.toml"
+STALE_MANAGED_HOME_FILES=(
+  ".config/autostart/jetbrains-toolbox.desktop"
+  ".local/share/applications/jetbrains-toolbox.desktop"
+)
 SHARED_MANIFESTS=(
   "$REPO_ROOT/packages/base.packages"
   "$REPO_ROOT/packages/aur.packages"
@@ -233,12 +237,8 @@ for package_name in "${removal_candidates[@]}"; do
   fi
 done
 
-if [[ ${#removal_targets[@]} -eq 0 ]]; then
-  log_success "No installed packages need removal for the selected baseline."
-  exit 0
-fi
-
-simulation_db="$(mktemp -d)"
+resolved_output=""
+simulation_db=""
 cleanup_simulation() {
   if [[ -n "${simulation_db:-}" && -d "$simulation_db" ]]; then
     find "$simulation_db" -depth -delete
@@ -246,28 +246,33 @@ cleanup_simulation() {
 }
 trap cleanup_simulation EXIT
 
-cp -a /var/lib/pacman/local "$simulation_db/local"
-ln -s /var/lib/pacman/sync "$simulation_db/sync"
-if [[ ${#installed_protected[@]} -gt 0 ]]; then
-  fakeroot pacman --dbpath "$simulation_db" -D --asexplicit "${installed_protected[@]}" >/dev/null
-fi
-
-if ! resolved_output="$(fakeroot pacman --dbpath "$simulation_db" -Rs --print-format '%n' -- "${removal_targets[@]}")"; then
-  die "Pacman could not resolve the removal transaction."
-fi
-mapfile -t resolved_removals <<<"$resolved_output"
-
-for package_name in "${resolved_removals[@]}"; do
-  [[ -n "$package_name" ]] || continue
-
-  if [[ "$package_name" == lib32-* ]]; then
-    die "Refusing transaction because it would remove protected package: $package_name"
+if [[ ${#removal_targets[@]} -eq 0 ]]; then
+  log_success "No installed packages need removal for the selected baseline."
+else
+  simulation_db="$(mktemp -d)"
+  cp -a /var/lib/pacman/local "$simulation_db/local"
+  ln -s /var/lib/pacman/sync "$simulation_db/sync"
+  if [[ ${#installed_protected[@]} -gt 0 ]]; then
+    fakeroot pacman --dbpath "$simulation_db" -D --asexplicit "${installed_protected[@]}" >/dev/null
   fi
 
-  if [[ "$KEEP_GAMING" == "true" && -n "${protected_gaming_set[$package_name]:-}" ]]; then
-    die "Refusing transaction because it would remove protected gaming package: $package_name"
+  if ! resolved_output="$(fakeroot pacman --dbpath "$simulation_db" -Rs --print-format '%n' -- "${removal_targets[@]}")"; then
+    die "Pacman could not resolve the removal transaction."
   fi
-done
+  mapfile -t resolved_removals <<<"$resolved_output"
+
+  for package_name in "${resolved_removals[@]}"; do
+    [[ -n "$package_name" ]] || continue
+
+    if [[ "$package_name" == lib32-* ]]; then
+      die "Refusing transaction because it would remove protected package: $package_name"
+    fi
+
+    if [[ "$KEEP_GAMING" == "true" && -n "${protected_gaming_set[$package_name]:-}" ]]; then
+      die "Refusing transaction because it would remove protected gaming package: $package_name"
+    fi
+  done
+fi
 
 log "Selected baseline: common"
 if [[ "$KEEP_GAMING" == "true" ]]; then
@@ -277,10 +282,18 @@ else
 fi
 
 printf '\nDirect installed removal roots:\n'
-printf '  %s\n' "${removal_targets[@]}"
+if [[ ${#removal_targets[@]} -gt 0 ]]; then
+  printf '  %s\n' "${removal_targets[@]}"
+else
+  printf '  (none)\n'
+fi
 printf '\nProtected baseline roots: %d installed packages\n' "${#installed_protected[@]}"
 printf '\nResolved Pacman removal transaction:\n'
-printf '  %s\n' "${resolved_removals[@]}"
+if [[ ${#resolved_removals[@]} -gt 0 ]]; then
+  printf '  %s\n' "${resolved_removals[@]}"
+else
+  printf '  (none)\n'
+fi
 
 if [[ "$MODE" == "plan" ]]; then
   printf '\nPlan only. No files, packages, or system state were changed.\n'
@@ -311,6 +324,14 @@ cargo install --list >"$inventory_root/cargo-install-list.txt"
 if command -v mise >/dev/null 2>&1; then
   mise ls --global >"$inventory_root/mise-global.txt" 2>&1 || true
 fi
+for relative_path in "${STALE_MANAGED_HOME_FILES[@]}"; do
+  source_path="$HOME/$relative_path"
+  if [[ -e "$source_path" || -L "$source_path" ]]; then
+    backup_path="$inventory_root/home/$relative_path"
+    mkdir -p "$(dirname "$backup_path")"
+    cp -a "$source_path" "$backup_path"
+  fi
+done
 
 mise_config_target="$HOME/.config/mise/config.toml"
 mise_config_existed=false
@@ -358,15 +379,24 @@ if [[ ${#installed_protected[@]} -gt 0 ]]; then
   sudo pacman -D --asexplicit "${installed_protected[@]}"
 fi
 
-if ! apply_resolved_output="$(pacman -Rs --print-format '%n' -- "${removal_targets[@]}")"; then
-  die "Pacman could not re-resolve the removal transaction after protection."
-fi
-if [[ "$apply_resolved_output" != "$resolved_output" ]]; then
-  die "Pacman transaction changed after planning; aborting before removal."
+if [[ ${#removal_targets[@]} -gt 0 ]]; then
+  if ! apply_resolved_output="$(pacman -Rs --print-format '%n' -- "${removal_targets[@]}")"; then
+    die "Pacman could not re-resolve the removal transaction after protection."
+  fi
+  if [[ "$apply_resolved_output" != "$resolved_output" ]]; then
+    die "Pacman transaction changed after planning; aborting before removal."
+  fi
+
+  log "Starting the reviewed Pacman removal transaction."
+  sudo pacman -Rn -- "${resolved_removals[@]}"
+else
+  log "No Pacman removal transaction is needed; continuing baseline convergence."
 fi
 
-log "Starting the reviewed Pacman removal transaction."
-sudo pacman -Rn -- "${resolved_removals[@]}"
+for relative_path in "${STALE_MANAGED_HOME_FILES[@]}"; do
+  rm -f -- "$HOME/$relative_path"
+done
+log "Removed stale managed JetBrains Toolbox launchers."
 
 log "Applying shared Snapper and Limine retention settings."
 bash "$REPO_ROOT/scripts/install/steps/07-setup-snapper"

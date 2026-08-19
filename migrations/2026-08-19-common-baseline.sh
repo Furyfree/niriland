@@ -95,6 +95,7 @@ GAMING_REMOVALS=(
 SYSTEM_NPM_REMOVALS=(
   @anthropic-ai/claude-code
   @openai/codex
+  @xai-official/grok
   @vue/language-server
   bash-language-server
   svgo
@@ -351,6 +352,14 @@ if ! "$MISE_BIN" install; then
   fi
   die "Mise baseline installation failed; the pre-migration config state was restored."
 fi
+
+mise_node_npm="$("$MISE_BIN" which npm 2>/dev/null || true)"
+if [[ -x "$mise_node_npm" ]] \
+  && "$mise_node_npm" --global list --depth=0 @xai-official/grok >/dev/null 2>&1; then
+  log "Removing the superseded Node-global Grok CLI."
+  "$mise_node_npm" uninstall --global @xai-official/grok
+fi
+
 eval "$("$MISE_BIN" activate bash)"
 install_baseline_cargo_tools
 

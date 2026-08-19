@@ -45,11 +45,12 @@ Apply requires the typed phrase `APPLY COMMON BASELINE` and leaves Pacman's own
 confirmation enabled. It records package, Mise, and Cargo inventories under
 `~/.local/state/niriland/migrations/`, creates a Snapper snapshot when Snapper
 is available, installs the tracked user-local Mise and Cargo tool baseline,
-removes superseded system-owned tools, and applies the shared Snapper/Limine
-retention settings. Packages declared by the shared manifests, protected
-platform foundations, every installed `lib32` package, and the selected gaming
-profile are marked explicit before recursive removal so Pacman preserves them;
-the original explicit and dependency reason lists remain in the inventory.
+removes superseded system-owned tools and the legacy Node-global Grok CLI, and
+applies the shared Snapper/Limine retention settings. Packages declared by the
+shared manifests, protected platform foundations, every installed `lib32`
+package, and the selected gaming profile are marked explicit before recursive
+removal so Pacman preserves them; the original explicit and dependency reason
+lists remain in the inventory.
 
 The migration does not delete application data, game installations, Wine
 prefixes, saves, containers, caches, or other home-directory state. Package

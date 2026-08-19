@@ -3,6 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/install/lib/common
 source "$SCRIPT_DIR/../lib/common"
 
 log "Starting development environment setup..."
@@ -40,11 +41,11 @@ fi
 # Mise Setup
 # ====================
 log "Configuring mise..."
-install_package mise
+ensure_user_mise
 
 MISE_CONFIG="$HOME/.config/mise/config.toml"
 if [[ -f "$MISE_CONFIG" ]]; then
-  if mise install; then
+  if "$MISE_BIN" install; then
     log_success "mise runtimes installed from $MISE_CONFIG"
   else
     warn "mise install failed. You may need to run it manually after setup."
@@ -54,9 +55,9 @@ else
 fi
 
 if [ -n "${BASH_VERSION:-}" ]; then
-  eval "$(mise activate bash)"
+  eval "$("$MISE_BIN" activate bash)"
 elif [ -n "${ZSH_VERSION:-}" ]; then
-  eval "$(mise activate zsh)"
+  eval "$("$MISE_BIN" activate zsh)"
 else
   echo "Unsupported shell: $(ps -p $$ -o comm=)"
 fi
@@ -117,10 +118,7 @@ fi
 # Cargo Tools
 # ====================
 log "Installing Cargo tools..."
-require_cmd cargo
-
-cargo install cargo-update 2>/dev/null || true
-cargo install nirius 2>/dev/null || true
+install_baseline_cargo_tools
 
 # Niri user session PATH may omit ~/.cargo/bin.
 # Expose nirius/niriusd from ~/.local/bin so keybinds and startup spawns

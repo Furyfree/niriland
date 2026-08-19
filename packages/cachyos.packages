@@ -10,8 +10,6 @@ fzf
 btop
 fastfetch
 neovim
-vim
-yazi
 lazygit
 lazydocker
 fd
@@ -19,7 +17,6 @@ duf
 dust
 ripgrep
 bat
-curlie
 github-cli
 eza
 tokei
@@ -34,14 +31,10 @@ unrar
 7zip
 zip
 unzip
-mise
 playerctl
 mpv
-imv
 spotify-launcher
 obs-studio
-kdenlive
-baobab
 docker
 docker-compose
 gcc
@@ -51,12 +44,9 @@ pacman-contrib
 bluez
 bluez-utils
 ghostty
-gnome-text-editor
 loupe
 zathura
 zathura-pdf-mupdf
-zathura-cb
-zathura-djvu
 tesseract-data-eng
 pipewire-alsa
 pipewire-pulse
@@ -72,10 +62,8 @@ brave-origin-bin
 vscodium
 typst
 tinymist
-teams-for-linux
-zen-browser-bin
 vesktop
 yay
 paru
-shelly
 topgrade
+prismlauncher

@@ -7,6 +7,8 @@ set -euo pipefail
 ##############################################################################
 
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Consumers use this value after sourcing the library.
+# shellcheck disable=SC2034
 REPO_ROOT="$(cd "$LIB_DIR/../../.." && pwd)"
 
 ##############################################################################
@@ -112,6 +114,74 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
 }
 
+ensure_user_mise() {
+  local architecture
+  local asset_name
+  local downloaded_binary
+  local expected_sha256
+  local mise_version="2026.8.8"
+
+  MISE_BIN="$HOME/.local/bin/mise"
+  export MISE_BIN
+
+  if [[ -x "$MISE_BIN" ]]; then
+    log "Using user-local mise: $MISE_BIN"
+    return 0
+  fi
+
+  require_cmd curl
+  require_cmd sha256sum
+
+  architecture="$(uname -m)"
+  case "$architecture" in
+    x86_64)
+      asset_name="mise-v${mise_version}-linux-x64"
+      expected_sha256="1fce52a3656cf14bef6feeb9f0b90d545126a0bb598f0a69afbb9e4702f8f3e3"
+      ;;
+    aarch64|arm64)
+      asset_name="mise-v${mise_version}-linux-arm64"
+      expected_sha256="76f570105249348a228af9411ca8c7869cfb4ca59de2d1dc025ac53305c5f1d5"
+      ;;
+    *)
+      die "Unsupported architecture for mise bootstrap: $architecture"
+      ;;
+  esac
+
+  downloaded_binary="$(mktemp)"
+
+  if ! curl -fsSL \
+    "https://github.com/jdx/mise/releases/download/v${mise_version}/${asset_name}" \
+    -o "$downloaded_binary"; then
+    rm -f -- "$downloaded_binary"
+    die "Failed to download mise v${mise_version}."
+  fi
+
+  if ! printf '%s  %s\n' "$expected_sha256" "$downloaded_binary" \
+    | sha256sum --check --status; then
+    rm -f -- "$downloaded_binary"
+    die "Checksum verification failed for mise v${mise_version}."
+  fi
+
+  mkdir -p "$(dirname "$MISE_BIN")"
+  if ! install -m 0755 "$downloaded_binary" "$MISE_BIN"; then
+    rm -f -- "$downloaded_binary"
+    die "Failed to install user-local mise."
+  fi
+
+  rm -f -- "$downloaded_binary"
+  [[ -x "$MISE_BIN" ]] || die "mise installer did not create $MISE_BIN"
+  log_success "Installed verified mise v${mise_version}: $MISE_BIN"
+}
+
+install_baseline_cargo_tools() {
+  require_cmd cargo
+
+  cargo install --locked cargo-update
+  cargo install --locked just
+  cargo install --locked nirius
+  cargo install --locked watchexec-cli
+}
+
 ##############################################################################
 # Package Management
 ##############################################################################
@@ -172,7 +242,8 @@ copy_file() {
   [[ -f "$src" ]] || die "File not found: $src"
 
   if [[ "$backup" == "true" ]] && [[ -f "$dest" ]] && ! cmp -s "$src" "$dest"; then
-    local backup_path="${dest}.bak.$(date +%s)"
+    local backup_path
+    backup_path="${dest}.bak.$(date +%s)"
     log "Backing up $dest to $backup_path..."
     run_sudo cp "$dest" "$backup_path" || die "Failed to backup $dest"
   fi

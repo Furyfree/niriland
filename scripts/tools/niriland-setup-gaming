@@ -4,25 +4,10 @@ set -euo pipefail
 
 NIRILAND_ROOT="${HOME}/.local/share/niriland"
 PRISMLAUNCHER_MRPACK="${NIRILAND_ROOT}/configs/base/.local/share/minecraft/Main.mrpack"
+GAMING_PACKAGE_MANIFEST="${NIRILAND_ROOT}/packages/gaming.packages"
 
-PACMAN_PACKAGES=(
-  cachyos-gaming-meta
-  cachyos-gaming-applications
-  prismlauncher
-  wowup-cf-bin
-  vulkan-icd-loader
-  lib32-vulkan-icd-loader
-  proton-cachyos-slr
-  protonup-qt
-  dosbox
-  inotify-tools
-  scummvm
-  timidity++
-  wget
-  xdotool
-  xorg-xwininfo
-  yad
-)
+COMMON_PACKAGES=(prismlauncher)
+GAMING_PACKAGES=()
 
 log() {
   printf '==> %s\n' "$*"
@@ -59,6 +44,15 @@ require_sudo() {
   sudo -v || die "sudo authentication failed"
 }
 
+load_gaming_packages() {
+  [[ -f "$GAMING_PACKAGE_MANIFEST" ]] \
+    || die "Gaming package manifest not found: $GAMING_PACKAGE_MANIFEST"
+
+  mapfile -t GAMING_PACKAGES < <(grep -Ev '^\s*(#|$)' "$GAMING_PACKAGE_MANIFEST")
+  [[ ${#GAMING_PACKAGES[@]} -gt 0 ]] \
+    || die "Gaming package manifest is empty: $GAMING_PACKAGE_MANIFEST"
+}
+
 install_package_if_missing() {
   local pkg
 
@@ -76,7 +70,9 @@ install_package_if_missing() {
 show_package_status() {
   local pkg
 
-  for pkg in "${PACMAN_PACKAGES[@]}"; do
+  load_gaming_packages
+
+  for pkg in "${COMMON_PACKAGES[@]}" "${GAMING_PACKAGES[@]}"; do
     if pacman -Qq "$pkg" >/dev/null 2>&1; then
       log "$pkg is installed."
     else
@@ -89,9 +85,10 @@ setup_gaming() {
   require_cmd pacman
   require_cmd sudo
   require_sudo
+  load_gaming_packages
 
   log "Installing gaming apps..."
-  install_package_if_missing "${PACMAN_PACKAGES[@]}"
+  install_package_if_missing "${COMMON_PACKAGES[@]}" "${GAMING_PACKAGES[@]}"
 
   if [[ -f "${PRISMLAUNCHER_MRPACK}" ]]; then
     log "Importing PrismLauncher pack: ${PRISMLAUNCHER_MRPACK}"

@@ -41,8 +41,8 @@ application/oxps=org.pwmt.zathura-pdf-mupdf.desktop
 application/epub+zip=org.pwmt.zathura-pdf-mupdf.desktop
 application/x-fictionbook=org.pwmt.zathura-pdf-mupdf.desktop
 application/x-mobipocket-ebook=org.pwmt.zathura-pdf-mupdf.desktop
-# Plaintext (VSCodium)
-text/plain=vscodium-wayland.desktop
+# Plaintext (Zed)
+text/plain=dev.zed.Zed.desktop
 
 # Code / Text (VSCodium)
 text/x-csrc=vscodium-wayland.desktop

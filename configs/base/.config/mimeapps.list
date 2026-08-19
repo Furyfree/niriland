@@ -16,15 +16,15 @@ image/svg+xml=org.gnome.Loupe.desktop
 image/avif=org.gnome.Loupe.desktop
 image/heic=org.gnome.Loupe.desktop
 
-# Video (Showtime)
-video/mp4=org.gnome.Showtime.desktop
-video/x-matroska=org.gnome.Showtime.desktop
-video/webm=org.gnome.Showtime.desktop
-video/x-msvideo=org.gnome.Showtime.desktop
-video/quicktime=org.gnome.Showtime.desktop
-video/x-flv=org.gnome.Showtime.desktop
-video/ogg=org.gnome.Showtime.desktop
-video/3gpp=org.gnome.Showtime.desktop
+# Video (mpv)
+video/mp4=mpv.desktop
+video/x-matroska=mpv.desktop
+video/webm=mpv.desktop
+video/x-msvideo=mpv.desktop
+video/quicktime=mpv.desktop
+video/x-flv=mpv.desktop
+video/ogg=mpv.desktop
+video/3gpp=mpv.desktop
 
 # Audio (mpv)
 audio/mpeg=mpv.desktop
@@ -41,14 +41,8 @@ application/oxps=org.pwmt.zathura-pdf-mupdf.desktop
 application/epub+zip=org.pwmt.zathura-pdf-mupdf.desktop
 application/x-fictionbook=org.pwmt.zathura-pdf-mupdf.desktop
 application/x-mobipocket-ebook=org.pwmt.zathura-pdf-mupdf.desktop
-image/vnd.djvu=org.pwmt.zathura-djvu.desktop
-application/x-cb7=org.pwmt.zathura-cb.desktop
-application/x-cbr=org.pwmt.zathura-cb.desktop
-application/x-cbt=org.pwmt.zathura-cb.desktop
-application/x-cbz=org.pwmt.zathura-cb.desktop
-
-# Plaintext (Gnome Text Editor)
-text/plain=org.gnome.TextEditor.desktop
+# Plaintext (VSCodium)
+text/plain=vscodium-wayland.desktop
 
 # Code / Text (VSCodium)
 text/x-csrc=vscodium-wayland.desktop

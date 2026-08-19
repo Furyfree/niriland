@@ -56,6 +56,13 @@ Keep entries short: problem, target state, and any important constraint.
 
 ### Platform refinements
 
+#### Shared workstation baseline
+
+- [x] Align the default package and development-tool manifests with the accepted post-cleanup workstation baseline.
+- [x] Keep Prism Launcher shared while moving the full gaming stack into an explicit per-machine manifest that normal install and update paths do not consume.
+- [x] Add a plan-first migration that protects `lib32`, optional gaming packages, and home-directory data before any removal is allowed.
+- [x] Standardize Ghostty mouse reporting across the active machines.
+
 #### Virtualization stack rebuild
 
 - [x] Remove the current VM helper/tooling path and rebuild virtualization support from scratch around a smaller, explicitly supported stack.

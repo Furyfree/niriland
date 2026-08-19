@@ -1,0 +1,31 @@
+# Optional gaming profile. Read by niriland-setup-gaming and by the common
+# baseline migration when validating --keep-gaming protection.
+
+# Install the preferred Heroic provider before the application meta package.
+heroic-games-launcher-bin
+
+# CachyOS profiles.
+cachyos-gaming-meta
+cachyos-gaming-applications
+
+# Gaming-facing dependencies supplied by the CachyOS profiles. They remain
+# explicit here so status and migration output show the complete retained stack.
+steam
+lutris
+vulkan-icd-loader
+lib32-vulkan-icd-loader
+proton-cachyos-slr
+wine
+winetricks
+protontricks
+gamescope
+mangohud
+goverlay
+umu-launcher
+
+# Additional launchers and classic-game support.
+wowup-cf-bin
+protonup-qt
+dosbox
+scummvm
+timidity++

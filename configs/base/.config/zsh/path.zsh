@@ -3,7 +3,6 @@
 path=(
   "$HOME/.local/bin"
   "$HOME/.local/bin/niriland"
-  "$HOME/develop/flutter/bin"
   $path
 )
 

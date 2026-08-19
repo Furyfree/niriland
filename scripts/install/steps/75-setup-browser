@@ -3,6 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/install/lib/common
 source "$SCRIPT_DIR/../lib/common"
 
 log "Installing browser dependencies"
@@ -10,11 +11,19 @@ install_package "brave-origin-bin"
 require_paru
 install_aur_package "1password"
 
-log "Adding Brave Origin and Zen to 1Password trusted browsers"
+log "Adding Brave Origin to 1Password trusted browsers"
 log "Creating 1Password config directory"
 run_sudo mkdir -p /etc/1password
+run_sudo touch /etc/1password/custom_allowed_browsers
 
-printf "brave-origin\nzen-bin\n" | run_sudo tee /etc/1password/custom_allowed_browsers >/dev/null
+run_sudo sed -i \
+  -e '/^helium$/d' \
+  -e '/^brave-origin$/d' \
+  -e '/^zen-bin$/d' \
+  /etc/1password/custom_allowed_browsers
+printf "brave-origin\n" | run_sudo tee -a /etc/1password/custom_allowed_browsers >/dev/null
+run_sudo chown root:root /etc/1password/custom_allowed_browsers
+run_sudo chmod 755 /etc/1password/custom_allowed_browsers
 
 log_success "1Password trusted browsers updated"
 log_success "Browser setup complete."

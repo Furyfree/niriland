@@ -27,7 +27,7 @@ git clone https://github.com/Furyfree/niriland.git ~/.local/share/niriland
 ~/.local/share/niriland/install
 ```
 
-Post-install note: after your first successful login into Niri, reboot one more time. Some systems do not start all user-session autostarts/services (`niriusd`, `1Password`) until the second boot. JetBrains Toolbox remains installed but does not start automatically.
+Post-install note: after your first successful login into Niri, reboot one more time. Some systems do not start all user-session autostarts/services (`niriusd`, `1Password`) until the second boot.
 
 ## Requirements
 
@@ -38,14 +38,14 @@ Post-install note: after your first successful login into Niri, reboot one more 
 
 ## What It Does
 
-After you install CachyOS by following [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md), Niriland installs the extra packages, configs, and tools used by this setup. It deploys Niri, DMS, Ghostty, and Zsh configs; sets up theming; installs Brave Origin and Zen Browser; configures dev tools like Docker, mise, Neovim/LazyVim, VSCodium, and Zed; and installs optional helper scripts for AI, gaming, VMs, fingerprint auth, and more.
+After you install CachyOS by following [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md), Niriland installs the shared workstation baseline. It deploys Niri, DMS, Ghostty, and Zsh configs; sets up theming; installs Brave Origin and Prism Launcher; configures Docker, user-local Mise, Neovim/LazyVim, VSCodium, and Zed; and installs optional helper scripts for gaming, AI, VMs, fingerprint auth, and more.
 
 For known issues and operational fixes, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 For one-time migration steps on older setups, see [docs/MIGRATIONS.md](docs/MIGRATIONS.md).
 For repo-local unfinished work, see [docs/ROADMAP.md](docs/ROADMAP.md).
 For the expected fresh-install baseline for the default Niriland flow, see [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md).
 
-Current gaming recommendation in this setup: use `Lutris` as the unified launcher for `Steam` and `Battle.net`, and use `Heroic` for `Epic Games`.
+Prism Launcher is part of the shared baseline. The full gaming stack is opt-in through `niriland-setup-gaming`; it uses Lutris for Steam and Battle.net workflows and Heroic for Epic Games.
 
 ## Who It Is For
 
@@ -69,6 +69,8 @@ Current gaming recommendation in this setup: use `Lutris` as the unified launche
 - The repo must live at `~/.local/share/niriland`.
 - Shared tracked config is loaded from the repo.
 - Machine-local changes belong outside the tracked tree.
+- The default package manifests describe the shared workstation baseline.
+- `packages/gaming.packages` is optional and is never read by the normal installer or updater.
 - The deployed Niri config layers repo config first, DMS-managed includes second, and user overrides last.
 
 Use these override locations for local customization:
@@ -118,8 +120,9 @@ Current update behavior:
 - requires a clean git worktree
 - runs `git pull --ff-only`
 - runs a full package upgrade through `niriland-pkg upgrade`
-- replays selected install steps
+- replays selected shared-baseline install steps
 - preserves existing local config during `20-deploy-configs`
+- does not install or remove the optional gaming profile
 
 ## Repository Layout
 
@@ -131,7 +134,8 @@ Current update behavior:
 - `configs/base/` — files deployed to `$HOME`
 - `configs/modules/` — modular shared config fragments (Niri/Zsh/Ghostty)
 - `configs/system/` — system-level assets used by steps/tools
-- `packages/*.packages` — package manifests
+- `packages/base.packages`, `aur.packages`, `cachyos.packages`, and `chaotic.packages` — shared package manifests
+- `packages/gaming.packages` — optional full gaming profile used only by `niriland-setup-gaming`
 - `packages/vscodium.extensions` — VSCodium extension list
 
 ## Helper Tools
@@ -147,7 +151,7 @@ Main tools:
 Optional follow-up helpers:
 
 - AI
-- gaming
+- gaming (`niriland-setup-gaming`; explicit per-machine opt-in)
 - WoW
 - Helix
 - Helium browser compatibility, including Widevine

@@ -13,7 +13,7 @@ if [[ -t 0 ]]; then
 fi
 
 export STARSHIP_CONFIG="$ZDOTDIR/starship.toml"
-export CHROME_EXECUTABLE="${CHROME_EXECUTABLE:-/usr/bin/helium-browser}"
+export CHROME_EXECUTABLE="${CHROME_EXECUTABLE:-/usr/bin/brave-origin}"
 
 if command -v bat >/dev/null 2>&1; then
   export MANPAGER="${MANPAGER:-bat -l man -p}"

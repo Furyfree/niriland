@@ -9,53 +9,58 @@ Migration policy:
 - Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
 - This file is for operational one-time fixes, not as a permanent changelog.
 
-## 14. august 2026 - Disable JetBrains Toolbox Autostart
+## 19. august 2026 - Adopt the Shared Workstation Baseline
 
 Who:
-Existing installs where JetBrains Toolbox created
-`~/.config/autostart/jetbrains-toolbox.desktop` and starts automatically with
-the graphical session.
+Existing installs that predate the shared post-cleanup package and development
+tool baseline. `cachytop` keeps the full optional gaming profile; other machines
+use the common baseline without it.
 
-Run:
+Inspect first:
 
 ```bash
-mkdir -p \
-  ~/.config/autostart \
-  ~/.config/backups/niriland/migrations \
-  ~/.local/share/applications
+# cachytop
+~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh plan --keep-gaming
 
-if [[ -f ~/.config/autostart/jetbrains-toolbox.desktop ]]; then
-  cp -a \
-    ~/.config/autostart/jetbrains-toolbox.desktop \
-    ~/.config/backups/niriland/migrations/jetbrains-toolbox-autostart.desktop
-fi
-
-cp -a \
-  ~/.local/share/niriland/configs/base/.config/autostart/jetbrains-toolbox.desktop \
-  ~/.config/autostart/jetbrains-toolbox.desktop
-cp -a \
-  ~/.local/share/niriland/configs/base/.local/share/applications/jetbrains-toolbox.desktop \
-  ~/.local/share/applications/jetbrains-toolbox.desktop
-
-if command -v update-desktop-database >/dev/null 2>&1; then
-  update-desktop-database ~/.local/share/applications
-fi
-
-systemctl --user daemon-reload
+# a machine without the full gaming profile
+~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh plan
 ```
 
-What it changes:
+The plan resolves Pacman's complete recursive removal transaction and aborts if
+it contains a protected `lib32` package. With `--keep-gaming`, it also aborts if
+the transaction contains the protected Steam/Lutris/Wine/Proton set, a package
+from `packages/gaming.packages`, or Prism Launcher.
 
-- Backs up an existing Toolbox-created autostart entry
-- Deploys a user application entry that overrides the packaged desktop entry
-- Deploys the matching XDG autostart entry with `Hidden=true` and autostart
-  disabled
-- Prevents Toolbox from starting in future graphical sessions without stopping
-  an instance that is already running
+After reviewing the exact transaction, apply explicitly:
+
+```bash
+# cachytop
+~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh apply --keep-gaming
+
+# a machine without the full gaming profile
+~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh apply
+```
+
+Apply requires the typed phrase `APPLY COMMON BASELINE` and leaves Pacman's own
+confirmation enabled. It records package, Mise, and Cargo inventories under
+`~/.local/state/niriland/migrations/`, creates a Snapper snapshot when Snapper
+is available, installs the tracked user-local Mise and Cargo tool baseline,
+removes superseded system-owned tools, and applies the shared Snapper/Limine
+retention settings. Packages declared by the shared manifests, protected
+platform foundations, every installed `lib32` package, and the selected gaming
+profile are marked explicit before recursive removal so Pacman preserves them;
+the original explicit and dependency reason lists remain in the inventory.
+
+The migration does not delete application data, game installations, Wine
+prefixes, saves, containers, caches, or other home-directory state. Package
+removal does not make the newly added shared packages appear; replay
+`10-install-packages` separately after the migration when its transaction has
+also been reviewed.
 
 Fresh installs:
-Not needed manually. Fresh installs already deploy both tracked Toolbox desktop
-entries.
+Not needed. The normal manifests install only the common baseline. Prism
+Launcher is common; the full gaming profile is installed explicitly with
+`niriland-setup-gaming` on selected machines.
 
 ## 14. august 2026 - Replace Helium with Brave Origin
 
@@ -84,7 +89,7 @@ sudo sed -i \
   -e '/^brave-origin$/d' \
   -e '/^zen-bin$/d' \
   /etc/1password/custom_allowed_browsers
-printf "brave-origin\nzen-bin\n" | sudo tee -a /etc/1password/custom_allowed_browsers >/dev/null
+printf "brave-origin\n" | sudo tee -a /etc/1password/custom_allowed_browsers >/dev/null
 
 # Package manifests install additions but do not uninstall packages removed from
 # the manifests, so clean up the old browser packages when they are present.

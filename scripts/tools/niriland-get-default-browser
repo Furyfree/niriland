@@ -3,7 +3,7 @@
 # Print a browser app-id matcher for nirius based on the current default browser.
 
 fallback_browser_app_id() {
-  echo "zen|brave-origin"
+  echo "brave-origin"
 }
 
 if ! command -v xdg-settings >/dev/null 2>&1; then

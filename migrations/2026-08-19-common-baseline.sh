@@ -10,6 +10,7 @@ MODE="plan"
 KEEP_GAMING=false
 GAMING_MANIFEST="$REPO_ROOT/packages/gaming.packages"
 MISE_CONFIG_SOURCE="$REPO_ROOT/configs/base/.config/mise/config.toml"
+MIMEAPPS_SOURCE="$REPO_ROOT/configs/base/.config/mimeapps.list"
 STALE_MANAGED_HOME_FILES=(
   ".config/autostart/jetbrains-toolbox.desktop"
   ".local/share/applications/jetbrains-toolbox.desktop"
@@ -183,6 +184,7 @@ require_cmd pacman
 require_cmd fakeroot
 [[ -f "$GAMING_MANIFEST" ]] || die "Missing gaming manifest: $GAMING_MANIFEST"
 [[ -f "$MISE_CONFIG_SOURCE" ]] || die "Missing mise config: $MISE_CONFIG_SOURCE"
+[[ -f "$MIMEAPPS_SOURCE" ]] || die "Missing MIME applications config: $MIMEAPPS_SOURCE"
 
 declare -a removal_candidates=("${COMMON_REMOVALS[@]}")
 declare -a removal_targets=()
@@ -309,6 +311,7 @@ read -r confirmation </dev/tty
 
 require_cmd cargo
 require_cmd curl
+require_cmd awk
 require_cmd sudo
 sudo -v || die "sudo authentication failed"
 
@@ -325,6 +328,10 @@ cargo install --list >"$inventory_root/cargo-install-list.txt"
 if command -v mise >/dev/null 2>&1; then
   mise ls --global >"$inventory_root/mise-global.txt" 2>&1 || true
 fi
+if [[ -x /usr/bin/npm ]]; then
+  env PATH=/usr/bin:/bin /usr/bin/npm --global list --depth=0 \
+    >"$inventory_root/system-npm-global.txt" 2>&1 || true
+fi
 for relative_path in "${STALE_MANAGED_HOME_FILES[@]}"; do
   source_path="$HOME/$relative_path"
   if [[ -e "$source_path" || -L "$source_path" ]]; then
@@ -334,12 +341,25 @@ for relative_path in "${STALE_MANAGED_HOME_FILES[@]}"; do
   fi
 done
 
+mimeapps_target="$HOME/.config/mimeapps.list"
+if [[ -f "$mimeapps_target" ]]; then
+  mimeapps_backup="$inventory_root/home/.config/mimeapps.list"
+  mkdir -p "$(dirname "$mimeapps_backup")"
+  cp -a "$mimeapps_target" "$mimeapps_backup"
+fi
+
 mise_config_target="$HOME/.config/mise/config.toml"
 mise_config_existed=false
 mkdir -p "$(dirname "$mise_config_target")"
 if [[ -f "$mise_config_target" ]]; then
   cp -a "$mise_config_target" "$inventory_root/mise-config.toml"
   mise_config_existed=true
+fi
+
+if command -v snapper >/dev/null 2>&1; then
+  sudo snapper -c root create --description "Before Niriland common baseline migration"
+else
+  warn "snapper is unavailable; continuing with inventory but no filesystem snapshot."
 fi
 
 ensure_user_mise
@@ -377,12 +397,6 @@ if [[ -x /usr/bin/npm ]]; then
   fi
 fi
 
-if command -v snapper >/dev/null 2>&1; then
-  sudo snapper -c root create --description "Before Niriland common baseline migration"
-else
-  warn "snapper is unavailable; continuing with inventory but no filesystem snapshot."
-fi
-
 log "Marking reviewed baseline packages explicit so recursive cleanup preserves them."
 if [[ ${#installed_protected[@]} -gt 0 ]]; then
   sudo pacman -D --asexplicit "${installed_protected[@]}"
@@ -409,6 +423,34 @@ log "Removed stale managed JetBrains Toolbox launchers."
 
 log "Applying shared Snapper and Limine retention settings."
 bash "$REPO_ROOT/scripts/install/steps/07-setup-snapper"
+
+if [[ -f "$mimeapps_target" ]]; then
+  mimeapps_tmp="$(mktemp)"
+  awk '
+    /^\[Default Applications\]$/ {
+      in_defaults = 1
+      print
+      next
+    }
+    /^\[/ {
+      in_defaults = 0
+    }
+    in_defaults && /^(image\/vnd\.djvu|application\/x-cb[7rtz])=/ {
+      next
+    }
+    in_defaults {
+      gsub(/org\.gnome\.Showtime\.desktop/, "mpv.desktop")
+      gsub(/org\.gnome\.TextEditor\.desktop/, "vscodium-wayland.desktop")
+    }
+    { print }
+  ' "$mimeapps_target" >"$mimeapps_tmp"
+  chmod --reference="$mimeapps_target" "$mimeapps_tmp"
+  mv -f -- "$mimeapps_tmp" "$mimeapps_target"
+else
+  mkdir -p "$(dirname "$mimeapps_target")"
+  cp -a "$MIMEAPPS_SOURCE" "$mimeapps_target"
+fi
+log "Updated MIME defaults for the retained application baseline."
 
 [[ -x "$HOME/.local/bin/mise" ]] || die "User-local mise is missing after migration."
 log_success "Common baseline migration completed. Inventory: $inventory_root"

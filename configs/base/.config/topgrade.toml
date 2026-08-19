@@ -28,7 +28,8 @@ pre_sudo = true
 # sudo_command = "sudo"
 
 # Disable specific steps - same options as the command line flag
-# Poetry and Node are managed by mise as part of the shared tool baseline.
+# Poetry is not part of the baseline; disable probes from any stale shim.
+# The Node step would duplicate updates already owned by the active mise tools.
 # Docker/Podman images are managed manually or outside this workstation.
 disable = ["poetry", "node", "containers"]
 

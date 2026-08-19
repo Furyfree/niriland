@@ -46,6 +46,7 @@ ensure_user_mise
 MISE_CONFIG="$HOME/.config/mise/config.toml"
 if [[ -f "$MISE_CONFIG" ]]; then
   if "$MISE_BIN" install; then
+    "$MISE_BIN" reshim
     log_success "mise runtimes installed from $MISE_CONFIG"
   else
     warn "mise install failed. You may need to run it manually after setup."

@@ -11,6 +11,7 @@ KEEP_GAMING=false
 GAMING_MANIFEST="$REPO_ROOT/packages/gaming.packages"
 MISE_CONFIG_SOURCE="$REPO_ROOT/configs/base/.config/mise/config.toml"
 MIMEAPPS_SOURCE="$REPO_ROOT/configs/base/.config/mimeapps.list"
+SESSION_ENV_SOURCE="$REPO_ROOT/configs/base/.config/environment.d/90-dms.conf"
 STALE_MANAGED_HOME_FILES=(
   ".config/autostart/jetbrains-toolbox.desktop"
   ".local/share/applications/jetbrains-toolbox.desktop"
@@ -185,6 +186,7 @@ require_cmd fakeroot
 [[ -f "$GAMING_MANIFEST" ]] || die "Missing gaming manifest: $GAMING_MANIFEST"
 [[ -f "$MISE_CONFIG_SOURCE" ]] || die "Missing mise config: $MISE_CONFIG_SOURCE"
 [[ -f "$MIMEAPPS_SOURCE" ]] || die "Missing MIME applications config: $MIMEAPPS_SOURCE"
+[[ -f "$SESSION_ENV_SOURCE" ]] || die "Missing graphical session environment: $SESSION_ENV_SOURCE"
 
 declare -a removal_candidates=("${COMMON_REMOVALS[@]}")
 declare -a removal_targets=()
@@ -348,6 +350,13 @@ if [[ -f "$mimeapps_target" ]]; then
   cp -a "$mimeapps_target" "$mimeapps_backup"
 fi
 
+session_env_target="$HOME/.config/environment.d/90-dms.conf"
+if [[ -f "$session_env_target" ]]; then
+  session_env_backup="$inventory_root/home/.config/environment.d/90-dms.conf"
+  mkdir -p "$(dirname "$session_env_backup")"
+  cp -a "$session_env_target" "$session_env_backup"
+fi
+
 mise_config_target="$HOME/.config/mise/config.toml"
 mise_config_existed=false
 mkdir -p "$(dirname "$mise_config_target")"
@@ -380,6 +389,7 @@ if [[ -x "$mise_node_npm" ]] \
   "$mise_node_npm" uninstall --global @xai-official/grok
 fi
 
+"$MISE_BIN" reshim
 eval "$("$MISE_BIN" activate bash)"
 install_baseline_cargo_tools
 
@@ -440,7 +450,7 @@ if [[ -f "$mimeapps_target" ]]; then
     }
     in_defaults {
       gsub(/org\.gnome\.Showtime\.desktop/, "mpv.desktop")
-      gsub(/org\.gnome\.TextEditor\.desktop/, "vscodium-wayland.desktop")
+      gsub(/org\.gnome\.TextEditor\.desktop/, "dev.zed.Zed.desktop")
     }
     { print }
   ' "$mimeapps_target" >"$mimeapps_tmp"
@@ -451,6 +461,10 @@ else
   cp -a "$MIMEAPPS_SOURCE" "$mimeapps_target"
 fi
 log "Updated MIME defaults for the retained application baseline."
+
+mkdir -p "$(dirname "$session_env_target")"
+cp -a "$SESSION_ENV_SOURCE" "$session_env_target"
+log "Added mise shims to the graphical session PATH; log out and back in to activate it."
 
 [[ -x "$HOME/.local/bin/mise" ]] || die "User-local mise is missing after migration."
 log_success "Common baseline migration completed. Inventory: $inventory_root"

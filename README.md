@@ -128,6 +128,7 @@ Current update behavior:
 
 - `bootstrap` — clone/update repo and run installer
 - `install` — installer orchestrator
+- `cleanup` — plan-first, staged cleanup of retired application data and rebuildable caches
 - `scripts/install/lib/common` — shared installer helpers
 - `scripts/install/steps/` — numbered install steps
 - `scripts/tools/` — helper scripts copied to `~/.local/bin/niriland`
@@ -158,6 +159,22 @@ Optional follow-up helpers:
 - certificates
 - fingerprint auth
 - virtualization
+
+## Post-baseline Cleanup
+
+The root-level `cleanup` script inventories data left by applications and
+development runtimes removed from the shared baseline. It also reports
+rebuildable Pacman, uv, npm, AUR-helper, and Nix caches. Plan mode is read-only:
+
+```bash
+./cleanup plan
+```
+
+Run `./cleanup apply` only after the common-baseline package migration has
+completed. Application data, Flutter/Android data, and caches use separate
+typed confirmations. Docker pruning is excluded unless `--docker` is passed,
+and Docker volumes, projects, documents, gaming data, Wine prefixes, and
+snapshots are never selected.
 
 ## License
 

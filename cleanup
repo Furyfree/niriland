@@ -211,6 +211,7 @@ build_path_lists() {
   )
 
   CACHE_PATHS=(
+    "$HOME/.npm/_npx"
     "$HOME/.cache/yay"
     "$HOME/.cache/paru"
   )
@@ -219,6 +220,7 @@ build_path_lists() {
     "$HOME/.zshenv"
     "$HOME/.zprofile"
     "$HOME/.config/zsh/.zprofile"
+    "$HOME/.config/zsh/path.zsh"
   )
 
   shopt -u nullglob
@@ -454,7 +456,7 @@ backup_file() {
   local destination
 
   [[ -f "$source_path" || -L "$source_path" ]] || return 0
-  relative_path="${source_path#$HOME/}"
+  relative_path="${source_path#"$HOME"/}"
   destination="$inventory_root/home/$relative_path"
   mkdir -p "$(dirname "$destination")"
   cp -a -- "$source_path" "$destination"
@@ -504,6 +506,18 @@ filter_stale_shell_paths() {
   fi
   temporary="$(mktemp)"
   awk -v home="$HOME" '
+    $0 == "if [[ -d \"$HOME/.local/share/JetBrains/Toolbox/scripts\" ]]; then" {
+      toolbox_block = 1
+      next
+    }
+    toolbox_block && $0 == "  path+=(\"$HOME/.local/share/JetBrains/Toolbox/scripts\")" { next }
+    toolbox_block && $0 == "fi" {
+      toolbox_block = 0
+      next
+    }
+    toolbox_block {
+      toolbox_block = 0
+    }
     $0 == "export PATH=\"$HOME/develop/flutter/bin:$PATH\"" { next }
     $0 == "  \"$HOME/develop/flutter/bin\"" { next }
     $0 == "# Added by Toolbox App" { next }

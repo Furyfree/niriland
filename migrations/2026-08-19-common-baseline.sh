@@ -392,6 +392,7 @@ fi
 "$MISE_BIN" reshim
 eval "$("$MISE_BIN" activate bash)"
 install_baseline_cargo_tools
+"$MISE_BIN" reshim
 
 if [[ -x /usr/bin/npm ]]; then
   installed_system_npm=()

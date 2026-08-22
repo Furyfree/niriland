@@ -120,6 +120,7 @@ fi
 # ====================
 log "Installing Cargo tools..."
 install_baseline_cargo_tools
+"$MISE_BIN" reshim
 
 # Niri user session PATH may omit ~/.cargo/bin.
 # Expose nirius/niriusd from ~/.local/bin so keybinds and startup spawns

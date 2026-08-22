@@ -164,7 +164,8 @@ Optional follow-up helpers:
 
 The root-level `cleanup` script inventories data left by applications and
 development runtimes removed from the shared baseline. It also reports
-rebuildable Pacman, uv, npm, AUR-helper, and Nix caches. Plan mode is read-only:
+rebuildable Pacman, uv, npm (including temporary `npx` installs), AUR-helper,
+and Nix caches. Plan mode is read-only:
 
 ```bash
 ./cleanup plan

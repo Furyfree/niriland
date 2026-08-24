@@ -1,0 +1,288 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+NIRILAND_ROOT="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
+SCRIPT_PATH="$(readlink -f -- "${BASH_SOURCE[0]}")"
+SCRIPT_REPO_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+
+if [[ -d "$SCRIPT_REPO_ROOT/installer/steps" && -f "$SCRIPT_REPO_ROOT/installer/install" ]]; then
+  REPO_ROOT="$SCRIPT_REPO_ROOT"
+else
+  REPO_ROOT="$NIRILAND_ROOT"
+fi
+
+[[ -f "$REPO_ROOT/installer/lib/common.sh" ]] || {
+  printf 'ERROR: Could not find shared installer library in %s\n' "$REPO_ROOT" >&2
+  exit 1
+}
+
+source "$REPO_ROOT/installer/lib/common.sh"
+
+BASE_CONFIG_DIR="$REPO_ROOT/configs/home"
+export BASE_CONFIG_DIR
+
+declare -A TRACKED_PATH_SET=()
+declare -a ALL_TRACKED_PATHS=()
+
+usage() {
+  cat <<'EOF'
+Usage:
+  niriland-sync-base-config
+  niriland-sync-base-config --pick [query]
+  niriland-sync-base-config --list
+  niriland-sync-base-config [--all] [--path REL_PATH] [REL_PATH...]
+
+Examples:
+  niriland-sync-base-config
+  niriland-sync-base-config --pick codex
+  niriland-sync-base-config .config/DankMaterialShell/settings.json
+  niriland-sync-base-config .config/zed/keymap.json .config/ghostty/config
+  niriland-sync-base-config --path .config/ghostty/config
+  niriland-sync-base-config --all
+
+Notes:
+  - Running without arguments opens an fzf picker.
+  - Use --list to inspect tracked relative paths.
+EOF
+}
+
+load_tracked_paths() {
+  local file_path rel_path
+
+  while IFS= read -r file_path; do
+    rel_path="${file_path#"$BASE_CONFIG_DIR"/}"
+    [[ "$rel_path" == "$file_path" ]] && continue
+    [[ "$rel_path" == "PLACEHOLDER" ]] && continue
+    [[ "$rel_path" == */PLACEHOLDER ]] && continue
+
+    ALL_TRACKED_PATHS+=("$rel_path")
+    TRACKED_PATH_SET["$rel_path"]=1
+  done < <(find "$BASE_CONFIG_DIR" \( -type f -o -type l \) | sort)
+}
+emit_paths() {
+  printf '%s\n' "${ALL_TRACKED_PATHS[@]}"
+}
+
+list_paths() {
+  emit_paths
+}
+
+_niriland_preview_base_config() {
+  local rel_path="${1:-}"
+  local src="$BASE_CONFIG_DIR/$rel_path"
+  local dest="$HOME/$rel_path"
+  local mime_type
+
+  [[ -n "$rel_path" ]] || return 0
+
+  printf 'Repo: %s\n' "$src"
+  printf 'Home: %s\n' "$dest"
+
+  if [[ -e "$dest" || -L "$dest" ]]; then
+    printf 'Status: existing target\n'
+  else
+    printf 'Status: target missing\n'
+  fi
+
+  printf '\n'
+
+  if [[ -L "$src" ]]; then
+    printf 'Symlink -> %s\n' "$(readlink "$src")"
+    return 0
+  fi
+
+  mime_type="$(file --brief --mime-type "$src" 2>/dev/null || true)"
+
+  if [[ "$mime_type" == text/* || "$mime_type" == application/json || "$mime_type" == application/xml || "$mime_type" == application/x-shellscript || "$mime_type" == inode/x-empty ]]; then
+    if command -v bat >/dev/null 2>&1; then
+      bat --style=plain --color=always --line-range=:200 -- "$src" 2>/dev/null || sed -n '1,200p' "$src"
+    else
+      sed -n '1,200p' "$src"
+    fi
+    return 0
+  fi
+
+  file --brief "$src" 2>/dev/null || true
+}
+
+export -f _niriland_preview_base_config
+
+pick_paths() {
+  local query="${1:-}"
+  local preview_cmd='_niriland_preview_base_config {}'
+  local -a fzf_args=()
+  local -a selected=()
+  local rel_path
+
+  require_cmd fzf
+  require_cmd file
+
+  fzf_args=(
+    --multi
+    --exact
+    --prompt 'sync-config> '
+    --header 'tab: select, enter: apply, alt-p: toggle preview'
+    --preview "$preview_cmd"
+    --preview-label 'tracked config preview'
+    --preview-label-pos bottom
+    --preview-window 'right:60%:wrap'
+    --bind 'alt-p:toggle-preview'
+    --bind 'alt-d:preview-half-page-down,alt-u:preview-half-page-up'
+    --bind 'alt-k:preview-up,alt-j:preview-down'
+  )
+
+  if [[ -n "$query" ]]; then
+    fzf_args+=(--query "$query")
+  fi
+
+  mapfile -t selected < <(
+    emit_paths | SHELL="$(command -v bash)" fzf "${fzf_args[@]}" || true
+  )
+
+  if [[ ${#selected[@]} -eq 0 ]]; then
+    log "No config paths selected."
+    return 0
+  fi
+
+  for rel_path in "${selected[@]}"; do
+    [[ -n "$rel_path" ]] || continue
+    append_unique "$rel_path"
+  done
+}
+
+append_unique() {
+  local candidate="$1"
+  local existing
+
+  for existing in "${TARGETS[@]:-}"; do
+    [[ "$existing" == "$candidate" ]] && return 0
+  done
+
+  TARGETS+=("$candidate")
+}
+
+append_all_paths() {
+  local rel_path
+
+  for rel_path in "${ALL_TRACKED_PATHS[@]}"; do
+    append_unique "$rel_path"
+  done
+}
+
+validate_rel_path() {
+  local rel_path="$1"
+
+  case "$rel_path" in
+    ""|/*|../*|*/../*|..)
+      die "Invalid relative path: $rel_path"
+      ;;
+    PLACEHOLDER|*/PLACEHOLDER)
+      die "Refusing to sync placeholder path: $rel_path"
+      ;;
+  esac
+}
+
+sync_target() {
+  local rel_path="$1"
+  local src="$BASE_CONFIG_DIR/$rel_path"
+  local dest="$HOME/$rel_path"
+  local backup_path
+
+  [[ -e "$src" || -L "$src" ]] || die "Tracked config not found: $src"
+
+  mkdir -p "$(dirname "$dest")"
+
+  if [[ -f "$src" && -f "$dest" ]] && cmp -s "$src" "$dest"; then
+    log "$rel_path unchanged, skipping."
+    return 0
+  fi
+
+  if [[ -L "$src" && -L "$dest" ]] && [[ "$(readlink "$src")" == "$(readlink "$dest")" ]]; then
+    log "$rel_path unchanged, skipping."
+    return 0
+  fi
+
+  if [[ -e "$dest" || -L "$dest" ]]; then
+    backup_path="$BACKUP_ROOT/$rel_path"
+    mkdir -p "$(dirname "$backup_path")"
+    log "Backing up $dest -> $backup_path"
+    cp -a "$dest" "$backup_path"
+    rm -rf -- "$dest"
+  fi
+
+  log "Syncing $rel_path"
+  cp -a "$src" "$dest"
+}
+
+[[ -d "$BASE_CONFIG_DIR" ]] || die "Missing base config directory: $BASE_CONFIG_DIR"
+
+load_tracked_paths
+
+declare -a TARGETS=()
+pick_mode=false
+pick_query=""
+initial_argc=$#
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    --pick)
+      pick_mode=true
+      if [[ $# -ge 2 ]] && [[ "$2" != -* ]]; then
+        pick_query="$2"
+        shift 2
+      else
+        shift
+      fi
+      ;;
+    --pick=*)
+      pick_mode=true
+      pick_query="${1#--pick=}"
+      shift
+      ;;
+    --list)
+      list_paths
+      exit 0
+      ;;
+    --all)
+      append_all_paths
+      shift
+      ;;
+    --path)
+      [[ $# -ge 2 ]] || die "--path requires a relative path argument"
+      validate_rel_path "$2"
+      append_unique "$2"
+      shift 2
+      ;;
+    -*)
+      die "Unknown option: $1"
+      ;;
+    *)
+      validate_rel_path "$1"
+      [[ -n "${TRACKED_PATH_SET[$1]:-}" ]] || die "Unknown tracked path: $1 (use --list or the fzf picker)"
+      append_unique "$1"
+      shift
+      ;;
+  esac
+done
+
+if [[ "$pick_mode" == "true" || "$initial_argc" -eq 0 ]]; then
+  pick_paths "$pick_query"
+fi
+
+[[ ${#TARGETS[@]} -gt 0 ]] || die "No config targets selected."
+
+BACKUP_TS="$(date +%Y%m%d%H%M%S)"
+BACKUP_ROOT="$HOME/.config/backups/niriland/base-config-sync/$BACKUP_TS"
+
+for rel_path in "${TARGETS[@]}"; do
+  validate_rel_path "$rel_path"
+  sync_target "$rel_path"
+done
+
+log "Backup root: $BACKUP_ROOT"
+log_success "Synced ${#TARGETS[@]} tracked config path(s)."

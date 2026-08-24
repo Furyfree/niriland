@@ -1,181 +1,171 @@
 # Niriland
 
-Niriland is my personal CachyOS-first desktop setup and bootstrap repo for Niri + DankMaterialShell. It includes package lists, configs, and helper scripts. The repo is public so other people can inspect it and try it, but it is not meant to be a general Linux installer.
+Niriland is a personal CachyOS-first workstation bootstrap and configuration
+repository for Niri. It is opinionated, fresh-install oriented, and intended
+for two closely aligned machines rather than as a general Linux installer.
 
-> **Project status:** Niriland is in maintenance mode and is being superseded by
-> Nimbus. Existing setups may still receive small fixes, but new platform work is
-> moving to Nimbus.
+The project is undergoing a bounded Bash maintenance rewrite. The accepted
+design and phase boundaries live in [`docs/PLAN.md`](docs/PLAN.md); residual work lives in
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
 
-> **Warning**
->
-> - This is a **fresh-install tool**. It overwrites system and user configs. Do not run on an existing customized system without understanding what each step does.
-> - Step `05-setup-fde` adds TPM2 auto-unlock and a recovery key to an existing CachyOS LUKS setup. Read the step before running if you use full-disk encryption.
-> - The repo **must** live at `~/.local/share/niriland`. The installed Niri config reads shared fragments directly from that path.
->
-> The fixed repo path is intentional: shared tracked config stays in the repo, machine-specific overrides stay outside it, and the config layout depends on that exact path.
+## Current status
 
-## Quick Start
+Phase 1 provides read-only foundations:
+
+- a gitignored machine profile selector;
+- tracked desktop and laptop profiles;
+- purpose-based package manifest contracts;
+- stable resource IDs and plan output;
+- migration discovery and immutable receipt validation;
+- a sudo keepalive helper that never stores passwords;
+- removal and exclusion of VSCodium's machine-local `globalStorage` database;
+- removal of the machine-specific Sodium fingerprint from the Minecraft pack.
+
+Only `niriland plan` and `niriland status` are active in the new command. The
+reserved `apply`, `update`, and `postinstall` commands refuse to run until their
+later phases are implemented. The existing `installer/install` and `niriland-update`
+scripts remain mutating entrypoints during the transition.
+
+## Safety
+
+The current installer can install packages, overwrite user and system
+configuration, enable services, and change groups. Read every step before using
+it on an existing system.
+
+- The repository is expected at `~/.local/share/niriland` until Phase 2 removes
+  the remaining fixed-path configuration references.
+- The unsafe TPM/FDE step has been removed. Reversible FDE support will
+  return as an explicit post-install workflow in Phase 5.
+- Sudo authentication uses `sudo -v` and a bounded keepalive. Passwords are not
+  read into or exported from shell variables.
+- Do not run legacy migrations casually. Phase 1 only reports them and never
+  executes one.
+
+## Machine selection
+
+The curl bootstrap creates the ignored local selector before installation. On a
+new checkout it prompts for `desktop` or `laptop`, runs the read-only plan, and
+requires confirmation before starting the installer. An existing
+`machine.local.conf` is preserved and validated instead of being replaced.
+
+For a manually cloned checkout, create the selector in the repository root:
+
+```bash
+cp machine.local.example machine.local.conf
+```
+
+Select one tracked profile:
+
+```ini
+profile=desktop
+```
+
+The parser treats this file as data. Unknown keys, duplicate keys, invalid
+identifiers, and shell syntax are rejected.
+
+The current profiles compose package sets as follows:
+
+```ini
+# desktop
+package_sets=base,dev,gaming,desktop
+
+# laptop
+package_sets=base,dev,gaming,laptop
+```
+
+The profile and new package files define the Phase 2 target contract. The
+installer still consumes the old unqualified manifests until the package
+source audit moves every package coherently. The bootstrap prints this boundary
+before asking whether to continue. See
+[`packages/README.md`](packages/README.md).
+
+## Read-only command
+
+With `machine.local.conf` present:
+
+```bash
+./bin/niriland plan
+./bin/niriland plan --prune
+./bin/niriland status
+```
+
+Phase 1 output deliberately labels package reconciliation, pruning, and legacy
+migration conversion as deferred. Planning does not create
+`~/.local/state/niriland` or change files, packages, services, or caches. The
+stable output contract is documented in
+[`docs/PLAN_FORMAT.md`](docs/PLAN_FORMAT.md).
+
+## Install and update
+
+The existing fresh-install entrypoints remain available while the reconciler is
+built:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Furyfree/niriland/main/bootstrap | bash
+
+# or from a checkout at the required runtime path
+~/.local/share/niriland/installer/install
 ```
 
-Or clone locally:
+The installer now asks sudo to validate its own credential cache once and keeps
+that timestamp alive for the run. It no longer collects a system password or
+reuses that password for disk encryption. Git name/email setup remains
+interactive, as does review of PKGBUILDs before installing AUR packages.
 
-```bash
-git clone https://github.com/Furyfree/niriland.git ~/.local/share/niriland
-~/.local/share/niriland/install
-```
-
-Post-install note: after your first successful login into Niri, reboot one more time. Some systems do not start all user-session autostarts/services (`niriusd`, `1Password`) until the second boot.
-
-## Requirements
-
-- CachyOS with `systemd`
-- Internet access
-- `sudo` access
-- `git` installed
-
-## What It Does
-
-After you install CachyOS by following [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md), Niriland installs the shared workstation baseline. It deploys Niri, DMS, Ghostty, and Zsh configs; sets up theming; installs Brave Origin and Prism Launcher; configures Docker, user-local Mise, Neovim/LazyVim, VSCodium, and Zed; and installs optional helper scripts for gaming, AI, VMs, fingerprint auth, and more.
-
-For known issues and operational fixes, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
-For one-time migration steps on older setups, see [docs/MIGRATIONS.md](docs/MIGRATIONS.md).
-For repo-local unfinished work, see [docs/ROADMAP.md](docs/ROADMAP.md).
-For the expected fresh-install baseline for the default Niriland flow, see [CACHYOS_INSTALL.md](CACHYOS_INSTALL.md).
-
-Prism Launcher is part of the shared baseline. The full gaming stack is opt-in through `niriland-setup-gaming`; it uses Lutris for Steam and Battle.net workflows and Heroic for Epic Games.
-
-## Who It Is For
-
-- For me and my own systems
-- For people who want to inspect or experiment with my setup
-
-## Who It Is Not For
-
-- Not for people looking for an installer that works across many Linux distributions
-- Not for existing heavily customized systems
-
-## Why It Is Structured This Way
-
-- Niriland keeps installer steps, package lists, tracked config, and helper tools in one repo so the full setup is easy to inspect and repeat.
-- The repo path is fixed because the installed Niri config includes repo-hosted modular fragments directly from `~/.local/share/niriland`.
-- Shared tracked config lives in the repo, while machine-local overrides live under `$HOME` outside the tracked tree so updates and local customization stay separate.
-- The project prefers a fresh-install target because the default flow deploys its own packages and config layers instead of trying to preserve an already customized system.
-
-## Runtime Model
-
-- The repo must live at `~/.local/share/niriland`.
-- Shared tracked config is loaded from the repo.
-- Machine-local changes belong outside the tracked tree.
-- The default package manifests describe the shared workstation baseline.
-- `packages/gaming.packages` is optional and is never read by the normal installer or updater.
-- The deployed Niri config layers repo config first, DMS-managed includes second, and user overrides last.
-
-Use these override locations for local customization:
-
-- `~/.config/niri/override.d/binds.kdl`
-- `~/.config/niri/override.d/autostart.kdl`
-- `~/.config/niri/override.d/cursor.kdl`
-- `~/.config/niri/dms/binds.kdl`
-
-Terminal preference and file-type defaults are separate:
-
-- terminal launcher preference: `~/.config/niri-xdg-terminals.list`
-- file associations and default editor: `~/.config/mimeapps.list`
-
-## Install And Update
-
-Install entrypoints:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Furyfree/niriland/main/bootstrap | bash
-~/.local/share/niriland/install
-```
-
-The installer currently asks for:
-
-- system password for `sudo`
-- LUKS password, with empty input reusing the system password
-- git name/email confirmation or override values
-
-The install flow is grouped by purpose:
-
-- `00-09`: base system preparation
-- `10-19`: package install and desktop setup
-- `20-39`: config deploy and desktop polish
-- `40-59`: shell, keyring, helper tools, editor bootstrap
-- `60-79`: developer tools, editors, browser setup
-- `80-99`: desktop integration and cleanup
-
-For normal maintenance:
+The current maintenance helper is still:
 
 ```bash
 niriland-update
 ```
 
-Current update behavior:
+It still upgrades packages and replays selected installer steps. Phase 4 will
+replace that behavior with fetch, preview, versioned migrations, reconciliation,
+and validation. It will never prune packages implicitly.
 
-- requires a clean git worktree
-- runs `git pull --ff-only`
-- runs a full package upgrade through `niriland-pkg upgrade`
-- replays selected shared-baseline install steps
-- preserves existing local config during `20-deploy-configs`
-- does not install or remove the optional gaming profile
+## Repository layout
 
-## Repository Layout
+- `bootstrap`: stable curl entrypoint;
+- `bin/`: public commands linked into `~/.local/bin`;
+- `src/niriland/`: private parser, planning, migration, state, and sudo code;
+- `machine.local.example`: tracked local profile template;
+- `profiles/`: tracked profile composition;
+- `packages/`: current manifests plus the purpose-based target contract;
+- `tests/`: rootless temporary-HOME and fake-command tests;
+- `installer/install`, `installer/steps/`: transitional numbered installer;
+- `configs/shared/`: shared fragments still loaded by deployed configs;
+- `migrations/`: legacy migrations plus the new contract documentation;
+- `configs/home`: canonical user configuration tree;
+- `configs/system`: root-owned system assets;
+- `docs/`: accepted plan, research, operational notes, and roadmap.
 
-- `bootstrap` — clone/update repo and run installer
-- `install` — installer orchestrator
-- `cleanup` — plan-first, staged cleanup of retired application data and rebuildable caches
-- `scripts/install/lib/common` — shared installer helpers
-- `scripts/install/steps/` — numbered install steps
-- `scripts/tools/` — helper scripts copied to `~/.local/bin/niriland`
-- `configs/base/` — files deployed to `$HOME`
-- `configs/modules/` — modular shared config fragments (Niri/Zsh/Ghostty)
-- `configs/system/` — system-level assets used by steps/tools
-- `packages/base.packages`, `aur.packages`, `cachyos.packages`, and `chaotic.packages` — shared package manifests
-- `packages/gaming.packages` — optional full gaming profile used only by `niriland-setup-gaming`
-- `packages/vscodium.extensions` — VSCodium extension list
+Retained optional helpers include gaming, certificates, fingerprint status,
+virtualization, and WoW. The certificate workflow remains active. Unsafe
+fingerprint mutation is disabled; its replacement will receive
+plan/apply/revert safety work in Phase 5. VM and WoW remain unclassified until
+Phase 4.
 
-## Helper Tools
+## Validation
 
-After `50-setup-tools`, helper scripts are copied to `~/.local/bin/niriland`.
-
-Main tools:
-
-- `niriland-pkg` — package install, remove, upgrade, and cleanup helper
-- `niriland-update` — repo update plus selected maintenance replay
-- `niriland-sync-base-config` — replay selected tracked files into `$HOME`
-
-Optional follow-up helpers:
-
-- AI
-- gaming (`niriland-setup-gaming`; explicit per-machine opt-in)
-- WoW
-- Helix
-- Helium browser compatibility, including Widevine
-- certificates
-- fingerprint auth
-- virtualization
-
-## Post-baseline Cleanup
-
-The root-level `cleanup` script inventories data left by applications and
-development runtimes removed from the shared baseline. It also reports
-rebuildable Pacman, uv, npm (including temporary `npx` installs), AUR-helper,
-and Nix caches. Plan mode is read-only:
+The Phase 1 gate is:
 
 ```bash
-./cleanup plan
+bash -n bin/niriland src/niriland/*.sh src/niriland/commands/*.sh tests/run tests/test-*.sh
+shellcheck -x -P SCRIPTDIR bin/niriland src/niriland/*.sh src/niriland/commands/*.sh tests/run tests/test-*.sh
+tests/run
 ```
 
-Run `./cleanup apply` only after the common-baseline package migration has
-completed. Application data, Flutter/Android data, and caches use separate
-typed confirmations. Docker pruning is excluded unless `--docker` is passed,
-and Docker volumes, projects, documents, gaming data, Wine prefixes, and
-snapshots are never selected.
+The repository-wide shell gate remains documented in `AGENTS.md`. Tests
+use temporary directories and a fake sudo executable; they do not require root
+or mutate the live workstation.
+
+## Documentation
+
+- [`docs/PLAN.md`](docs/PLAN.md): accepted rewrite scope and ordered phases;
+- [`docs/RESEARCH.md`](docs/RESEARCH.md): implementation research and current evidence;
+- [`docs/ROADMAP.md`](docs/ROADMAP.md): residual repo work;
+- [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md): legacy migration guidance;
+- [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md): operational fixes;
+- [`docs/CACHYOS_INSTALL.md`](docs/CACHYOS_INSTALL.md): expected CachyOS starting point.
 
 ## License
 

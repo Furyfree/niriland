@@ -5,7 +5,8 @@ Guidance for coding agents working in this repository.
 ## Project Overview
 
 Niriland is a personal CachyOS-first desktop bootstrap and configuration repo for
-Niri + DankMaterialShell. It is intentionally opinionated and fresh-install
+Niri. The active installer still deploys DankMaterialShell while the bounded
+rewrite moves toward Noctalia. It is intentionally opinionated and fresh-install
 oriented: installer steps can overwrite system and user configuration.
 
 The repository is expected to live at `~/.local/share/niriland`. Some tracked
@@ -21,13 +22,16 @@ path assumptions unless the whole runtime model is being updated.
 
 ## Repository Layout
 
-- `bootstrap` clones or updates the repo and starts the installer.
-- `install` orchestrates numbered install steps.
-- `scripts/install/lib/common` contains shared installer helpers.
-- `scripts/install/steps/` contains numbered install steps.
-- `scripts/tools/` contains helper commands copied to `~/.local/bin/niriland`.
-- `configs/base/` contains files deployed into `$HOME`.
-- `configs/modules/` contains shared config fragments loaded by deployed config.
+- `bootstrap` clones or updates the repo and starts the active installer.
+- `bin/` contains public commands; `bin/niriland` is the new primary command.
+- `src/niriland/` contains private parser, plan, migration, and sudo libraries.
+- `profiles/` composes purpose-based package manifests per machine.
+- `tests/` contains rootless tests using temporary state and fake commands.
+- `installer/install` orchestrates the numbered install steps.
+- `installer/lib/common.sh` contains shared installer helpers.
+- `installer/steps/` contains numbered install steps.
+- `configs/home/` contains files deployed into `$HOME`.
+- `configs/shared/` contains shared fragments still loaded by deployed config.
 - `configs/system/` contains system-level assets used by steps and tools.
 - `packages/*.packages` contains package manifests.
 - `docs/` contains operational notes, migrations, roadmap, and troubleshooting.
@@ -37,12 +41,12 @@ path assumptions unless the whole runtime model is being updated.
 - Keep changes scoped. This repo includes personal dotfiles and machine setup
   scripts, so do not generalize behavior beyond the stated request.
 - Preserve the fresh-install model unless explicitly asked to change it.
-- Do not move tracked config fragments out of `configs/modules/` without checking
+- Do not move tracked config fragments out of `configs/shared/` without checking
   references in deployed Niri, Ghostty, or Zsh config.
 - Machine-local customization should stay outside tracked config unless the user
   explicitly asks to make it the shared default.
-- Treat files under `configs/base/` as deployable `$HOME` paths. A path such as
-  `configs/base/.config/niri/config.kdl` deploys to `~/.config/niri/config.kdl`.
+- Treat files under `configs/home/` as deployable `$HOME` paths. A path such as
+  `configs/home/.config/niri/config.kdl` deploys to `~/.config/niri/config.kdl`.
 - Avoid introducing dependencies that are not listed in `packages/` or installed
   by the relevant setup step.
 
@@ -50,19 +54,24 @@ path assumptions unless the whole runtime model is being updated.
 
 - Use Bash for installer and helper scripts.
 - Keep `set -euo pipefail` in executable scripts.
-- Prefer helpers from `scripts/install/lib/common` for installer steps:
+- Treat `machine.local.conf` and profile files as strict data. Never source them.
+- Prefer helpers from `installer/lib/common.sh` for installer steps:
   `log`, `warn`, `die`, `require_cmd`, `ensure_sudo_session`, `run_sudo`, and
   package helpers where applicable.
+- Never read or export a sudo password. Long mutating entrypoints use
+  `niriland_sudo_session_start` and always stop it through a trap.
 - Quote variable expansions and paths.
 - Keep install steps executable and numbered by lifecycle order.
-- For update-time replay behavior, check `scripts/tools/niriland-update` before
+- For update-time replay behavior, check `bin/niriland-update` before
   changing installer step names or assumptions.
 
 ## Safety
 
-- Do not run `install`, `bootstrap`, `niriland-update`, or numbered installer
-  steps casually. They can install packages, change system state, deploy configs,
-  and require sudo.
+- Do not run `installer/install`, `bootstrap`, `niriland-update`, or numbered
+  installer steps casually. They can install packages, change system state,
+  deploy configs, and require sudo.
+- Phase 1 `niriland apply`, `update`, and `postinstall` commands are reserved and
+  must continue refusing mutation until their planned phases are implemented.
 - Do not run package upgrade/install commands unless the user explicitly asks.
 - Be careful with `20-deploy-configs`: default mode overwrites deploy targets
   after backing them up; preserve mode skips existing `.config/*` files.
@@ -74,13 +83,21 @@ path assumptions unless the whole runtime model is being updated.
 For script-only changes, prefer static checks:
 
 ```bash
-bash -n bootstrap install scripts/install/lib/common scripts/install/steps/* scripts/tools/*
+bash -n bootstrap bin/* installer/install installer/lib/common.sh installer/steps/*
 ```
 
 If `shellcheck` is available, run it on changed shell scripts:
 
 ```bash
-shellcheck bootstrap install scripts/install/lib/common scripts/install/steps/* scripts/tools/*
+shellcheck -x -P SCRIPTDIR bootstrap bin/* installer/install installer/lib/common.sh installer/steps/*
+```
+
+For the rewrite foundation, also run:
+
+```bash
+bash -n bin/niriland src/niriland/*.sh src/niriland/commands/*.sh tests/run tests/test-*.sh
+shellcheck -x -P SCRIPTDIR bin/niriland src/niriland/*.sh src/niriland/commands/*.sh tests/run tests/test-*.sh
+tests/run
 ```
 
 For package manifest changes, inspect the relevant package list and setup step

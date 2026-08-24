@@ -8,15 +8,7 @@ If expected commands are missing, verify these foundational steps completed succ
 
 - `00-setup-pacman` for package-manager setup, AUR helper setup, and repo normalization
 - `10-install-packages` for the main package manifests
-- `50-setup-tools` for helper scripts copied into `~/.local/bin/niriland`
-
-## AI Tooling Issues
-
-If the AI helper stack is not working as expected:
-
-- Run `niriland-setup-ai status`
-- Verify `ollama`, `docker.service`, and `openwebui` are active
-- Check the service templates under `configs/system/etc/systemd/system/`
+- `50-setup-tools` for commands linked into `~/.local/bin`
 
 ## Ghostty Theme Issues
 

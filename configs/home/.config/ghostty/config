@@ -1,0 +1,2 @@
+config-file = ~/.local/share/niriland/configs/shared/.config/ghostty/config
+theme = dankcolors

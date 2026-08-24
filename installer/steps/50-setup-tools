@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
+
+PUBLIC_BIN_SRC="$REPO_ROOT/bin"
+TOOLS_DST="$HOME/.local/bin"
+BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/niriland/backups/tools-$(date +%Y%m%d%H%M%S)-$$"
+declare -A LINKED_TOOL_SOURCES=()
+
+link_tool() {
+  local source_path="$1"
+  local target_path
+  local backup_path
+  local tool_name
+
+  tool_name="$(basename "$source_path")"
+  target_path="$TOOLS_DST/$tool_name"
+
+  if [[ -n "${LINKED_TOOL_SOURCES[$tool_name]:-}" ]] \
+    && [[ "${LINKED_TOOL_SOURCES[$tool_name]}" != "$source_path" ]]; then
+    die "Duplicate public tool name: $tool_name"
+  fi
+  LINKED_TOOL_SOURCES[$tool_name]="$source_path"
+
+  if [[ -L "$target_path" ]] \
+    && [[ "$(readlink -f -- "$target_path")" == "$(readlink -f -- "$source_path")" ]]; then
+    log "Tool already linked: $target_path"
+    return 0
+  fi
+
+  if [[ -e "$target_path" || -L "$target_path" ]]; then
+    mkdir -p "$BACKUP_ROOT"
+    backup_path="$BACKUP_ROOT/$(basename "$target_path")"
+    log "Moving existing tool path to $backup_path"
+    mv -- "$target_path" "$backup_path"
+  fi
+
+  ln -s -- "$source_path" "$target_path"
+  log "Linked $target_path -> $source_path"
+}
+
+link_directory() {
+  local source_dir="$1"
+  local source_path
+
+  [[ -d "$source_dir" ]] || die "Tools source directory not found: $source_dir"
+  for source_path in "$source_dir"/*; do
+    [[ -f "$source_path" && -x "$source_path" ]] || continue
+    link_tool "$source_path"
+  done
+}
+
+mkdir -p "$TOOLS_DST"
+link_directory "$PUBLIC_BIN_SRC"
+
+PATH_MARKER="# niriland-path"
+# This line is written literally to the target shell environment.
+# shellcheck disable=SC2016
+PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
+
+ensure_path_block() {
+  local profile_file="$1"
+  local temp_file
+
+  touch "$profile_file"
+  temp_file="$(mktemp "${profile_file}.tmp.XXXXXX")"
+
+  awk -v marker="$PATH_MARKER" -v path_line="$PATH_LINE" '
+    $0 == marker {
+      print marker
+      if ((getline next_line) > 0 && next_line !~ /^export PATH=.*\.local\/bin/) {
+        print path_line
+        print next_line
+      } else {
+        print path_line
+      }
+      found = 1
+      next
+    }
+    { print }
+    END {
+      if (!found) {
+        print ""
+        print marker
+        print path_line
+      }
+    }
+  ' "$profile_file" > "$temp_file"
+  if ! command cat -- "$temp_file" > "$profile_file"; then
+    rm -f -- "$temp_file"
+    die "Could not update PATH in $profile_file"
+  fi
+  rm -f -- "$temp_file"
+
+  log "PATH configured in $profile_file"
+}
+
+ensure_path_block "$HOME/.zprofile"
+ensure_path_block "$HOME/.profile"
+
+log_success "Tools setup complete."

@@ -1,0 +1,340 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+##############################################################################
+# Path Setup
+##############################################################################
+
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Consumers use this value after sourcing the library.
+# shellcheck disable=SC2034
+REPO_ROOT="$(cd "$LIB_DIR/../.." && pwd)"
+
+# shellcheck source=src/niriland/sudo-session.sh
+source "$REPO_ROOT/src/niriland/sudo-session.sh"
+
+##############################################################################
+# Colors
+##############################################################################
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+##############################################################################
+# Logging Functions
+##############################################################################
+
+log() {
+  printf "${BLUE}==>${NC} %s\n" "$*"
+}
+
+log_success() {
+  printf "${GREEN}==>${NC} %s\n" "$*"
+}
+
+log_warning() {
+  printf "${YELLOW}WARN:${NC} %s\n" "$*" >&2
+}
+
+log_error() {
+  printf "${RED}ERROR:${NC} %s\n" "$*" >&2
+}
+
+warn() {
+  log_warning "$@"
+}
+
+die() {
+  log_error "$@"
+  exit 1
+}
+
+prompt_yes_no() {
+  local question="$1"
+  local default="${2:-N}"
+  local prompt_suffix
+  local reply
+
+  case "$default" in
+    Y|y)
+      prompt_suffix="[Y/n]"
+      ;;
+    N|n)
+      prompt_suffix="[y/N]"
+      ;;
+    *)
+      die "prompt_yes_no default must be Y or N"
+      ;;
+  esac
+
+  while true; do
+    read -rp "$question $prompt_suffix " reply </dev/tty
+    if [[ -z "$reply" ]]; then
+      reply="$default"
+    fi
+
+    case "$reply" in
+      Y|y|yes|YES)
+        return 0
+        ;;
+      N|n|no|NO)
+        return 1
+        ;;
+      *)
+        warn "Please answer y or n."
+        ;;
+    esac
+  done
+}
+
+##############################################################################
+# Requirement Checks
+##############################################################################
+
+ensure_sudo_session() {
+  if sudo -n true 2>/dev/null; then
+    return 0
+  fi
+
+  sudo -v || die "sudo authentication failed"
+}
+
+require_paru() {
+  if ! command -v paru >/dev/null 2>&1; then
+    die "paru is required but not installed. Run 00-setup-pacman first."
+  fi
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+ensure_user_mise() {
+  local architecture
+  local asset_name
+  local downloaded_binary
+  local expected_sha256
+  local mise_version="2026.8.8"
+
+  MISE_BIN="$HOME/.local/bin/mise"
+  export MISE_BIN
+
+  if [[ -x "$MISE_BIN" ]]; then
+    log "Using user-local mise: $MISE_BIN"
+    return 0
+  fi
+
+  require_cmd curl
+  require_cmd sha256sum
+
+  architecture="$(uname -m)"
+  case "$architecture" in
+    x86_64)
+      asset_name="mise-v${mise_version}-linux-x64"
+      expected_sha256="1fce52a3656cf14bef6feeb9f0b90d545126a0bb598f0a69afbb9e4702f8f3e3"
+      ;;
+    aarch64|arm64)
+      asset_name="mise-v${mise_version}-linux-arm64"
+      expected_sha256="76f570105249348a228af9411ca8c7869cfb4ca59de2d1dc025ac53305c5f1d5"
+      ;;
+    *)
+      die "Unsupported architecture for mise bootstrap: $architecture"
+      ;;
+  esac
+
+  downloaded_binary="$(mktemp)"
+
+  if ! curl -fsSL \
+    "https://github.com/jdx/mise/releases/download/v${mise_version}/${asset_name}" \
+    -o "$downloaded_binary"; then
+    rm -f -- "$downloaded_binary"
+    die "Failed to download mise v${mise_version}."
+  fi
+
+  if ! printf '%s  %s\n' "$expected_sha256" "$downloaded_binary" \
+    | sha256sum --check --status; then
+    rm -f -- "$downloaded_binary"
+    die "Checksum verification failed for mise v${mise_version}."
+  fi
+
+  mkdir -p "$(dirname "$MISE_BIN")"
+  if ! install -m 0755 "$downloaded_binary" "$MISE_BIN"; then
+    rm -f -- "$downloaded_binary"
+    die "Failed to install user-local mise."
+  fi
+
+  rm -f -- "$downloaded_binary"
+  [[ -x "$MISE_BIN" ]] || die "mise installer did not create $MISE_BIN"
+  log_success "Installed verified mise v${mise_version}: $MISE_BIN"
+}
+
+install_baseline_cargo_tools() {
+  require_cmd cargo
+
+  cargo install --locked cargo-update
+  cargo install --locked just
+  cargo install --locked nirius
+  cargo install --locked watchexec-cli
+}
+
+##############################################################################
+# Package Management
+##############################################################################
+
+install_package() {
+  local pkg
+  local -a missing_packages=()
+
+  for pkg in "$@"; do
+    if pacman -Qq "$pkg" >/dev/null 2>&1; then
+      log "$pkg already installed, skipping."
+      continue
+    fi
+
+    missing_packages+=("$pkg")
+  done
+
+  if [[ ${#missing_packages[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  log "Installing packages: ${missing_packages[*]}"
+  run_sudo pacman -S --needed --noconfirm "${missing_packages[@]}" \
+    || die "Failed to install packages: ${missing_packages[*]}"
+}
+
+install_aur_package() {
+  local pkg
+  local -a missing_packages=()
+
+  for pkg in "$@"; do
+    if pacman -Qq "$pkg" >/dev/null 2>&1; then
+      log "$pkg already installed, skipping."
+      continue
+    fi
+
+    missing_packages+=("$pkg")
+  done
+
+  if [[ ${#missing_packages[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  log "Installing AUR packages: ${missing_packages[*]}"
+  paru -S --needed --noconfirm --review "${missing_packages[@]}" \
+    || die "Failed to install AUR packages: ${missing_packages[*]}"
+}
+
+##############################################################################
+# File Operations
+##############################################################################
+
+copy_file() {
+  local src="$1"
+  local dest="$2"
+  local backup="${3:-true}"
+
+  [[ -f "$src" ]] || die "File not found: $src"
+
+  if [[ "$backup" == "true" ]] && [[ -f "$dest" ]] && ! cmp -s "$src" "$dest"; then
+    local backup_path
+    backup_path="${dest}.bak.$(date +%s)"
+    log "Backing up $dest to $backup_path..."
+    run_sudo cp "$dest" "$backup_path" || die "Failed to backup $dest"
+  fi
+
+  log "Copying $src to $dest..."
+  run_sudo cp "$src" "$dest" || die "Failed to copy $src to $dest"
+}
+
+# Run a privileged command through sudo's own credential cache.
+run_sudo() {
+  ensure_sudo_session
+  sudo "$@"
+}
+
+##############################################################################
+# Git Configuration
+##############################################################################
+
+# Read or confirm git configuration
+read_git_config() {
+  log "Checking Git configuration..."
+
+  # Check existing git config
+  local existing_name existing_email
+  existing_name=$(git config --global user.name 2>/dev/null || echo "")
+  existing_email=$(git config --global user.email 2>/dev/null || echo "")
+
+  if [[ -n "$existing_name" && -n "$existing_email" ]]; then
+    log_success "Found existing Git config:"
+    echo "  Name:  $existing_name"
+    echo "  Email: $existing_email"
+    echo
+
+    read -rp "Keep this configuration? (Y/n) " -n 1 -r </dev/tty
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+      export GIT_NAME="$existing_name"
+      export GIT_EMAIL="$existing_email"
+      return 0
+    fi
+  fi
+
+  # Prompt for new config.
+  # Leave both fields empty to skip setting git user values.
+  echo
+  read -rp "Git name (Full Name, Enter to skip): " GIT_NAME </dev/tty
+  read -rp "Git email (Enter to skip): " GIT_EMAIL </dev/tty
+
+  # Allow blank inputs and continue without changing git config.
+  if [[ -z "$GIT_NAME" && -z "$GIT_EMAIL" ]]; then
+    warn "Git configuration left blank, skipping setup."
+    unset GIT_NAME
+    unset GIT_EMAIL
+    return 0
+  fi
+
+  if [[ -z "$GIT_NAME" || -z "$GIT_EMAIL" ]]; then
+    warn "Git name/email incomplete, skipping setup."
+    unset GIT_NAME
+    unset GIT_EMAIL
+    return 0
+  fi
+
+  export GIT_NAME
+  export GIT_EMAIL
+  log_success "Git configuration set"
+}
+
+# Apply git configuration to global config
+setup_git_user() {
+  if [[ -z "${GIT_NAME:-}" || -z "${GIT_EMAIL:-}" ]]; then
+    warn "Git configuration not set, skipping setup"
+    return 0
+  fi
+
+  log "Applying Git configuration..."
+  git config --global user.name "$GIT_NAME"
+  git config --global user.email "$GIT_EMAIL"
+  log_success "Git user configured: $GIT_NAME <$GIT_EMAIL>"
+}
+
+# Clean up git config from environment
+clean_git_config() {
+  unset GIT_NAME
+  unset GIT_EMAIL
+}
+
+##############################################################################
+# Cleanup All
+##############################################################################
+
+cleanup_all() {
+  niriland_sudo_session_stop
+  clean_git_config
+}

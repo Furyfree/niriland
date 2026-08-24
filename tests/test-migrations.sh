@@ -43,6 +43,11 @@ niriland_migration_receipt_status \
   || fail "contract migration without receipt was not pending"
 pass "contract migration without receipt is pending"
 
+migration_summary="$(niriland_migration_status_summary "$test_dir/state")"
+[[ "$migration_summary" == 'complete=0, pending=1, legacy=1, blocked=0' ]] \
+  || fail "pending migration summary was incorrect: $migration_summary"
+pass "migration summary reports pending and legacy states"
+
 source_hash="$(niriland_migration_source_hash "$test_dir/migrations/2026-08-23-example.sh")"
 printf '%s\n' \
   'id=2026-08-23-example' \
@@ -55,6 +60,11 @@ niriland_migration_receipt_status \
 [[ "$NIRILAND_MIGRATION_STATUS" == "complete" ]] \
   || fail "matching receipt was not complete"
 pass "matching migration receipt is complete"
+
+migration_summary="$(niriland_migration_status_summary "$test_dir/state")"
+[[ "$migration_summary" == 'complete=1, pending=0, legacy=1, blocked=0' ]] \
+  || fail "complete migration summary was incorrect: $migration_summary"
+pass "migration summary reports completed receipts"
 
 printf '%s\n' \
   'id=2026-08-23-example' \
@@ -82,5 +92,10 @@ niriland_migration_receipt_status \
 [[ "$NIRILAND_MIGRATION_STATUS" == "changed" ]] \
   || fail "changed completed migration was not blocked"
 pass "completed migration source is immutable"
+
+migration_summary="$(niriland_migration_status_summary "$test_dir/state")"
+[[ "$migration_summary" == 'complete=0, pending=0, legacy=1, blocked=1' ]] \
+  || fail "blocked migration summary was incorrect: $migration_summary"
+pass "migration summary reports changed receipts as blocked"
 
 printf '1..%d\n' "$TEST_COUNT"

@@ -43,7 +43,12 @@ it on an existing system.
 
 ## Machine selection
 
-Create the ignored local selector in the repository root:
+The curl bootstrap creates the ignored local selector before installation. On a
+new checkout it prompts for `desktop` or `laptop`, runs the read-only plan, and
+requires confirmation before starting the legacy installer. An existing
+`machine.local.conf` is preserved and validated instead of being replaced.
+
+For a manually cloned checkout, create the selector in the repository root:
 
 ```bash
 cp machine.local.example machine.local.conf
@@ -70,7 +75,8 @@ package_sets=base,dev,gaming,laptop
 
 The profile and new package files define the Phase 2 target contract. The
 legacy installer still consumes the old unqualified manifests until the package
-source audit moves every package coherently. See
+source audit moves every package coherently. The bootstrap prints this boundary
+before asking whether to continue. See
 [`packages/README.md`](packages/README.md).
 
 ## Read-only command

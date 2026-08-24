@@ -15,24 +15,126 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
 }
 
-REPO_URL="${NIRILAND_REPO_URL:-https://github.com/Furyfree/niriland.git}"
-TARGET_DIR="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
+ensure_machine_config() {
+  local target_dir="$1"
+  local input_path="${2:-/dev/tty}"
+  local output_path="${3:-/dev/tty}"
+  local config_file="$target_dir/machine.local.conf"
+  local selection
+  local profile
+  local temp_file
+  local input_fd
+  local output_fd
 
-require_cmd git
+  if [[ -f "$config_file" ]]; then
+    log "Keeping existing machine selector at $config_file"
+    return 0
+  fi
 
-if [[ -d "$TARGET_DIR/.git" ]]; then
-  log "Updating repo in $TARGET_DIR"
-  git -C "$TARGET_DIR" pull --ff-only
-else
-  log "Cloning repo to $TARGET_DIR"
-  mkdir -p "$(dirname "$TARGET_DIR")"
-  git clone "$REPO_URL" "$TARGET_DIR"
+  exec {input_fd}<"$input_path" || die "Cannot read machine profile selection from $input_path"
+  exec {output_fd}>"$output_path" || die "Cannot show machine profile selection on $output_path"
+
+  while true; do
+    printf '%s\n' \
+      'Select machine profile:' \
+      '  1) desktop' \
+      '  2) laptop' \
+      >&"$output_fd"
+    printf 'Profile [1/2]: ' >&"$output_fd"
+    IFS= read -r selection <&"$input_fd" \
+      || die "Machine profile selection was cancelled"
+
+    case "$selection" in
+      1|desktop)
+        profile="desktop"
+        break
+        ;;
+      2|laptop)
+        profile="laptop"
+        break
+        ;;
+      *)
+        printf 'Choose 1 (desktop) or 2 (laptop).\n' >&"$output_fd"
+        ;;
+    esac
+  done
+
+  exec {input_fd}<&-
+  exec {output_fd}>&-
+
+  temp_file="$(mktemp "$target_dir/.machine.local.conf.tmp.XXXXXX")" \
+    || die "Could not create temporary machine selector"
+  if ! printf 'profile=%s\n' "$profile" >"$temp_file"; then
+    rm -f -- "$temp_file"
+    die "Could not write temporary machine selector"
+  fi
+  if ! mv -- "$temp_file" "$config_file"; then
+    rm -f -- "$temp_file"
+    die "Could not install machine selector at $config_file"
+  fi
+  log "Selected machine profile: $profile"
+}
+
+confirm_legacy_install() {
+  local input_path="${1:-/dev/tty}"
+  local output_path="${2:-/dev/tty}"
+  local reply
+  local input_fd
+  local output_fd
+
+  exec {input_fd}<"$input_path" || die "Cannot read installation confirmation from $input_path"
+  exec {output_fd}>"$output_path" || die "Cannot show installation confirmation on $output_path"
+  printf '%s\n' \
+    'The profile is validated, but the Phase 1 legacy installer still uses its' \
+    'existing shared package manifests. Profile-specific package reconciliation' \
+    'begins in Phase 2.' \
+    >&"$output_fd"
+  printf 'Continue with the legacy installation? [y/N] ' >&"$output_fd"
+  IFS= read -r reply <&"$input_fd" || reply=""
+  exec {input_fd}<&-
+  exec {output_fd}>&-
+
+  [[ "$reply" =~ ^[Yy]([Ee][Ss])?$ ]]
+}
+
+main() {
+  local repo_url="${NIRILAND_REPO_URL:-https://github.com/Furyfree/niriland.git}"
+  local target_dir="${NIRILAND_DIR:-$HOME/.local/share/niriland}"
+  local install_script
+
+  require_cmd git
+
+  if [[ -d "$target_dir/.git" ]]; then
+    log "Updating repo in $target_dir"
+    git -C "$target_dir" pull --ff-only
+  else
+    log "Cloning repo to $target_dir"
+    mkdir -p "$(dirname "$target_dir")"
+    git clone "$repo_url" "$target_dir"
+  fi
+
+  ensure_machine_config "$target_dir"
+
+  if [[ ! -x "$target_dir/niriland" ]]; then
+    die "Niriland command not found or not executable: $target_dir/niriland"
+  fi
+  log "Validating selected profile"
+  "$target_dir/niriland" plan
+
+  if ! confirm_legacy_install; then
+    log "Installation cancelled. No installer steps were run."
+    return 0
+  fi
+
+  install_script="$target_dir/install"
+  if [[ ! -x "$install_script" ]]; then
+    die "Install script not found or not executable: $install_script"
+  fi
+
+  log "Bootstrapping"
+  bash "$install_script"
+}
+
+if [[ "${BASH_SOURCE[0]:-$0}" == "$0" ]]; then
+  main "$@"
 fi
-
-INSTALL_SCRIPT="$TARGET_DIR/install"
-if [[ ! -x "$INSTALL_SCRIPT" ]]; then
-  die "Install script not found or not executable: $INSTALL_SCRIPT"
-fi
-
-log "Bootstrapping"
-bash "$INSTALL_SCRIPT"

@@ -166,3 +166,40 @@ niriland_migration_receipt_status() {
     NIRILAND_MIGRATION_DETAIL="success receipt matches source"
   fi
 }
+
+niriland_migration_status_summary() {
+  local state_root="$1"
+  local index
+  local complete=0
+  local pending=0
+  local legacy=0
+  local blocked=0
+
+  for index in "${!NIRILAND_MIGRATION_IDS[@]}"; do
+    niriland_migration_receipt_status \
+      "${NIRILAND_MIGRATION_IDS[$index]}" \
+      "${NIRILAND_MIGRATION_FILES[$index]}" \
+      "$state_root"
+    case "$NIRILAND_MIGRATION_STATUS" in
+      complete)
+        complete=$((complete + 1))
+        ;;
+      pending)
+        pending=$((pending + 1))
+        ;;
+      legacy)
+        legacy=$((legacy + 1))
+        ;;
+      changed|invalid)
+        blocked=$((blocked + 1))
+        ;;
+      *)
+        niriland_die "Unknown migration status: $NIRILAND_MIGRATION_STATUS" \
+          || return 1
+        ;;
+    esac
+  done
+
+  printf 'complete=%d, pending=%d, legacy=%d, blocked=%d\n' \
+    "$complete" "$pending" "$legacy" "$blocked"
+}

@@ -60,6 +60,8 @@ status_output="$(
 assert_contains "$status_output" 'Package sets: base,dev,gaming,desktop' \
   "status must show composed package sets"
 assert_contains "$status_output" '(not created)' "status must not create state"
+assert_contains "$status_output" 'Migration states:' \
+  "status must summarize migration receipt states"
 pass "status reports Phase 1 foundations"
 
 for invocation in 'apply' 'apply --prune' 'update' 'postinstall'; do

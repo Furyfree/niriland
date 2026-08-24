@@ -8,7 +8,7 @@ If expected commands are missing, verify these foundational steps completed succ
 
 - `00-setup-pacman` for package-manager setup, AUR helper setup, and repo normalization
 - `10-install-packages` for the main package manifests
-- `50-setup-tools` for helper scripts copied into `~/.local/bin/niriland`
+- `50-setup-tools` for commands linked into `~/.local/bin`
 
 ## Ghostty Theme Issues
 

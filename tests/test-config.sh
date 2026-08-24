@@ -4,8 +4,8 @@ set -euo pipefail
 
 # shellcheck source=tests/test-lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/test-lib.sh"
-# shellcheck source=scripts/lib/config
-source "$TEST_ROOT/scripts/lib/config"
+# shellcheck source=src/niriland/config.sh
+source "$TEST_ROOT/src/niriland/config.sh"
 
 test_dir="$(mktemp -d)"
 trap 'rm -rf -- "$test_dir"' EXIT
@@ -49,6 +49,14 @@ printf '%s\n' 'package_sets=base,base' >"$test_dir/repo/profiles/duplicate.conf"
 assert_command_fails "duplicate package sets must fail" \
   niriland_parse_profile "$test_dir/repo" duplicate
 pass "duplicate package sets are rejected"
+
+for invalid_list in 'base,dev,' ',base,dev' 'base,,dev'; do
+  printf 'package_sets=%s\n' "$invalid_list" \
+    >"$test_dir/repo/profiles/invalid-list.conf"
+  assert_command_fails "invalid package set list must fail: $invalid_list" \
+    niriland_parse_profile "$test_dir/repo" invalid-list
+done
+pass "empty package-set entries are rejected"
 
 printf '%s\n' 'package_sets=base,missing' >"$test_dir/repo/profiles/missing.conf"
 assert_command_fails "missing manifests must fail" \

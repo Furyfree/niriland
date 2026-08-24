@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
+
+log "Installing DankMaterialShell and dependencies..."
+install_package niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk matugen cava qt6-multimedia-ffmpeg wtype
+
+log "Installing and enabling power-profiles-daemon..."
+install_package power-profiles-daemon
+run_sudo systemctl enable --now power-profiles-daemon
+install_aur_package quickshell-git
+install_package dms-shell dms-shell-niri
+install_aur_package greetd-dms-greeter-bin
+
+TARGET_USER="${SUDO_USER:-${USER:-}}"
+if [[ -z "$TARGET_USER" ]]; then
+  die "Unable to determine target user for DMS greeter setup."
+fi
+
+log "Ensuring greeter group access for $TARGET_USER..."
+run_sudo groupadd -f greeter
+run_sudo usermod -aG greeter "$TARGET_USER"
+
+log "Starting DMS..."
+if systemctl --user add-wants niri.service dms 2>/dev/null; then
+  log "DMS user service linked to niri.service"
+else
+  warn "No active user session; run 'systemctl --user add-wants niri.service dms' after first login."
+fi
+
+require_cmd dms
+if dms greeter enable 2>/dev/null && dms greeter sync 2>/dev/null; then
+  log "DMS greeter configured."
+else
+  warn "DMS greeter setup failed (no active session?). Run 'dms greeter enable && dms greeter sync' after first login."
+fi
+
+log "DMS setup complete."

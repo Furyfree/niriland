@@ -1,6 +1,6 @@
 # Roadmap
 
-[`../plan.md`](../plan.md) owns the active rewrite scope, phase order, risks,
+[`PLAN.md`](PLAN.md) owns the active rewrite scope, phase order, risks,
 recovery, and acceptance criteria. This file only tracks residual repository
 work and resolved roadmap input so it cannot become a competing plan.
 
@@ -18,7 +18,7 @@ Phase 1 is implemented locally and establishes the safe foundation:
 Its static validation is complete, but it remains unapplied to live
 configuration or package state. Configuration deployment, package ownership,
 Noctalia cutover, pruning, and post-install system changes belong to later
-phases in `plan.md`. Phase 2 begins only after this foundation and its research
+phases in `PLAN.md`. Phase 2 begins only after this foundation and its research
 have been reviewed.
 
 ## Residual work

@@ -19,7 +19,7 @@ die() {
 }
 
 for rel_path in "${CONFIG_PATHS[@]}"; do
-  src="$NIRILAND_ROOT/configs/base/$rel_path"
+  src="$NIRILAND_ROOT/configs/home/$rel_path"
   dest="$HOME/$rel_path"
 
   [[ -f "$src" ]] || die "Missing source config file: $src"

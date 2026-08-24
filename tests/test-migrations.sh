@@ -4,8 +4,8 @@ set -euo pipefail
 
 # shellcheck source=tests/test-lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/test-lib.sh"
-# shellcheck source=scripts/lib/migrations
-source "$TEST_ROOT/scripts/lib/migrations"
+# shellcheck source=src/niriland/migrations.sh
+source "$TEST_ROOT/src/niriland/migrations.sh"
 
 test_dir="$(mktemp -d)"
 trap 'rm -rf -- "$test_dir"' EXIT

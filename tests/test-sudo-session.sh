@@ -4,8 +4,8 @@ set -euo pipefail
 
 # shellcheck source=tests/test-lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/test-lib.sh"
-# shellcheck source=scripts/lib/sudo-session
-source "$TEST_ROOT/scripts/lib/sudo-session"
+# shellcheck source=src/niriland/sudo-session.sh
+source "$TEST_ROOT/src/niriland/sudo-session.sh"
 
 test_dir="$(mktemp -d)"
 trap 'niriland_sudo_session_stop; rm -rf -- "$test_dir"' EXIT
@@ -31,6 +31,7 @@ assert_contains "$sudo_log" '-v' "sudo session must validate once"
 assert_contains "$sudo_log" '-n true' "sudo session must refresh non-interactively"
 assert_contains "$sudo_log" '-k' "long privileged flow must invalidate on stop"
 [[ -z "$NIRILAND_SUDO_KEEPALIVE_PID" ]] || fail "sudo keepalive PID was not cleared"
+[[ -z "$NIRILAND_SUDO_KEEPALIVE_FD" ]] || fail "sudo keepalive signal FD was not cleared"
 pass "sudo keepalive uses validation, non-interactive refresh, and invalidation"
 
 export NIRILAND_SUDO_KEEPALIVE_INTERVAL=60
@@ -43,6 +44,13 @@ stop_elapsed_ns=$((stop_finished_at - stop_started_at))
 (( stop_elapsed_ns < 2000000000 )) \
   || fail "sudo keepalive stop waited for the full sleep interval"
 pass "sudo keepalive stops promptly during its sleep interval"
+
+for _ in {1..5}; do
+  niriland_sudo_session_start false
+  sleep 0.01
+  niriland_sudo_session_stop
+done
+pass "sudo keepalive stops reliably across repeated long-interval sessions"
 
 : >"$FAKE_SUDO_LOG"
 niriland_sudo_session_start false

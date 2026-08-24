@@ -5,8 +5,8 @@ set -euo pipefail
 # shellcheck source=tests/test-lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/test-lib.sh"
 
-# shellcheck source=scripts/lib/plan
-source "$TEST_ROOT/scripts/lib/plan"
+# shellcheck source=src/niriland/plan-output.sh
+source "$TEST_ROOT/src/niriland/plan-output.sh"
 
 for resource_id in \
   'profile:desktop' \
@@ -31,7 +31,7 @@ printf '%s\n' 'profile=desktop' >"$test_dir/machine.conf"
 plan_output="$(
   NIRILAND_MACHINE_CONFIG="$test_dir/machine.conf" \
   NIRILAND_STATE_HOME="$test_dir/state" \
-    "$TEST_ROOT/niriland" plan
+    "$TEST_ROOT/bin/niriland" plan
 )"
 assert_contains "$plan_output" 'Profile: desktop' "plan must show selected profile"
 assert_contains "$plan_output" 'SELECT   profile:desktop' "plan must emit stable profile ID"
@@ -44,7 +44,7 @@ pass "plan resolves profile without creating state"
 prune_output="$(
   NIRILAND_MACHINE_CONFIG="$test_dir/machine.conf" \
   NIRILAND_STATE_HOME="$test_dir/state" \
-    "$TEST_ROOT/niriland" plan --prune
+    "$TEST_ROOT/bin/niriland" plan --prune
 )"
 assert_contains "$prune_output" 'Prune: true' "prune plan must be explicit"
 assert_contains "$prune_output" 'package-prune:untracked' \
@@ -55,7 +55,7 @@ pass "prune planning remains read-only and deferred"
 status_output="$(
   NIRILAND_MACHINE_CONFIG="$test_dir/machine.conf" \
   NIRILAND_STATE_HOME="$test_dir/state" \
-    "$TEST_ROOT/niriland" status
+    "$TEST_ROOT/bin/niriland" status
 )"
 assert_contains "$status_output" 'Package sets: base,dev,gaming,desktop' \
   "status must show composed package sets"
@@ -67,7 +67,7 @@ pass "status reports Phase 1 foundations"
 for invocation in 'apply' 'apply --prune' 'update' 'postinstall'; do
   read -r -a args <<<"$invocation"
   if env NIRILAND_MACHINE_CONFIG="$test_dir/machine.conf" \
-    "$TEST_ROOT/niriland" "${args[@]}" >/dev/null 2>&1; then
+    "$TEST_ROOT/bin/niriland" "${args[@]}" >/dev/null 2>&1; then
     fail "$invocation unexpectedly succeeded"
   else
     command_status=$?

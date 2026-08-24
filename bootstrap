@@ -75,7 +75,7 @@ ensure_machine_config() {
   log "Selected machine profile: $profile"
 }
 
-confirm_legacy_install() {
+confirm_install() {
   local input_path="${1:-/dev/tty}"
   local output_path="${2:-/dev/tty}"
   local reply
@@ -85,11 +85,11 @@ confirm_legacy_install() {
   exec {input_fd}<"$input_path" || die "Cannot read installation confirmation from $input_path"
   exec {output_fd}>"$output_path" || die "Cannot show installation confirmation on $output_path"
   printf '%s\n' \
-    'The profile is validated, but the Phase 1 legacy installer still uses its' \
+    'The profile is validated, but the current installer still uses its' \
     'existing shared package manifests. Profile-specific package reconciliation' \
     'begins in Phase 2.' \
     >&"$output_fd"
-  printf 'Continue with the legacy installation? [y/N] ' >&"$output_fd"
+  printf 'Continue with the installation? [y/N] ' >&"$output_fd"
   IFS= read -r reply <&"$input_fd" || reply=""
   exec {input_fd}<&-
   exec {output_fd}>&-
@@ -115,18 +115,18 @@ main() {
 
   ensure_machine_config "$target_dir"
 
-  if [[ ! -x "$target_dir/niriland" ]]; then
-    die "Niriland command not found or not executable: $target_dir/niriland"
+  if [[ ! -x "$target_dir/bin/niriland" ]]; then
+    die "Niriland command not found or not executable: $target_dir/bin/niriland"
   fi
   log "Validating selected profile"
-  "$target_dir/niriland" plan
+  "$target_dir/bin/niriland" plan
 
-  if ! confirm_legacy_install; then
+  if ! confirm_install; then
     log "Installation cancelled. No installer steps were run."
     return 0
   fi
 
-  install_script="$target_dir/install"
+  install_script="$target_dir/installer/install"
   if [[ ! -x "$install_script" ]]; then
     die "Install script not found or not executable: $install_script"
   fi

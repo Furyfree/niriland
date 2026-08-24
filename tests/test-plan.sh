@@ -5,6 +5,25 @@ set -euo pipefail
 # shellcheck source=tests/test-lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/test-lib.sh"
 
+# shellcheck source=scripts/lib/plan
+source "$TEST_ROOT/scripts/lib/plan"
+
+for resource_id in \
+  'profile:desktop' \
+  'package-set:base' \
+  'migration:2026-08-23-example' \
+  'home:.config/niri/config.kdl'; do
+  niriland_validate_resource_id "$resource_id" \
+    || fail "valid resource ID was rejected: $resource_id"
+done
+pass "resource IDs accept documented stable forms"
+
+for resource_id in 'Home:desktop' 'home:' 'home:.' 'home:/etc/niri/config.kdl'; do
+  assert_command_fails "invalid resource ID was accepted: $resource_id" \
+    niriland_validate_resource_id "$resource_id"
+done
+pass "resource IDs reject malformed and absolute forms"
+
 test_dir="$(mktemp -d)"
 trap 'rm -rf -- "$test_dir"' EXIT
 printf '%s\n' 'profile=desktop' >"$test_dir/machine.conf"

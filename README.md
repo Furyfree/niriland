@@ -104,7 +104,7 @@ curl -fsSL https://raw.githubusercontent.com/Furyfree/niriland/main/bootstrap | 
 The installer now asks sudo to validate its own credential cache once and keeps
 that timestamp alive for the run. It no longer collects a system password or
 reuses that password for disk encryption. Git name/email setup remains
-interactive.
+interactive, as does review of PKGBUILDs before installing AUR packages.
 
 The legacy maintenance helper is still:
 

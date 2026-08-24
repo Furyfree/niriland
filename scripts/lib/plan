@@ -18,7 +18,7 @@ niriland_plan_reset() {
 }
 
 niriland_validate_resource_id() {
-  [[ "$1" =~ ^[a-z][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9._/-]*$ ]]
+  [[ "$1" =~ ^[a-z][a-z0-9-]*:([A-Za-z0-9]|\.[A-Za-z0-9])[A-Za-z0-9._/-]*$ ]]
 }
 
 niriland_plan_emit() {

@@ -225,7 +225,7 @@ install_aur_package() {
   fi
 
   log "Installing AUR packages: ${missing_packages[*]}"
-  paru -S --needed --noconfirm "${missing_packages[@]}" \
+  paru -S --needed --noconfirm --review "${missing_packages[@]}" \
     || die "Failed to install AUR packages: ${missing_packages[*]}"
 }
 

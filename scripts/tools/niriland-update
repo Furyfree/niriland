@@ -39,7 +39,8 @@ if [[ "$SCRIPT_SELF" != "$REPO_UPDATE_SCRIPT" ]]; then
 fi
 
 # Package upgrades and selected install-step replays include privileged operations.
-read_system_pass
+trap cleanup_all EXIT
+niriland_sudo_session_start true
 
 log "Upgrading packages (niriland-pkg upgrade)..."
 bash "$REPO_ROOT/scripts/tools/niriland-pkg" upgrade
@@ -70,8 +71,6 @@ for pattern in 10-* 15-* 20-* 50-* 80-* 90-*; do
   fi
 done
 
-clean_system_pass
-
 if command -v cargo-install-update >/dev/null 2>&1; then
   log "Updating Cargo-installed tools..."
   cargo install-update --all || warn "Cargo install-update failed."
@@ -82,4 +81,6 @@ if command -v dms >/dev/null 2>&1; then
   dms ipc call systemupdater updatestatus >/dev/null 2>&1 || warn "Failed to refresh DMS system updater widget."
 fi
 
+cleanup_all
+trap - EXIT
 log_success "Update complete."

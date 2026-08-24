@@ -21,6 +21,8 @@ log "Tools destination: $TOOLS_DST"
 log "Tools synced from: $TOOLS_SRC"
 
 PATH_MARKER="# niriland-path"
+# This line is written literally to the target shell environment.
+# shellcheck disable=SC2016
 PATH_LINE='export PATH="$HOME/.local/bin:$HOME/.local/bin/niriland:$PATH"'
 
 ensure_path_block() {

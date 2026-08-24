@@ -43,11 +43,14 @@ if ! grep -q '^\[chaotic-aur\]' /etc/pacman.conf; then
     printf '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist\n' \
         | run_sudo tee -a /etc/pacman.conf >/dev/null
 
-    run_sudo pacman -Sy --noconfirm
     log "Chaotic AUR added."
 else
     log "Chaotic AUR already configured, skipping."
 fi
+
+# Refresh repository metadata and upgrade as one transaction. Never leave the
+# system in a partial-upgrade state after adding or changing repositories.
+run_sudo pacman -Syu --needed --noconfirm archlinux-keyring cachyos-keyring
 
 # --- Paru ---
 install_package paru
@@ -61,12 +64,6 @@ run_sudo sed -i \
     -e 's/^#CombinedUpgrade/CombinedUpgrade/' \
     -e 's/^#UpgradeMenu/UpgradeMenu/' \
     -e 's/^#NewsOnUpgrade/NewsOnUpgrade/' /etc/paru.conf
-
-if ! grep -q '^SkipReview' /etc/paru.conf; then
-    echo 'SkipReview' | run_sudo tee -a /etc/paru.conf >/dev/null
-fi
-
-run_sudo pacman -Sy --needed archlinux-keyring cachyos-keyring
 
 # --- Cleanup cache timer ---
 install_package pacman-contrib

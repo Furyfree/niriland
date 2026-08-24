@@ -16,7 +16,7 @@ copied_count=0
 
 if [[ -d "$BACKGROUNDS_SRC" ]]; then
   while IFS= read -r src_file; do
-    rel_path="${src_file#$BACKGROUNDS_SRC/}"
+    rel_path="${src_file#"$BACKGROUNDS_SRC"/}"
     dest_file="$BACKGROUNDS_DST/$rel_path"
 
     mkdir -p "$(dirname "$dest_file")"

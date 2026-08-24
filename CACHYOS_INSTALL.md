@@ -13,7 +13,9 @@ The goal is a clean CachyOS install with no desktop environment preinstalled, so
 - Optional `LUKS2` encryption
 - A minimal base with CachyOS core packages enabled
 
-Encryption is recommended, not required. If you use LUKS2 on the root filesystem, Niriland's `05-setup-fde` step can later add TPM2 auto-unlock and a recovery key when the hardware supports it.
+Encryption is recommended, not required. The unsafe legacy `05-setup-fde` step
+has been removed. Phase 5 will replace it with an explicit, reversible TPM2
+auto-unlock post-install workflow.
 
 ## Before You Start
 

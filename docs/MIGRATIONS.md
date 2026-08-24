@@ -1,74 +1,22 @@
 # Migrations
 
-One-time commands for existing Niriland setups when a change should be applied to older systems but does not belong in the normal update path forever.
+One-time commands for existing Niriland setups when a change cannot be
+expressed safely as normal desired-state reconciliation.
 
 Migration policy:
 
-- Add new migrations at the top of this document.
-- Keep entries while there is still a realistic chance that an existing machine needs the fix.
-- Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
-- This file is for operational one-time fixes, not as a permanent changelog.
+- New migrations follow the contract in [`../migrations/README.md`](../migrations/README.md).
+- `niriland plan` remains read-only and reports legacy or pending migrations.
+- A later update phase will run reviewed contract migrations once and record
+  immutable success receipts.
+- Never edit a migration after a matching success receipt may exist; add a new
+  migration instead.
+- Retire migrations after both active machines satisfy them and their old state
+  is no longer realistic.
 
-## 19. august 2026 - Adopt the Shared Workstation Baseline
-
-Who:
-Existing installs that predate the shared post-cleanup package and development
-tool baseline. `cachytop` keeps the full optional gaming profile; other machines
-use the common baseline without it.
-
-Inspect first:
-
-```bash
-# cachytop
-~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh plan --keep-gaming
-
-# a machine without the full gaming profile
-~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh plan
-```
-
-The plan resolves Pacman's complete recursive removal transaction and aborts if
-it contains a protected `lib32` package. With `--keep-gaming`, it also aborts if
-the transaction contains the protected Steam/Lutris/Wine/Proton set, a package
-from `packages/gaming.packages`, or Prism Launcher.
-
-After reviewing the exact transaction, apply explicitly:
-
-```bash
-# cachytop
-~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh apply --keep-gaming
-
-# a machine without the full gaming profile
-~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh apply
-```
-
-Apply requires the typed phrase `APPLY COMMON BASELINE` and leaves Pacman's own
-confirmation enabled. It records package, Mise, and Cargo inventories under
-`~/.local/state/niriland/migrations/`, creates a Snapper snapshot when Snapper
-is available, installs the tracked user-local Mise and Cargo tool baseline,
-removes superseded system-owned tools and the legacy Node-global Grok CLI, and
-retargets video and plain-text MIME defaults to mpv and Zed. Defaults for
-comic-book archives and DjVu are removed because their Zathura plugins leave
-the baseline. Mise shims are regenerated and added to the graphical session
-PATH so T3 Code can resolve the shared CLI agents after login. It then applies
-the shared Snapper/Limine retention settings. Packages declared by the shared
-manifests, protected platform foundations, every installed `lib32` package,
-and the selected gaming profile are marked explicit before recursive removal
-so Pacman preserves them; the original explicit and dependency reason lists
-remain in the inventory.
-
-The migration does not delete application data, game installations, Wine
-prefixes, saves, containers, caches, or other home-directory state. Package
-removal does not make the newly added shared packages appear; replay
-`10-install-packages` separately after the migration when its transaction has
-also been reviewed.
-
-Fresh installs:
-Not needed. The normal manifests install only the common baseline. Prism
-Launcher is common; the full gaming profile is installed explicitly with
-`niriland-setup-gaming` on selected machines.
-
-Log out and back in after applying the migration so the graphical session reads
-the updated environment.
+The shared workstation baseline migration was retired on 23 August 2026 because
+both active machines already satisfy it. It must not be replayed by the new
+update workflow.
 
 ## 14. august 2026 - Replace Helium with Brave Origin
 
@@ -258,7 +206,7 @@ fi
 ~/.local/share/niriland/migrations/2026-04-30.sh
 
 # If CachyOS Hello is available, run "Rank mirrors" afterwards.
-sudo pacman -Sy
+sudo pacman -Syu
 ```
 
 Verify:
@@ -274,7 +222,8 @@ pacdiff -o
 
 Expected:
 
-- `sudo pacman -Sy` synchronizes all configured repositories successfully
+- `sudo pacman -Syu` synchronizes all configured repositories and completes the
+  corresponding system upgrade successfully
 - `core`, `extra`, and `multilib` each have at least one server
 - `pacman-conf --repo-list` includes the expected CachyOS repos plus `core`, `extra`, `multilib`, and `chaotic-aur`
 - `/etc/limine-snapper-sync.conf` has `MAX_SNAPSHOT_ENTRIES=auto`

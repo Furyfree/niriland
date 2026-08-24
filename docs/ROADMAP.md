@@ -1,127 +1,45 @@
 # Roadmap
 
-This file tracks repo-local unfinished work and completed milestones.
-Cross-repo design and ownership planning belongs outside this repo.
-Keep entries short: problem, target state, and any important constraint.
+[`../plan.md`](../plan.md) owns the active rewrite scope, phase order, risks,
+recovery, and acceptance criteria. This file only tracks residual repository
+work and resolved roadmap input so it cannot become a competing plan.
 
-## Active work
+## Current status
 
-### Desktop and session
+Phase 1 is implemented locally and establishes the safe foundation:
 
-- [ ] Fix Vesktop screensharing on Wayland/Niri by correcting portal routing first and only adding app-specific flags if the portal-side fix is not enough.
+- strict machine and profile parsing;
+- purpose-based package manifest contracts;
+- stable read-only plan output and state paths;
+- an automatic migration contract without migration execution;
+- sudo credential keepalive without passwords in environment variables;
+- removal of accepted obsolete cleanup and setup paths.
 
-- [ ] Add `niriland-launch-tui` and `niriland-launch-tui-presentation` as small helper scripts for normal and presentation-style TUI launches.
+Its static validation is complete, but it remains unapplied to live
+configuration or package state. Configuration deployment, package ownership,
+Noctalia cutover, pruning, and post-install system changes belong to later
+phases in `plan.md`. Phase 2 begins only after this foundation and its research
+have been reviewed.
 
-- [ ] Make Bluetooth reliable on the desktop machine and document any machine-specific fix that must survive updates or rebuilds.
+## Residual work
 
-- [ ] Decide whether a custom DMS launcher plugin is worth keeping for personal script entries, or whether desktop entries are sufficient.
+- Phase 2: canonical `configs/home` symlinks, `configs/system` copies, XDG Zsh
+  completion, package source/ownership reconciliation, and prune planning.
+- Phase 3: Niri plus Noctalia v5, Noctalia Greeter, tracked GUI settings, portal
+  validation, and safe DMS removal.
+- Phase 4: update migration execution, resumability, script consolidation,
+  package pruning, and purpose-based developer/tooling manifests.
+- Phase 5: reversible FDE/TPM and suspend-then-hibernate post-install flows;
+  retain certificate and fingerprint setup after safety review.
+- Phase 6: desktop entry/icon polish, Messenger icon correction, Zed/Typst PDF
+  handling, documentation, and a final two-machine drift audit.
 
-- [ ] Replace or crop the Messenger desktop icon so the logo renders larger in launchers.
+## Closed or moved roadmap input
 
-- [ ] Make suspend-then-hibernate work on the current machine, including proper disk-backed swap, resume configuration, and optional DMS integration.
-
-- [ ] Re-evaluate the default package set for terminal multiplexing and document viewing, especially `tmux` or `zellij`, and configure Zathura as a polished default PDF viewer.
-
-- [ ] Trim `~/.config/environment.d/90-dms.conf` down to variables that still matter and remove overrides that are now redundant or misleading.
-
-### Installer and update path
-
-- [ ] Reduce `niriland-update` noise and stop replaying install-step work that is unnecessary on a normal update run.
-
-- [ ] Simplify installer prompt flow so a normal install needs less attention and fewer unnecessary confirmations.
-
-- [ ] Rework sudo-session handling so cached sudo credentials are reused cleanly and optional actions do not trigger avoidable prompts.
-
-- [ ] Move the FDE auto-unlock work in `05-setup-fde` out of the default install path if it continues to behave like machine-specific follow-up instead of baseline setup.
-
-- [ ] Add installer resumability so failed or interrupted runs can continue from a known point instead of replaying everything.
-
-- [ ] Re-evaluate Chaotic-AUR usage after the 2026-05-02 mirror TLS outage; prefer official CachyOS/Arch packages and keep AUR/Chaotic packages only where there is no good repo alternative.
-
-### Tooling and maintenance
-
-- [ ] Split optional development tooling out of the default install path and keep only true baseline developer setup in the main flow.
-
-- [ ] Make Zed smarter for Typst work, especially opening generated PDFs in the default viewer without first landing on Zed's binary-file error tab.
-
-- [ ] Add an explicit opt-in Flutter setup path with sane release resolution, browser configuration, Android prerequisites, and clear Linux versus macOS boundaries.
-
-- [ ] Add `rustup target add i686-unknown-linux-gnu` to the relevant setup path so lib32 AUR builds that need Rust can complete.
-
-- [ ] Standardize tool scripts around a small shared helper library instead of duplicating logging, color, and command-check boilerplate.
-
-## Recently completed work
-
-### Platform refinements
-
-#### Shared workstation baseline
-
-- [x] Align the default package and development-tool manifests with the accepted post-cleanup workstation baseline.
-- [x] Keep Prism Launcher shared while moving the full gaming stack into an explicit per-machine manifest that normal install and update paths do not consume.
-- [x] Add a plan-first migration that protects `lib32`, optional gaming packages, and home-directory data before any removal is allowed.
-- [x] Standardize Ghostty mouse reporting across the active machines.
-
-#### Virtualization stack rebuild
-
-- [x] Remove the current VM helper/tooling path and rebuild virtualization support from scratch around a smaller, explicitly supported stack.
-  - [x] Rebuild the libvirt path around `qemu-full`, `virt-manager`, `swtpm`, `libvirtd`, libvirt group membership, default-network autostart, the required `network.conf` firewall backend, and the needed UFW route allowance for `192.168.122.0/24`, using the CachyOS reference at <https://wiki.cachyos.org/virtualization/qemu_and_vmm_setup/>.
-  - [x] Re-add lightweight VM workflows around `quickemu-git` and `quickgui` after the base virtualization path is clean again.
-
-#### Package workflow rework
-
-- [x] Rework `niriland-pkg` around a coherent `yay`-based flow with a combined repo + AUR picker instead of the old broken AUR-list workaround path.
-
-#### Global Python removal
-
-- [x] Stop setting Python globally through `mise`, because that leaks into system-tool expectations and breaks things like `virt-manager`.
-
-#### Snapper retention defaults
-
-- [x] Fix the snapper + limine-snapper-sync defaults so snapshot retention matches the intended setup.
-  - [x] Set `MAX_SNAPSHOT_ENTRIES=auto` in `/etc/limine-snapper-sync.conf` so recent Snapper snapshots do not trigger a false limit mismatch.
-  - [x] Set `NUMBER_MIN_AGE="86400"`, `NUMBER_LIMIT="15"`, and `NUMBER_LIMIT_IMPORTANT="15"` in `/etc/snapper/configs/root`.
-
-## Earlier completed milestones
-
-### Arch-first foundation
-
-#### Foundation build-out
-
-- [x] Start the repo with a simple Arch-oriented foundation.
-- [x] Add the first installer scaffold, numbered setup steps, shared shell helpers, and package manifest files.
-- [x] Add pacman/paru setup, base package installation, bootstrap entrypoint, and the first full-disk-encryption automation work.
-- [x] Build out the early platform flow around config deployment, shell setup, theming, keyring integration, and package-driven system setup.
-
-### Desktop platform build-out
-
-#### Desktop platform build-out
-
-- [x] Add Niri + DankMaterialShell integration and turn the repo into a real desktop bootstrap instead of a loose dotfiles collection.
-- [x] Add layered tracked config plus machine-local override structure for Niri, shell, and desktop behavior.
-- [x] Add `nirius`-based focus-or-spawn behavior and the helper scripts that support browser and webapp launching.
-- [x] Tighten desktop polish with theming, wallpapers, portal restarts, desktop entries, power profile setup, and post-install session fixes.
-- [x] Continue refining default packages and desktop behavior as the platform stabilized, including DMS settings, browser handling, editor setup, and base package changes.
-
-### Maintenance and optional tooling
-
-#### Maintenance and optional tooling
-
-- [x] Add updater and maintenance flows so package upgrades and selected install-step replays can be run after the initial install.
-- [x] Add `niriland-pkg`, keybinding reference docs, the guide, and the current project framing/documentation pass.
-- [x] Add editor and developer setup for Neovim/LazyVim, VSCodium, Zed, Docker, mise, PlatformIO, cargo tools, and related desktop integration.
-- [x] Add browser and password-manager integration around Brave Origin, Zen, and 1Password.
-- [x] Move gaming, AI, certificates, fingerprint auth, and virtualization into helper tools instead of forcing them into the default install path.
-
-### CachyOS-first pivot
-
-#### CachyOS-first pivot
-
-- [x] Pivot the platform from Arch-first assumptions to a CachyOS-first base.
-- [x] Replace the old install story with a CachyOS baseline and then simplify it further into the current CachyOS install guide.
-- [x] Fold CachyOS-specific system behavior into the installer, including package/tweak normalization and FDE/Limine follow-up work.
-
-### Documentation cleanup
-
-#### Documentation cleanup
-
-- [x] Clean up the public documentation surface by clarifying project scope, reorganizing docs out of the root, renaming the CachyOS install doc, and rechecking the keybinding reference against the current config.
+- Vesktop screen sharing works locally; preserve and validate its portal state.
+- Bluetooth works on both machines; no machine-specific workaround remains.
+- Standard desktop entries and Noctalia supersede the DMS launcher-plugin idea.
+- Multiplexing and TUI launch helpers move to Herdr.
+- Zathura is acceptable as configured and needs no additional polish.
+- Flutter, Helium, Helix, and local Ollama/OpenWebUI setup are retired.
+- Fedora and Hyprland remain later platform considerations outside this rewrite.

@@ -10,14 +10,6 @@ If expected commands are missing, verify these foundational steps completed succ
 - `10-install-packages` for the main package manifests
 - `50-setup-tools` for helper scripts copied into `~/.local/bin/niriland`
 
-## AI Tooling Issues
-
-If the AI helper stack is not working as expected:
-
-- Run `niriland-setup-ai status`
-- Verify `ollama`, `docker.service`, and `openwebui` are active
-- Check the service templates under `configs/system/etc/systemd/system/`
-
 ## Ghostty Theme Issues
 
 Ghostty will not apply the expected theme setup cleanly until a background image is configured.

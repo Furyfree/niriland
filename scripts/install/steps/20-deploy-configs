@@ -59,14 +59,14 @@ deploy_file() {
 
 log "Preparing destination directories..."
 while IFS= read -r dir_path; do
-  rel_dir="${dir_path#$BASE_CONFIG_DIR/}"
+  rel_dir="${dir_path#"$BASE_CONFIG_DIR"/}"
   [[ "$rel_dir" == "$dir_path" ]] && continue
   mkdir -p "$HOME/$rel_dir"
 done < <(find "$BASE_CONFIG_DIR" -type d | sort)
 
 log "Deploying user config files from $BASE_CONFIG_DIR to $HOME"
 while IFS= read -r file_path; do
-  rel_file="${file_path#$BASE_CONFIG_DIR/}"
+  rel_file="${file_path#"$BASE_CONFIG_DIR"/}"
   [[ "$rel_file" == "$file_path" ]] && continue
   [[ "$rel_file" == "PLACEHOLDER" ]] && continue
   [[ "$rel_file" == */PLACEHOLDER ]] && continue

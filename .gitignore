@@ -1,1 +1,3 @@
 .codex
+machine.local.conf
+configs/base/.config/VSCodium/User/globalStorage/

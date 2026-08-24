@@ -11,6 +11,9 @@ LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC2034
 REPO_ROOT="$(cd "$LIB_DIR/../../.." && pwd)"
 
+# shellcheck source=scripts/lib/sudo-session
+source "$REPO_ROOT/scripts/lib/sudo-session"
+
 ##############################################################################
 # Colors
 ##############################################################################
@@ -97,11 +100,7 @@ ensure_sudo_session() {
     return 0
   fi
 
-  if [[ -z "${SYSTEM_PASS:-}" ]]; then
-    read_system_pass
-  fi
-
-  sudo -S -p '' -v <<<"$SYSTEM_PASS" >/dev/null 2>&1 || die "sudo authentication failed"
+  sudo -v || die "sudo authentication failed"
 }
 
 require_paru() {
@@ -252,102 +251,10 @@ copy_file() {
   run_sudo cp "$src" "$dest" || die "Failed to copy $src to $dest"
 }
 
-##############################################################################
-# Password Management
-##############################################################################
-
-# Read and validate system password for sudo usage.
-read_system_pass() {
-  log "Collecting system password..."
-
-  while true; do
-    read -rsp "Enter system password (sudo): " SYSTEM_PASS </dev/tty
-    echo
-    read -rsp "Confirm system password: " SYSTEM_PASS_CONFIRM </dev/tty
-    echo
-
-    if [[ "$SYSTEM_PASS" != "$SYSTEM_PASS_CONFIRM" ]]; then
-      warn "Passwords don't match, please try again"
-      continue
-    fi
-
-    # Force a fresh check so cached sudo credentials do not mask a bad password.
-    sudo -k
-    if sudo -S -p '' -v <<<"$SYSTEM_PASS" >/dev/null 2>&1; then
-      export SYSTEM_PASS
-      unset SYSTEM_PASS_CONFIRM
-      log_success "Password verified"
-      return 0
-    else
-      warn "Invalid sudo password, please try again"
-    fi
-  done
-}
-
-# Read and cache disk encryption password for later non-interactive enrollment.
-read_luks_pass() {
-  if [[ -z "${SYSTEM_PASS:-}" ]]; then
-    die "System password not set. Call read_system_pass first."
-  fi
-
-  log "Collecting disk encryption password..."
-
-  while true; do
-    read -rsp "Enter disk encryption password (LUKS, Enter = system password): " LUKS_PASSWORD </dev/tty
-    echo
-
-    if [[ -z "$LUKS_PASSWORD" ]]; then
-      export LUKS_PASSWORD="$SYSTEM_PASS"
-      log_success "Disk encryption password set (reusing system password)"
-      return 0
-    fi
-
-    read -rsp "Confirm disk encryption password: " LUKS_PASSWORD_CONFIRM </dev/tty
-    echo
-
-    if [[ "$LUKS_PASSWORD" != "$LUKS_PASSWORD_CONFIRM" ]]; then
-      warn "Passwords don't match, please try again"
-      continue
-    fi
-
-    export LUKS_PASSWORD
-    unset LUKS_PASSWORD_CONFIRM
-    log_success "Disk encryption password set"
-    return 0
-  done
-}
-
-# Get the system password.
-get_system_pass() {
-  if [[ -z "${SYSTEM_PASS:-}" ]]; then
-    die "System password not set. Call read_system_pass first."
-  fi
-  echo "$SYSTEM_PASS"
-}
-
-# Get the disk encryption password.
-get_luks_pass() {
-  if [[ -z "${LUKS_PASSWORD:-}" ]]; then
-    die "LUKS password not set. Call read_luks_pass first."
-  fi
-  echo "$LUKS_PASSWORD"
-}
-
-# Run command with sudo using cached sudo session.
+# Run a privileged command through sudo's own credential cache.
 run_sudo() {
   ensure_sudo_session
   sudo "$@"
-}
-
-# Clean up passwords from memory.
-clean_system_pass() {
-  unset SYSTEM_PASS
-  unset SYSTEM_PASS_CONFIRM
-}
-
-clean_luks_pass() {
-  unset LUKS_PASSWORD
-  unset LUKS_PASSWORD_CONFIRM
 }
 
 ##############################################################################
@@ -423,18 +330,11 @@ clean_git_config() {
   unset GIT_EMAIL
 }
 
-clean_cache() {
-    run_sudo paccache -r
-}
-
 ##############################################################################
 # Cleanup All
 ##############################################################################
 
 cleanup_all() {
-  sudo -k >/dev/null 2>&1 || true
+  niriland_sudo_session_stop
   clean_git_config
-  clean_cache
-  clean_system_pass
-  clean_luks_pass
 }

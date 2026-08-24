@@ -42,7 +42,7 @@ deploy_spotlight_entries() {
   mkdir -p "$APPLICATIONS_DST"
 
   while IFS= read -r src_path; do
-    local rel_path="${src_path#$APPLICATIONS_SRC/}"
+    local rel_path="${src_path#"$APPLICATIONS_SRC"/}"
     copy_if_changed "$src_path" "$APPLICATIONS_DST/$rel_path" "applications/$rel_path"
   done < <(find "$APPLICATIONS_SRC" -mindepth 1 -maxdepth 1 \( -type f -o -type l \) | sort)
 }
@@ -58,7 +58,7 @@ deploy_hidden_overrides() {
   mkdir -p "$APPLICATIONS_DST"
 
   while IFS= read -r src_path; do
-    local rel_path="${src_path#$hidden_src/}"
+    local rel_path="${src_path#"$hidden_src"/}"
     local dest_path="$APPLICATIONS_DST/$rel_path"
     copy_if_changed "$src_path" "$dest_path" "applications/$rel_path hidden override"
   done < <(find "$hidden_src" \( -type f -o -type l \) | sort)

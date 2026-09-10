@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: niriland-setup-fingerprint [status|help]
+
+The old fingerprint setup and removal workflow is disabled because directly
+editing PAM configuration is not safe enough. A reversible implementation is
+planned as `niriland postinstall fingerprint`.
+
+Commands:
+  status  Show the current command status without changing the system
+  help    Show this help
+EOF
+}
+
+case "${1:-setup}" in
+  status)
+    printf '%s\n' \
+      'Fingerprint mutation is disabled.' \
+      'Planned replacement: niriland postinstall fingerprint'
+    ;;
+  help|--help|-h)
+    usage
+    ;;
+  setup|enable|remove|disable|--remove)
+    printf '%s\n' \
+      'ERROR: Fingerprint mutation is disabled because the old PAM workflow was unsafe.' \
+      'Use niriland-setup-fingerprint status for details.' >&2
+    exit 2
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

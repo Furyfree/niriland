@@ -1,74 +1,22 @@
 # Migrations
 
-One-time commands for existing Niriland setups when a change should be applied to older systems but does not belong in the normal update path forever.
+One-time commands for existing Niriland setups when a change cannot be
+expressed safely as normal desired-state reconciliation.
 
 Migration policy:
 
-- Add new migrations at the top of this document.
-- Keep entries while there is still a realistic chance that an existing machine needs the fix.
-- Remove entries once all active systems are expected to be converged or the old state is no longer realistic.
-- This file is for operational one-time fixes, not as a permanent changelog.
+- New migrations follow the contract in [`../migrations/README.md`](../migrations/README.md).
+- `niriland plan` remains read-only and reports legacy or pending migrations.
+- A later update phase will run reviewed contract migrations once and record
+  immutable success receipts.
+- Never edit a migration after a matching success receipt may exist; add a new
+  migration instead.
+- Retire migrations after both active machines satisfy them and their old state
+  is no longer realistic.
 
-## 19. august 2026 - Adopt the Shared Workstation Baseline
-
-Who:
-Existing installs that predate the shared post-cleanup package and development
-tool baseline. `cachytop` keeps the full optional gaming profile; other machines
-use the common baseline without it.
-
-Inspect first:
-
-```bash
-# cachytop
-~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh plan --keep-gaming
-
-# a machine without the full gaming profile
-~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh plan
-```
-
-The plan resolves Pacman's complete recursive removal transaction and aborts if
-it contains a protected `lib32` package. With `--keep-gaming`, it also aborts if
-the transaction contains the protected Steam/Lutris/Wine/Proton set, a package
-from `packages/gaming.packages`, or Prism Launcher.
-
-After reviewing the exact transaction, apply explicitly:
-
-```bash
-# cachytop
-~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh apply --keep-gaming
-
-# a machine without the full gaming profile
-~/.local/share/niriland/migrations/2026-08-19-common-baseline.sh apply
-```
-
-Apply requires the typed phrase `APPLY COMMON BASELINE` and leaves Pacman's own
-confirmation enabled. It records package, Mise, and Cargo inventories under
-`~/.local/state/niriland/migrations/`, creates a Snapper snapshot when Snapper
-is available, installs the tracked user-local Mise and Cargo tool baseline,
-removes superseded system-owned tools and the legacy Node-global Grok CLI, and
-retargets video and plain-text MIME defaults to mpv and Zed. Defaults for
-comic-book archives and DjVu are removed because their Zathura plugins leave
-the baseline. Mise shims are regenerated and added to the graphical session
-PATH so T3 Code can resolve the shared CLI agents after login. It then applies
-the shared Snapper/Limine retention settings. Packages declared by the shared
-manifests, protected platform foundations, every installed `lib32` package,
-and the selected gaming profile are marked explicit before recursive removal
-so Pacman preserves them; the original explicit and dependency reason lists
-remain in the inventory.
-
-The migration does not delete application data, game installations, Wine
-prefixes, saves, containers, caches, or other home-directory state. Package
-removal does not make the newly added shared packages appear; replay
-`10-install-packages` separately after the migration when its transaction has
-also been reviewed.
-
-Fresh installs:
-Not needed. The normal manifests install only the common baseline. Prism
-Launcher is common; the full gaming profile is installed explicitly with
-`niriland-setup-gaming` on selected machines.
-
-Log out and back in after applying the migration so the graphical session reads
-the updated environment.
+The shared workstation baseline migration was retired on 23 August 2026 because
+both active machines already satisfy it. It must not be replayed by the new
+update workflow.
 
 ## 14. august 2026 - Replace Helium with Brave Origin
 
@@ -109,7 +57,7 @@ if (( ${#old_browser_packages[@]} > 0 )); then
   sudo pacman -Rns "${old_browser_packages[@]}"
 fi
 
-bash ~/.local/share/niriland/scripts/install/steps/50-setup-tools
+bash ~/.local/share/niriland/installer/steps/50-setup-tools
 ```
 
 What it changes:
@@ -139,7 +87,7 @@ if [[ -f ~/.config/zathura/zathurarc ]]; then
   cp -a ~/.config/zathura/zathurarc ~/.config/backups/niriland/migrations/zathurarc-before-niriland-default
 fi
 
-cp -a ~/.local/share/niriland/configs/base/.config/zathura/zathurarc ~/.config/zathura/zathurarc
+cp -a ~/.local/share/niriland/configs/home/.config/zathura/zathurarc ~/.config/zathura/zathurarc
 ```
 
 What it changes:
@@ -162,7 +110,7 @@ Run:
 ```bash
 mkdir -p ~/.config/zed ~/.config/backups/niriland/migrations
 cp -a ~/.config/zed/settings.json ~/.config/backups/niriland/migrations/zed-settings-before-tinymist-pdf-export.json
-cp -a ~/.local/share/niriland/configs/base/.config/zed/settings.json ~/.config/zed/settings.json
+cp -a ~/.local/share/niriland/configs/home/.config/zed/settings.json ~/.config/zed/settings.json
 ```
 
 What it changes:
@@ -187,8 +135,8 @@ Run:
 
 What it changes:
 
-- Copies `~/.local/share/niriland/configs/base/.config/VSCodium/User/settings.json` to `~/.config/VSCodium/User/settings.json`
-- Copies `~/.local/share/niriland/configs/base/.config/VSCodium/User/keybindings.json` to `~/.config/VSCodium/User/keybindings.json`
+- Copies `~/.local/share/niriland/configs/home/.config/VSCodium/User/settings.json` to `~/.config/VSCodium/User/settings.json`
+- Copies `~/.local/share/niriland/configs/home/.config/VSCodium/User/keybindings.json` to `~/.config/VSCodium/User/keybindings.json`
 - Backs up the existing local VSCodium user files under `~/.config/backups/niriland/migrations/`
 - Moves the primary VSCodium sidebar to the right for explorer/source control
 - Keeps the panel on the bottom for the terminal and keeps the secondary side bar available for AI views
@@ -244,7 +192,7 @@ if [[ -f /etc/pacman.conf.bak ]]; then
 fi
 
 # Reapply Niriland pacman defaults, multilib, Chaotic AUR, paru config, and keyrings.
-~/.local/share/niriland/scripts/install/steps/00-setup-pacman
+~/.local/share/niriland/installer/steps/00-setup-pacman
 
 # Restore Arch mirror servers if /etc/pacman.d/mirrorlist was overwritten without active Server lines.
 if ! pacman-conf --repo core Server >/dev/null 2>&1 || [[ -z "$(pacman-conf --repo core Server)" ]]; then
@@ -258,7 +206,7 @@ fi
 ~/.local/share/niriland/migrations/2026-04-30.sh
 
 # If CachyOS Hello is available, run "Rank mirrors" afterwards.
-sudo pacman -Sy
+sudo pacman -Syu
 ```
 
 Verify:
@@ -274,7 +222,8 @@ pacdiff -o
 
 Expected:
 
-- `sudo pacman -Sy` synchronizes all configured repositories successfully
+- `sudo pacman -Syu` synchronizes all configured repositories and completes the
+  corresponding system upgrade successfully
 - `core`, `extra`, and `multilib` each have at least one server
 - `pacman-conf --repo-list` includes the expected CachyOS repos plus `core`, `extra`, `multilib`, and `chaotic-aur`
 - `/etc/limine-snapper-sync.conf` has `MAX_SNAPSHOT_ENTRIES=auto`
@@ -539,7 +488,7 @@ Run:
 
 ```bash
 mkdir -p ~/.local/share/applications
-cp -a ~/.local/share/niriland/configs/base/.local/share/applications/Codex.desktop ~/.local/share/applications/Codex.desktop
+cp -a ~/.local/share/niriland/configs/home/.local/share/applications/Codex.desktop ~/.local/share/applications/Codex.desktop
 ```
 
 What it changes:
@@ -559,8 +508,8 @@ Run:
 
 ```bash
 mkdir -p ~/.config/helix
-cp -a ~/.local/share/niriland/configs/base/.config/topgrade.toml ~/.config/topgrade.toml
-cp -a ~/.local/share/niriland/configs/base/.config/helix/languages.toml ~/.config/helix/languages.toml
+cp -a ~/.local/share/niriland/configs/home/.config/topgrade.toml ~/.config/topgrade.toml
+cp -a ~/.local/share/niriland/configs/home/.config/helix/languages.toml ~/.config/helix/languages.toml
 
 rm -rf -- ~/.config/helix/runtime/grammars/sources/gotmpl
 
@@ -594,7 +543,7 @@ Run:
 
 ```bash
 mkdir -p ~/.config/zed
-cp -a ~/.local/share/niriland/configs/base/.config/zed/settings.json ~/.config/zed/settings.json
+cp -a ~/.local/share/niriland/configs/home/.config/zed/settings.json ~/.config/zed/settings.json
 ```
 
 What it changes:
@@ -626,7 +575,7 @@ if pacman -Qq evince >/dev/null 2>&1; then
 fi
 
 mkdir -p ~/.config
-cp -a ~/.local/share/niriland/configs/base/.config/mimeapps.list ~/.config/mimeapps.list
+cp -a ~/.local/share/niriland/configs/home/.config/mimeapps.list ~/.config/mimeapps.list
 
 xdg-mime query default application/pdf
 ```
@@ -767,7 +716,7 @@ Run:
 
 ```bash
 mkdir -p ~/.config/zed
-cp -a ~/.local/share/niriland/configs/base/.config/zed/settings.json ~/.config/zed/settings.json
+cp -a ~/.local/share/niriland/configs/home/.config/zed/settings.json ~/.config/zed/settings.json
 ```
 
 What it changes:
@@ -781,12 +730,12 @@ Not needed manually. Fresh installs already deploy the current tracked Zed setti
 ## 18. marts 2026 - Refresh Preserved Tracked Base Configs
 
 Who:
-Existing installs whose local configs were preserved during updates and now need selected tracked files from `configs/base` replayed into `$HOME`.
+Existing installs whose local configs were preserved during updates and now need selected tracked files from `configs/home` replayed into `$HOME`.
 
 Run:
 
 ```bash
-BASE=~/.local/share/niriland/configs/base
+BASE=~/.local/share/niriland/configs/home
 
 # List tracked base config files if needed.
 find "$BASE" \( -type f -o -type l \) | sed "s#^$BASE/##" | sort
@@ -807,7 +756,7 @@ cp -a "$BASE/.config/ghostty/config" ~/.config/ghostty/config
 
 What it changes:
 
-- Copies selected tracked files from `~/.local/share/niriland/configs/base` into the matching path under `$HOME`
+- Copies selected tracked files from `~/.local/share/niriland/configs/home` into the matching path under `$HOME`
 - Covers both `~/.config/*` refreshes such as `.config/DankMaterialShell/settings.json` and `~/.local/share/*` refreshes such as `.local/share/applications/Codex.desktop`
 
 Fresh installs:
@@ -824,8 +773,8 @@ Run:
 sudo pacman -S --needed sheldon
 
 mkdir -p ~/.config/sheldon
-cp -a ~/.local/share/niriland/configs/base/.config/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
-cp -a ~/.local/share/niriland/configs/base/.zshrc ~/.zshrc
+cp -a ~/.local/share/niriland/configs/home/.config/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
+cp -a ~/.local/share/niriland/configs/home/.zshrc ~/.zshrc
 
 if pacman -Qq zinit >/dev/null 2>&1; then
   paru -Rns --noconfirm zinit
@@ -880,7 +829,7 @@ rm -f \
   ~/Pictures/Wallpapers/vadim-sherbakov-NQSWvyVRIJk-unsplash.jpg \
   ~/Pictures/Wallpapers/wallhaven-1p62vg.png
 
-bash ~/.local/share/niriland/scripts/install/steps/30-setup-backgrounds
+bash ~/.local/share/niriland/installer/steps/30-setup-backgrounds
 ```
 
 What it changes:
@@ -900,7 +849,7 @@ Run:
 
 ```bash
 mkdir -p ~/.config/zed
-cp -a ~/.local/share/niriland/configs/base/.config/zed/keymap.json ~/.config/zed/keymap.json
+cp -a ~/.local/share/niriland/configs/home/.config/zed/keymap.json ~/.config/zed/keymap.json
 ```
 
 What it changes:
@@ -946,17 +895,18 @@ Existing installs whose deployed `~/.local/bin/niriland/niriland-update` still u
 Run:
 
 ```bash
-bash ~/.local/share/niriland/scripts/install/steps/50-setup-tools
+bash ~/.local/share/niriland/installer/steps/50-setup-tools
 ```
 
 What it changes:
 
-- Replaces `~/.local/bin/niriland` with the current repo copy from `scripts/tools`
-- Updates the deployed `niriland-update` script itself
-- Removes stale deleted helper scripts from the deployed tools directory
+- Backs up the old copied `~/.local/bin/niriland` directory
+- Links public commands from `bin/` and transitional helpers from
+  `bin/` into `~/.local/bin`
+- Updates the deployed `niriland-update` link and removes the nested tools path
 
 Fresh installs:
-Not needed manually. Fresh installs already deploy the current tool directory.
+Not needed manually. Fresh installs already link the current commands.
 
 ## 13. marts 2026 - Snapper Retention
 
@@ -966,7 +916,7 @@ Existing installs from before `07-setup-snapper` was added.
 Run:
 
 ```bash
-bash ~/.local/share/niriland/scripts/install/steps/07-setup-snapper
+bash ~/.local/share/niriland/installer/steps/07-setup-snapper
 sudo systemctl start snapper-cleanup.service
 sudo limine-snapper-sync
 sudo snapper list | tail -n +3 | wc -l

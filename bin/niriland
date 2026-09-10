@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f -- "${BASH_SOURCE[0]}")"
+REPO_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+
+# shellcheck source=src/niriland/common.sh
+source "$REPO_ROOT/src/niriland/common.sh"
+# shellcheck source=src/niriland/config.sh
+source "$REPO_ROOT/src/niriland/config.sh"
+# shellcheck source=src/niriland/migrations.sh
+source "$REPO_ROOT/src/niriland/migrations.sh"
+# shellcheck source=src/niriland/plan-output.sh
+source "$REPO_ROOT/src/niriland/plan-output.sh"
+# shellcheck source=src/niriland/commands/common.sh
+source "$REPO_ROOT/src/niriland/commands/common.sh"
+# shellcheck source=src/niriland/commands/plan.sh
+source "$REPO_ROOT/src/niriland/commands/plan.sh"
+# shellcheck source=src/niriland/commands/status.sh
+source "$REPO_ROOT/src/niriland/commands/status.sh"
+
+niriland_usage() {
+  cat <<'EOF'
+Usage: niriland <command> [options]
+
+Phase 1 commands:
+  plan [--prune]  Validate the selected profile and show read-only foundations
+  status          Show the selected profile and migration foundation status
+  help            Show this help
+
+Reserved commands (implemented in later phases):
+  apply [--prune]
+  update
+  postinstall <action>
+
+Set NIRILAND_MACHINE_CONFIG to test another machine configuration. The default
+is machine.local.conf in the repository root.
+EOF
+}
+
+niriland_reserved_command() {
+  niriland_error "$1 is reserved for a later phase and made no changes."
+  return 2
+}
+
+niriland_main() {
+  local command="${1:-help}"
+  [[ $# -eq 0 ]] || shift
+
+  case "$command" in
+    plan)
+      niriland_command_plan "$@"
+      ;;
+    status)
+      [[ $# -eq 0 ]] || niriland_die "status does not accept arguments"
+      niriland_command_status
+      ;;
+    apply|update|postinstall)
+      niriland_reserved_command "$command"
+      ;;
+    help|-h|--help)
+      niriland_usage
+      ;;
+    *)
+      niriland_usage >&2
+      niriland_die "Unknown command: $command"
+      ;;
+  esac
+}
+
+niriland_main "$@"

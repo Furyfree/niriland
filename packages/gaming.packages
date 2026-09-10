@@ -1,5 +1,5 @@
-# Optional gaming profile. Read by niriland-setup-gaming and by the common
-# baseline migration when validating --keep-gaming protection.
+# Legacy full-gaming manifest. Read by niriland-setup-gaming until the Phase 2
+# source and ownership audit splits shared gaming from desktop-only extras.
 
 # Install the preferred Heroic provider before the application meta package.
 heroic-games-launcher-bin

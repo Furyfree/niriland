@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common"
+
+log "Setting up backgrounds..."
+
+BACKGROUNDS_SRC="$REPO_ROOT/configs/backgrounds"
+PICTURES_DIR="$HOME/Pictures"
+BACKGROUNDS_DST="$PICTURES_DIR/Wallpapers"
+mkdir -p "$BACKGROUNDS_DST"
+
+copied_count=0
+
+if [[ -d "$BACKGROUNDS_SRC" ]]; then
+  while IFS= read -r src_file; do
+    rel_path="${src_file#$BACKGROUNDS_SRC/}"
+    dest_file="$BACKGROUNDS_DST/$rel_path"
+
+    mkdir -p "$(dirname "$dest_file")"
+
+    if [[ -f "$dest_file" ]] && cmp -s "$src_file" "$dest_file"; then
+      continue
+    fi
+
+    cp -a "$src_file" "$dest_file"
+    copied_count=$((copied_count + 1))
+  done < <(find "$BACKGROUNDS_SRC" -type f ! -name 'PLACEHOLDER' ! -name '.gitkeep' | sort)
+
+  log "Background source: $BACKGROUNDS_SRC"
+  log "Background destination: $BACKGROUNDS_DST"
+  log "Background files updated: $copied_count"
+else
+  warn "Backgrounds directory not found at $BACKGROUNDS_SRC"
+fi
+
+log_success "Background setup complete."

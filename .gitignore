@@ -1,3 +1,4 @@
 .codex
-machine.local.conf
-configs/home/.config/VSCodium/User/globalStorage/
+
+# Machine-local editor state is not part of the historical installer.
+configs/base/.config/VSCodium/User/globalStorage/

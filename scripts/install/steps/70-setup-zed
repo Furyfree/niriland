@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common"
+
+log "Configuring Zed..."
+
+install_package curl
+
+if command -v zed >/dev/null 2>&1 || [[ -x "$HOME/.local/bin/zed" ]]; then
+  log "Zed already installed, skipping."
+  exit 0
+fi
+
+log "Installing Zed via upstream installer..."
+curl -f https://zed.dev/install.sh | sh
+
+if command -v zed >/dev/null 2>&1 || [[ -x "$HOME/.local/bin/zed" ]]; then
+  log_success "Zed installed."
+else
+  warn "Zed installer completed, but zed was not found on PATH yet."
+fi

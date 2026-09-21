@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common"
+EXTENSIONS_FILE="$REPO_ROOT/packages/vscodium.extensions"
+
+log "Installing VSCodium extensions from $EXTENSIONS_FILE"
+
+mkdir -p "$HOME/.config/VSCodium/User"
+
+# Check if VSCodium is installed
+require_cmd codium
+
+if [[ ! -f "$EXTENSIONS_FILE" ]]; then
+  warn "Extensions file not found: $EXTENSIONS_FILE. Skipping VSCodium extension setup."
+  exit 0
+fi
+
+declare -A installed_map=()
+while IFS= read -r installed || [[ -n "$installed" ]]; do
+  installed="${installed#"${installed%%[![:space:]]*}"}"
+  installed="${installed%"${installed##*[![:space:]]}"}"
+  [[ -z "$installed" ]] && continue
+  installed_map["${installed,,}"]=1
+done < <(codium --list-extensions 2>/dev/null || true)
+
+installed_count=0
+skipped_count=0
+failed_count=0
+
+# Install VSCodium extensions from the extensions file
+while IFS= read -r line || [[ -n "$line" ]]; do
+  extension="${line#"${line%%[![:space:]]*}"}"
+  extension="${extension%"${extension##*[![:space:]]}"}"
+
+  if [[ -z "$extension" || "$extension" == \#* ]]; then
+    continue
+  fi
+
+  extension_key="${extension,,}"
+  if [[ -n "${installed_map[$extension_key]:-}" ]]; then
+    skipped_count=$((skipped_count + 1))
+    continue
+  fi
+
+  log "Installing VSCodium extension: $extension"
+  if codium --install-extension "$extension" >/dev/null 2>&1; then
+    installed_map["$extension_key"]=1
+    installed_count=$((installed_count + 1))
+  else
+    warn "Failed to install VSCodium extension: $extension"
+    failed_count=$((failed_count + 1))
+  fi
+done < "$EXTENSIONS_FILE"
+
+log "VSCodium extensions complete (installed: $installed_count, skipped: $skipped_count, failed: $failed_count)"

@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-BASE="$REPO_ROOT/configs/home"
+BASE="$REPO_ROOT/configs/base"
 
 log() {
   printf '==> %s\n' "$*"
